@@ -92,15 +92,19 @@ final class PortSignalTests: XCTestCase {
             signal, PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input)
         )
         machine.states += [machine.states[0]]
-        let signal2 = PortSignal(currentStateInFor: machine)
+        let signal2 = PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input)
         XCTAssertEqual(
             signal2?.type,
             .ranged(type: .stdLogicVector(size: .downto(
                 upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
             )))
         )
+        XCTAssertEqual(
+            signal2, PortSignal(name: .currentStateIn(for: machine), bitsRequired: 2, mode: .input)
+        )
         machine.states = []
         XCTAssertNil(PortSignal(currentStateInFor: machine))
+        XCTAssertNil(PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input))
     }
 
 }
