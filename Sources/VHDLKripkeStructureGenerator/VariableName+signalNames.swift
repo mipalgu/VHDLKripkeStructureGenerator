@@ -57,6 +57,7 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Adds common variable names.
 extension VariableName {
 
     // swiftlint:disable force_unwrapping
@@ -67,34 +68,58 @@ extension VariableName {
     /// The `setInternalSignals` signal.
     static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
 
+    /// The `setTargetState` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func currentStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_currentStateIn")!
     }
 
+    /// The `currentStateOut` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func currentStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_currentStateOut")!
     }
 
+    /// The `internalStateIn` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func internalStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_internalStateIn")!
     }
 
+    /// The `internalStateOut` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func internalStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_internalStateOut")!
     }
 
+    /// The `previousRingletIn` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func previousRingletIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_previousRingletIn")!
     }
 
+    /// The `previousRingletOut` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func previousRingletOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_previousRingletOut")!
     }
 
+    /// The `targetStateIn` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func targetStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_targetStateIn")!
     }
 
+    /// The `targetStateOut` signal.
+    /// - Parameter machine: The machine that uses this signal.
+    /// - Returns: The variable name for this signal.
     static func targetStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_targetStateOut")!
     }
