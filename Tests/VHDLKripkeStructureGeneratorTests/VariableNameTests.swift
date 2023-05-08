@@ -1,4 +1,4 @@
-// VariableName+signalNames.swift
+// VariableNameTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,51 +54,35 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension VariableName {
+/// Test class for ``VariableName`` extensions.
+final class VariableNameTests: XCTestCase {
 
-    // swiftlint:disable force_unwrapping
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// The `reset` signal.
-    static let reset = VariableName(rawValue: "reset")!
+    /// A machine to use as test data.
+    let machine: Machine! = Machine.initial(
+        path: URL(fileURLWithPath: "path/to/M.machine", isDirectory: true)
+    )
 
-    /// The `setInternalSignals` signal.
-    static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
+    // swiftlint:enable implicitly_unwrapped_optional
 
-    static func currentStateIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_currentStateIn")!
+    /// Test that the constants are correct with the given machine name.
+    func testStaticConstants() {
+        XCTAssertEqual(VariableName.reset.rawValue, "reset")
+        XCTAssertEqual(VariableName.setInternalSignals.rawValue, "setInternalSignals")
+        XCTAssertEqual(VariableName.currentStateIn(for: machine).rawValue, "M_currentStateIn")
+        XCTAssertEqual(VariableName.currentStateOut(for: machine).rawValue, "M_currentStateOut")
+        XCTAssertEqual(VariableName.internalStateIn(for: machine).rawValue, "M_internalStateIn")
+        XCTAssertEqual(VariableName.internalStateOut(for: machine).rawValue, "M_internalStateOut")
+        XCTAssertEqual(VariableName.previousRingletIn(for: machine).rawValue, "M_previousRingletIn")
+        XCTAssertEqual(VariableName.previousRingletOut(for: machine).rawValue, "M_previousRingletOut")
+        XCTAssertEqual(VariableName.targetStateIn(for: machine).rawValue, "M_targetStateIn")
+        XCTAssertEqual(VariableName.targetStateOut(for: machine).rawValue, "M_targetStateOut")
     }
-
-    static func currentStateOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_currentStateOut")!
-    }
-
-    static func internalStateIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_internalStateIn")!
-    }
-
-    static func internalStateOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_internalStateOut")!
-    }
-
-    static func previousRingletIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_previousRingletIn")!
-    }
-
-    static func previousRingletOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_previousRingletOut")!
-    }
-
-    static func targetStateIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_targetStateIn")!
-    }
-
-    static func targetStateOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_targetStateOut")!
-    }
-
-    // swiftlint:enable force_unwrapping
 
 }
