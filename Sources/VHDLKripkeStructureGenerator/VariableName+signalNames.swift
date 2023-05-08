@@ -71,6 +71,7 @@ extension VariableName {
     /// The `setTargetState` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func currentStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_currentStateIn")!
     }
@@ -78,6 +79,7 @@ extension VariableName {
     /// The `currentStateOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func currentStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_currentStateOut")!
     }
@@ -85,6 +87,7 @@ extension VariableName {
     /// The `internalStateIn` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func internalStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_internalStateIn")!
     }
@@ -92,6 +95,7 @@ extension VariableName {
     /// The `internalStateOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func internalStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_internalStateOut")!
     }
@@ -99,6 +103,7 @@ extension VariableName {
     /// The `previousRingletIn` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func previousRingletIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_previousRingletIn")!
     }
@@ -106,6 +111,7 @@ extension VariableName {
     /// The `previousRingletOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func previousRingletOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_previousRingletOut")!
     }
@@ -113,6 +119,7 @@ extension VariableName {
     /// The `targetStateIn` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func targetStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_targetStateIn")!
     }
@@ -120,6 +127,7 @@ extension VariableName {
     /// The `targetStateOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
+    @usableFromInline
     static func targetStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_targetStateOut")!
     }
