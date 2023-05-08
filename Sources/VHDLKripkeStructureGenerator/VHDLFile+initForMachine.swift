@@ -59,20 +59,20 @@ import VHDLParsing
 
 extension VHDLFile {
 
-    init?(kripke machine: Machine) {
-        guard let representation = MachineRepresentation(machine: machine) else {
-            return nil
-        }
-        let existingFormat = VHDLFile(representation: representation)
-        guard
-            existingFormat.entities.count == 1,
-            let entity = existingFormat.entities.first,
-            existingFormat.architectures.count == 1,
-            let architecture = existingFormat.architectures.first
-        else {
-            return nil
-        }
-        let includes = existingFormat.includes
-    }
+    // init?(kripke machine: Machine) {
+    //     guard let representation = MachineRepresentation(machine: machine) else {
+    //         return nil
+    //     }
+    //     let existingFormat = VHDLFile(representation: representation)
+    //     guard
+    //         existingFormat.entities.count == 1,
+    //         let entity = existingFormat.entities.first,
+    //         existingFormat.architectures.count == 1,
+    //         let architecture = existingFormat.architectures.first
+    //     else {
+    //         return nil
+    //     }
+    //     let includes = existingFormat.includes
+    // }
 
 }
