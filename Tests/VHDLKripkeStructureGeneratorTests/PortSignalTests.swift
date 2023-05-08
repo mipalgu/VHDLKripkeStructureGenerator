@@ -1,4 +1,4 @@
-// PortSignal+internalVariables.swift
+// PortSignalTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,53 +54,48 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Adds the ability to create port signals required for kripke structure generation in a specific machine.
-extension PortSignal {
+/// Test class for ``PortSignal`` extensions.
+final class PortSignalTests: XCTestCase {
 
-    /// Create the `currentStateIn` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
-    init?(currentStateInFor machine: Machine) {
-        self.init(name: .currentStateIn(for: machine), machine: machine, mode: .input)
-    }
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// Create a PortSignal that is sized to fit the number of states in a machine.
-    /// - Parameters:
-    ///   - name: The name of the signal.
-    ///   - machine: The machine containing the states.
-    ///   - mode: The mode of the signal.
-    @usableFromInline
-    init?(name: VariableName, machine: Machine, mode: Mode) {
-        guard
-            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1), bitsRequired >= 1
-        else {
-            return nil
-        }
-        self.init(name: name, bitsRequired: bitsRequired, mode: mode)
-    }
+    /// A machine to use as test data.
+    var machine: Machine!
 
-    /// Create a `std_logic_vector` port signal.
-    /// - Parameters:
-    ///   - name: The name of the signal.
-    ///   - bitsRequired: The number of bits in the signal.
-    ///   - mode: The mode of the signal.
-    /// - Warning: `bitsRequired` must be greater than 0. Values that are 0 or less will cause a fatal error.
-    @usableFromInline
-    init(name: VariableName, bitsRequired: Int, mode: Mode) {
-        guard bitsRequired > 0 else {
-            fatalError("Invalid number of bits.")
-        }
-        self.init(
-            type: .ranged(type: .stdLogicVector(size: .downto(
-                upper: .literal(value: .integer(value: bitsRequired - 1)),
-                lower: .literal(value: .integer(value: 0))
-            ))),
-            name: name,
-            mode: mode
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    override func setUp() {
+        machine = Machine.initial(
+            path: URL(fileURLWithPath: "path/to/M.machine", isDirectory: true)
         )
+    }
+
+    /// Test that ``init(currentStateInFor:)`` works correctly.
+    func testCurrentStateInInit() {
+        let signal = PortSignal(currentStateInFor: machine)
+        XCTAssertEqual(signal?.name, .currentStateIn(for: machine))
+        XCTAssertEqual(
+            signal?.type,
+            .ranged(type: .stdLogicVector(size: .downto(
+                upper: .literal(value: .integer(value: 0)), lower: .literal(value: .integer(value: 0))
+            )))
+        )
+        XCTAssertEqual(signal?.mode, .input)
+        machine.states += [machine.states[0]]
+        let signal2 = PortSignal(currentStateInFor: machine)
+        XCTAssertEqual(
+            signal2?.type,
+            .ranged(type: .stdLogicVector(size: .downto(
+                upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+            )))
+        )
+        machine.states = []
+        XCTAssertNil(PortSignal(currentStateInFor: machine))
     }
 
 }
