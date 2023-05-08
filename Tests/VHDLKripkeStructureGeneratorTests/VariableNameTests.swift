@@ -73,8 +73,11 @@ final class VariableNameTests: XCTestCase {
 
     /// Test that the constants are correct with the given machine name.
     func testStaticConstants() {
+        XCTAssertEqual(VariableName.primitiveTypes.rawValue, "PrimitiveTypes")
         XCTAssertEqual(VariableName.reset.rawValue, "reset")
         XCTAssertEqual(VariableName.setInternalSignals.rawValue, "setInternalSignals")
+        XCTAssertEqual(VariableName.stdLogicTypes.rawValue, "stdLogicTypes")
+        XCTAssertEqual(VariableName.stdLogicTypesT.rawValue, "stdLogicTypes_t")
         XCTAssertEqual(VariableName.currentStateIn(for: machine).rawValue, "M_currentStateIn")
         XCTAssertEqual(VariableName.currentStateOut(for: machine).rawValue, "M_currentStateOut")
         XCTAssertEqual(VariableName.internalStateIn(for: machine).rawValue, "M_internalStateIn")

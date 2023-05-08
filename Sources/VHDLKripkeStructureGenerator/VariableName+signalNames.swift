@@ -62,11 +62,20 @@ extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
+    /// The `PrimitiveTypes` package name.
+    static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
+
     /// The `reset` signal.
     static let reset = VariableName(rawValue: "reset")!
 
     /// The `setInternalSignals` signal.
     static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
+
+    /// The `stdLogicTypes` constant.
+    static let stdLogicTypes = VariableName(rawValue: "stdLogicTypes")!
+
+    /// The `stdLogicTypes_t` type.
+    static let stdLogicTypesT = VariableName(rawValue: "stdLogicTypes_t")!
 
     /// The `setTargetState` signal.
     /// - Parameter machine: The machine that uses this signal.
