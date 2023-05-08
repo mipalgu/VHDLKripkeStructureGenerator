@@ -60,6 +60,12 @@ import VHDLParsing
 /// Adds the ability to create port signals required for kripke structure generation in a specific machine.
 extension PortSignal {
 
+    /// The `reset` signal.
+    static let reset = PortSignal(type: .stdLogic, name: .reset, mode: .input)
+
+    /// The `setInternalSignals` signal.
+    static let setInternalSignals = PortSignal(type: .stdLogic, name: .setInternalSignals, mode: .input)
+
     /// Create the `currentStateIn` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
     @usableFromInline
@@ -67,19 +73,35 @@ extension PortSignal {
         self.init(name: .currentStateIn(for: machine), machine: machine, mode: .input)
     }
 
-    /// Create a PortSignal that is sized to fit the number of states in a machine.
-    /// - Parameters:
-    ///   - name: The name of the signal.
-    ///   - machine: The machine containing the states.
-    ///   - mode: The mode of the signal.
+    /// Create the `currentStateOut` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
     @usableFromInline
-    init?(name: VariableName, machine: Machine, mode: Mode) {
-        guard
-            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1), bitsRequired >= 1
-        else {
-            return nil
-        }
-        self.init(name: name, bitsRequired: bitsRequired, mode: mode)
+    init?(currentStateOutFor machine: Machine) {
+        self.init(name: .currentStateOut(for: machine), machine: machine, mode: .output)
+    }
+
+    init?(internalStateInFor machine: Machine) {
+        self.init(name: .internalStateIn(for: machine), bitsRequired: 3, mode: .input)
+    }
+
+    init?(internalStateOutFor machine: Machine) {
+        self.init(name: .internalStateOut(for: machine), bitsRequired: 3, mode: .output)
+    }
+
+    init?(previousRingletInFor machine: Machine) {
+        self.init(name: .previousRingletIn(for: machine), machine: machine, mode: .input)
+    }
+
+    init?(previousRingletOutFor machine: Machine) {
+        self.init(name: .previousRingletOut(for: machine), machine: machine, mode: .output)
+    }
+
+    init?(targetStateInFor machine: Machine) {
+        self.init(name: .targetStateIn(for: machine), machine: machine, mode: .input)
+    }
+
+    init?(targetStateOutFor machine: Machine) {
+        self.init(name: .targetStateOut(for: machine), machine: machine, mode: .output)
     }
 
     /// Create a `std_logic_vector` port signal.
@@ -101,6 +123,21 @@ extension PortSignal {
             name: name,
             mode: mode
         )
+    }
+
+    /// Create a PortSignal that is sized to fit the number of states in a machine.
+    /// - Parameters:
+    ///   - name: The name of the signal.
+    ///   - machine: The machine containing the states.
+    ///   - mode: The mode of the signal.
+    @usableFromInline
+    init?(name: VariableName, machine: Machine, mode: Mode) {
+        guard
+            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1), bitsRequired >= 1
+        else {
+            return nil
+        }
+        self.init(name: name, bitsRequired: bitsRequired, mode: mode)
     }
 
 }

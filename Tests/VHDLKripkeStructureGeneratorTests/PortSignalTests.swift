@@ -107,4 +107,41 @@ final class PortSignalTests: XCTestCase {
         XCTAssertNil(PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input))
     }
 
+    /// Test remaining machine signals.
+    func testStateSignals() {
+        XCTAssertEqual(
+            PortSignal(currentStateOutFor: machine),
+            PortSignal(name: .currentStateOut(for: machine), bitsRequired: 1, mode: .output)
+        )
+        XCTAssertEqual(PortSignal.reset, PortSignal(type: .stdLogic, name: .reset, mode: .input))
+        XCTAssertEqual(
+            PortSignal.setInternalSignals,
+            PortSignal(type: .stdLogic, name: .setInternalSignals, mode: .input)
+        )
+        XCTAssertEqual(
+            PortSignal(internalStateInFor: machine),
+            PortSignal(name: .internalStateIn(for: machine), bitsRequired: 3, mode: .input)
+        )
+        XCTAssertEqual(
+            PortSignal(internalStateOutFor: machine),
+            PortSignal(name: .internalStateOut(for: machine), bitsRequired: 3, mode: .output)
+        )
+        XCTAssertEqual(
+            PortSignal(previousRingletInFor: machine),
+            PortSignal(name: .previousRingletIn(for: machine), bitsRequired: 1, mode: .input)
+        )
+        XCTAssertEqual(
+            PortSignal(previousRingletOutFor: machine),
+            PortSignal(name: .previousRingletOut(for: machine), bitsRequired: 1, mode: .output)
+        )
+        XCTAssertEqual(
+            PortSignal(targetStateInFor: machine),
+            PortSignal(name: .targetStateIn(for: machine), bitsRequired: 1, mode: .input)
+        )
+        XCTAssertEqual(
+            PortSignal(targetStateOutFor: machine),
+            PortSignal(name: .targetStateOut(for: machine), bitsRequired: 1, mode: .output)
+        )
+    }
+
 }
