@@ -1,4 +1,4 @@
-// VHDLFile+initForMachine.swift
+// VHDLFileTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,34 +54,29 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add helpers for kripke structure generation.
-extension VHDLFile {
+/// Test class for ``VHDLFile`` extensions.
+final class VHDLFileTests: XCTestCase {
 
-    /// The `PrimitiveTypes` package.
-    static let primitiveTypes = VHDLFile(
-        architectures: [],
-        entities: [],
-        includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.all")],
-        packages: [.primitiveTypes]
-    )
+    /// Test the `PrimitiveTypes` file is generated correctly.
+    func testPrimitiveTypes() {
+        // swiftlint:disable line_length
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
 
-    // init?(kripke machine: Machine) {
-    //     guard let representation = MachineRepresentation(machine: machine) else {
-    //         return nil
-    //     }
-    //     let existingFormat = VHDLFile(representation: representation)
-    //     guard
-    //         existingFormat.entities.count == 1,
-    //         let entity = existingFormat.entities.first,
-    //         existingFormat.architectures.count == 1,
-    //         let architecture = existingFormat.architectures.first
-    //     else {
-    //         return nil
-    //     }
-    //     let includes = existingFormat.includes
-    // }
+        package PrimitiveTypes is
+            type stdLogicTypes_t is array (0 to 8) of std_logic;
+            constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
+        end package PrimitiveTypes;
+
+        """
+        // swiftlint:enable line_length
+        XCTAssertEqual(VHDLFile.primitiveTypes.rawValue, expected)
+    }
 
 }
