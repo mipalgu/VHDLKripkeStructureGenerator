@@ -78,6 +78,7 @@ final class PortSignalTests: XCTestCase {
     /// Test that ``init(currentStateInFor:)`` works correctly.
     func testCurrentStateInInit() {
         let signal = PortSignal(currentStateInFor: machine)
+        XCTAssertNotNil(signal)
         XCTAssertEqual(signal?.name, .currentStateIn(for: machine))
         XCTAssertEqual(
             signal?.type,
@@ -86,6 +87,10 @@ final class PortSignalTests: XCTestCase {
             )))
         )
         XCTAssertEqual(signal?.mode, .input)
+        XCTAssertEqual(signal, PortSignal(name: .currentStateIn(for: machine), bitsRequired: 1, mode: .input))
+        XCTAssertEqual(
+            signal, PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input)
+        )
         machine.states += [machine.states[0]]
         let signal2 = PortSignal(currentStateInFor: machine)
         XCTAssertEqual(
