@@ -80,26 +80,44 @@ extension PortSignal {
         self.init(name: .currentStateOut(for: machine), machine: machine, mode: .output)
     }
 
+    /// Create the `internalStateIn` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
+    @usableFromInline
     init?(internalStateInFor machine: Machine) {
         self.init(name: .internalStateIn(for: machine), bitsRequired: 3, mode: .input)
     }
 
+    /// Create the `internalStateOut` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
+    @usableFromInline
     init?(internalStateOutFor machine: Machine) {
         self.init(name: .internalStateOut(for: machine), bitsRequired: 3, mode: .output)
     }
 
+    /// Create the `previousRingletIn` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
+    @usableFromInline
     init?(previousRingletInFor machine: Machine) {
         self.init(name: .previousRingletIn(for: machine), machine: machine, mode: .input)
     }
 
+    /// Create the `previousRingletOut` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
+    @usableFromInline
     init?(previousRingletOutFor machine: Machine) {
         self.init(name: .previousRingletOut(for: machine), machine: machine, mode: .output)
     }
 
+    /// Create the `targetStateIn` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
+    @usableFromInline
     init?(targetStateInFor machine: Machine) {
         self.init(name: .targetStateIn(for: machine), machine: machine, mode: .input)
     }
 
+    /// Create the `targetStateOut` signal for a machine.
+    /// - Parameter machine: The machine to create the signal for.
+    @usableFromInline
     init?(targetStateOutFor machine: Machine) {
         self.init(name: .targetStateOut(for: machine), machine: machine, mode: .output)
     }
