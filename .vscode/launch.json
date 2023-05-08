@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "name": "Debug VHDLKripkeStructureGenerator",
+            "program": "${workspaceFolder:VHDLKripkeStructureGenerator}/.build/debug/VHDLKripkeStructureGenerator",
+            "args": [],
+            "cwd": "${workspaceFolder:VHDLKripkeStructureGenerator}",
+            "preLaunchTask": "swift: Build Debug VHDLKripkeStructureGenerator"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "name": "Release VHDLKripkeStructureGenerator",
+            "program": "${workspaceFolder:VHDLKripkeStructureGenerator}/.build/release/VHDLKripkeStructureGenerator",
+            "args": [],
+            "cwd": "${workspaceFolder:VHDLKripkeStructureGenerator}",
+            "preLaunchTask": "swift: Build Release VHDLKripkeStructureGenerator"
+        }
+    ]
+}
