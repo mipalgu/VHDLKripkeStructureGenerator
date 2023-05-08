@@ -12,6 +12,9 @@ let package = Package(
         .library(
             name: "VHDLKripkeStructureGenerator",
             targets: ["VHDLKripkeStructureGenerator"]
+        ),
+        .library(
+            name: "VHDLKripkeStructureGeneratorProtocols", targets: ["VHDLKripkeStructureGeneratorProtocols"]
         )
     ],
     dependencies: [
@@ -27,8 +30,9 @@ let package = Package(
         // depends on.
         .target(
             name: "VHDLKripkeStructureGenerator",
-            dependencies: ["VHDLMachines", "VHDLParsing"]
+            dependencies: ["VHDLMachines", "VHDLParsing", "VHDLKripkeStructureGeneratorProtocols"]
         ),
+        .target(name: "VHDLKripkeStructureGeneratorProtocols", dependencies: ["VHDLParsing", "VHDLMachines"]),
         .testTarget(
             name: "VHDLKripkeStructureGeneratorTests",
             dependencies: ["VHDLKripkeStructureGenerator"]
