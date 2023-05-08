@@ -35,7 +35,7 @@ let package = Package(
         .target(name: "VHDLKripkeStructureGeneratorProtocols", dependencies: ["VHDLParsing", "VHDLMachines"]),
         .testTarget(
             name: "VHDLKripkeStructureGeneratorTests",
-            dependencies: ["VHDLKripkeStructureGenerator"]
+            dependencies: ["VHDLKripkeStructureGenerator", "VHDLMachines", "VHDLParsing"]
         )
     ]
 )
