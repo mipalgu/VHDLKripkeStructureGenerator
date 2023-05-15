@@ -77,6 +77,16 @@ extension VariableName {
     /// The `stdLogicTypes_t` type.
     static let stdLogicTypesT = VariableName(rawValue: "stdLogicTypes_t")!
 
+    /// Creates the equivalent port name for a signal that exists within a machines local scope. The new name
+    /// namespaces the machine before the signal name.
+    /// - Parameters:
+    ///   - signal: The signal to convert to a port name.
+    ///   - machine: The machine that uses this signal.
+    @usableFromInline
+    init(portNameFor signal: LocalSignal, in machine: Machine) {
+        self.init(rawValue: "\(machine.name)_\(signal.name)")!
+    }
+
     /// The `setTargetState` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.

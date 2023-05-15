@@ -88,4 +88,15 @@ final class VariableNameTests: XCTestCase {
         XCTAssertEqual(VariableName.targetStateOut(for: machine).rawValue, "M_targetStateOut")
     }
 
+    /// Tests that the port name is created correctly from the local signal and machine name.
+    func testPortNameInit() {
+        guard let signalName = VariableName(rawValue: "x") else {
+            XCTFail("Failed to create signal name.")
+            return
+        }
+        let signal = LocalSignal(type: .stdLogic, name: signalName)
+        let portName = VariableName(portNameFor: signal, in: machine)
+        XCTAssertEqual(portName.rawValue, "M_x")
+    }
+
 }
