@@ -158,4 +158,19 @@ extension PortSignal {
         self.init(name: name, bitsRequired: bitsRequired, mode: mode)
     }
 
+    /// Creates a `PortSignal` for an equivalent `LocalSignal` that exists within a `Machine`.
+    /// - Parameters:
+    ///   - signal: The signal to convert.
+    ///   - machine: The machine containing the signal.
+    ///   - mode: The mode of the new `PortSignal`.
+    /// - Warning: This init returns `nil` for signals containing alias types.
+    @usableFromInline
+    init?(signal: LocalSignal, in machine: Machine, mode: Mode) {
+        guard case .signal(let type) = signal.type else {
+            return nil
+        }
+        let name = VariableName(portNameFor: signal, in: machine)
+        self.init(type: type, name: name, mode: mode)
+    }
+
 }

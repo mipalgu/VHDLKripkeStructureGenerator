@@ -144,4 +144,22 @@ final class PortSignalTests: XCTestCase {
         )
     }
 
+    /// Test that init(signal:,in:,mode:) works correctly for signal typed `LocalSignal`s.
+    func testLocalSignalInit() {
+        let signal = LocalSignal(type: .stdLogic, name: .x)
+        let portSignal = PortSignal(signal: signal, in: machine, mode: .input)
+        guard let expectedName = VariableName(rawValue: "M_x") else {
+            XCTFail("Failed to create expected name")
+            return
+        }
+        let expected = PortSignal(type: .stdLogic, name: expectedName, mode: .input)
+        XCTAssertEqual(portSignal, expected)
+    }
+
+    /// Test that init(signal:,in:,mode:) returns nil for alias typed `LocalSignal`s.
+    func testLocalSignalInitReturnsNilForAlias() {
+        let signal = LocalSignal(type: .alias(name: .y), name: .x)
+        XCTAssertNil(PortSignal(signal: signal, in: machine, mode: .input))
+    }
+
 }
