@@ -56,6 +56,7 @@
 
 import VHDLParsing
 
+/// Adds common test variable names.
 extension VariableName {
 
     // swiftlint:disable force_unwrapping
@@ -65,6 +66,9 @@ extension VariableName {
 
     /// A variable `y`
     static let y = VariableName(rawValue: "y")!
+
+    /// A variable `y2`
+    static let y2 = VariableName(rawValue: "y2")!
 
     // swiftlint:enable force_unwrapping
 

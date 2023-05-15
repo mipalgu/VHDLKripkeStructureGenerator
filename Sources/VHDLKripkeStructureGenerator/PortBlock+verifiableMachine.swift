@@ -57,8 +57,14 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add inits to `PortBlock` for new verifiable format.
 extension PortBlock {
 
+    /// Create a new `PortBlock` for the verifiable machine format from the given `MachineRepresentation`.
+    /// - Parameter representation: The representation to convert to a verifiable machine, i.e. a format that
+    /// exposes internal signals for verification.
+    /// - Warning: A machine that uses type aliases will make this initialiser return nil.
+    @usableFromInline
     init?(verifiable representation: MachineRepresentation) {
         let machine = representation.machine
         guard
@@ -96,7 +102,7 @@ extension PortBlock {
             return nil
         }
         let originalSignals = representation.entity.port.signals
-        self.init(signals: originalSignals + snapshots + [
+        self.init(signals: originalSignals + snapshots + machinePorts + [
             currentStateIn,
             currentStateOut,
             previousRingletIn,
