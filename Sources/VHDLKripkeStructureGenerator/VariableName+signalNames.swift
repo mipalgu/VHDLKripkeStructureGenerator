@@ -89,6 +89,15 @@ extension VariableName {
     /// The `targetState` signal.
     static let targetState = VariableName(rawValue: "targetState")!
 
+    /// Appends a string to the end of a `VariableName`.
+    /// - Parameters:
+    ///   - name: The name to modify.
+    ///   - post: The string to append to the end of `name`.
+    @usableFromInline
+    init?(name: VariableName, post: String) {
+        self.init(rawValue: "\(name.rawValue)\(post)")
+    }
+
     /// Creates the equivalent port name for a signal that exists within a machines local scope. The new name
     /// namespaces the machine before the signal name.
     /// - Parameters:
@@ -97,6 +106,25 @@ extension VariableName {
     @usableFromInline
     init(portNameFor signal: LocalSignal, in machine: Machine) {
         self.init(rawValue: "\(machine.name)_\(signal.name)")!
+    }
+
+    /// Prepends a string to the start of a `VariableName`.
+    /// - Parameters:
+    ///   - pre: The string to prepend.
+    ///   - name: The `VariableName` to modify.
+    @usableFromInline
+    init?(pre: String, name: VariableName) {
+        self.init(rawValue: "\(pre)\(name.rawValue)")
+    }
+
+    /// Adds strings to the beginning and end of a `VariableName`.
+    /// - Parameters:
+    ///   - pre: The string to prepend to `name`.
+    ///   - name: The `VariableName` to modify.
+    ///   - post: The string to append to `name`.
+    @usableFromInline
+    init?(pre: String, name: VariableName, post: String) {
+        self.init(rawValue: "\(pre)\(name.rawValue)\(post)")
     }
 
     /// The `setTargetState` signal.

@@ -64,6 +64,9 @@ extension VariableName {
     /// A variable `initialX`.
     static let initialX = VariableName(rawValue: "initialX")!
 
+    /// A variable `suspendedX`.
+    static let suspendedX = VariableName(rawValue: "suspendedX")!
+
     /// A variable `x`.
     static let x = VariableName(rawValue: "x")!
 

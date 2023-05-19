@@ -103,4 +103,28 @@ final class VariableNameTests: XCTestCase {
         XCTAssertEqual(portName.rawValue, "M_x")
     }
 
+    /// Test that pre prepends string correctly.
+    func testPreInit() {
+        let expected = VariableName(rawValue: "M_x")
+        let result = VariableName(pre: "M_", name: .x)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(expected, result)
+    }
+
+    /// Test that post appends string correctly.
+    func testPostInit() {
+        let expected = VariableName(rawValue: "xIn")
+        let result = VariableName(name: .x, post: "In")
+        XCTAssertNotNil(result)
+        XCTAssertEqual(expected, result)
+    }
+
+    /// Test that pre and post modify string correctly.
+    func testPrePostInit() {
+        let expected = VariableName(rawValue: "M_xIn")
+        let result = VariableName(pre: "M_", name: .x, post: "In")
+        XCTAssertNotNil(result)
+        XCTAssertEqual(expected, result)
+    }
+
 }
