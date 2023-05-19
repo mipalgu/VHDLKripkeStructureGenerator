@@ -57,6 +57,7 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add the new machine logic.
 extension SynchronousBlock {
 
     init(internalSignal block: SynchronousBlock, signal: VariableName, newSignal: VariableName) {
@@ -114,6 +115,12 @@ extension SynchronousBlock {
         }
     }
 
+    // swiftlint:disable function_body_length
+
+    /// Create the internal mutation block during the reset assertion.
+    /// - Parameter machine: The machine to create the block for.
+    /// - Returns: The logic performing internal signal mutation.
+    @usableFromInline
     static func internalMutation(for machine: Machine) -> SynchronousBlock? {
         let writeSnapshots = machine.externalSignals.filter { $0.mode != .input }
         let snapshotWrites: [SynchronousBlock] = writeSnapshots.compactMap {
@@ -136,7 +143,67 @@ extension SynchronousBlock {
                 name: .variable(name: newName), value: .reference(variable: .variable(name: $0.name))
             ))
         }
-        guard snapshotWrites.count == writeSnapshots.count, snapshotReads.count == writeSnapshots.count else {
+        let machineWrites: [SynchronousBlock] = machine.machineSignals.compactMap {
+            guard
+                let newName = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)In")
+            else {
+                return nil
+            }
+            return SynchronousBlock.statement(statement: .assignment(
+                name: .variable(name: $0.name), value: .reference(variable: .variable(name: newName))
+            ))
+        }
+        let machineReads: [SynchronousBlock] = machine.machineSignals.compactMap {
+            guard
+                let newName = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")
+            else {
+                return nil
+            }
+            return SynchronousBlock.statement(statement: .assignment(
+                name: .variable(name: newName), value: .reference(variable: .variable(name: $0.name))
+            ))
+        }
+        let stateSignals = machine.states.map { ($0.name, $0.signals) }
+        let stateWrites: [SynchronousBlock] = stateSignals
+        .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
+            signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
+                guard
+                    let newName = VariableName(
+                        pre: "\(machine.name.rawValue)_\(name.rawValue)_", name: signal.name, post: "In"
+                    ),
+                    let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
+                else {
+                    return nil
+                }
+                return SynchronousBlock.statement(statement: .assignment(
+                    name: .variable(name: stateName), value: .reference(variable: .variable(name: newName))
+                ))
+            }
+        }
+        let stateReads: [SynchronousBlock] = stateSignals
+        .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
+            signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
+                guard
+                    let newName = VariableName(
+                        pre: "\(machine.name.rawValue)_\(name.rawValue)_", name: signal.name
+                    ),
+                    let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
+                else {
+                    return nil
+                }
+                return SynchronousBlock.statement(statement: .assignment(
+                    name: .variable(name: newName), value: .reference(variable: .variable(name: stateName))
+                ))
+            }
+        }
+        guard
+            snapshotWrites.count == writeSnapshots.count,
+            snapshotReads.count == writeSnapshots.count,
+            machineWrites.count == machine.machineSignals.count,
+            machineReads.count == machine.machineSignals.count,
+            stateWrites.count == machine.stateVariables,
+            stateReads.count == machine.stateVariables
+        else {
             return nil
         }
         return .ifStatement(block: .ifElse(
@@ -177,7 +244,7 @@ extension SynchronousBlock {
                     name: .variable(name: .targetStateOut(for: machine)),
                     value: .reference(variable: .variable(name: .targetStateIn(for: machine)))
                 ))
-            ] + snapshotWrites),
+            ] + snapshotWrites + machineWrites + stateWrites),
             elseBlock: .blocks(blocks: [
                 .statement(statement: .assignment(
                     name: .variable(name: .currentStateOut(for: machine)),
@@ -195,8 +262,10 @@ extension SynchronousBlock {
                     name: .variable(name: .targetStateOut(for: machine)),
                     value: .reference(variable: .variable(name: .targetState))
                 ))
-            ] + snapshotReads)
+            ] + snapshotReads + machineReads + stateReads)
         ))
     }
+
+    // swiftlint:enable function_body_length
 
 }
