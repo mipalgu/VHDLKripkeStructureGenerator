@@ -60,6 +60,8 @@ import VHDLParsing
 /// Add inits to `PortBlock` for new verifiable format.
 extension PortBlock {
 
+    // swiftlint:disable function_body_length
+
     /// Create a new `PortBlock` for the verifiable machine format from the given `MachineRepresentation`.
     /// - Parameter representation: The representation to convert to a verifiable machine, i.e. a format that
     /// exposes internal signals for verification.
@@ -107,22 +109,63 @@ extension PortBlock {
             }
             return PortSignal(type: type, name: name, mode: .input)
         }
-        guard machinePorts.count == machineSignals.count, machineInputs.count == machineSignals.count else {
+        let stateSignals = machine.states.map {
+            ($0.name, $0.signals)
+        }
+        let stateCount = stateSignals.reduce(0) { $0 + $1.1.count }
+        let stateSignalsIn = stateSignals.flatMap { state, signals in
+            signals.compactMap { (signal: LocalSignal) -> PortSignal? in
+                guard
+                    let newName = VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(state.rawValue)_\(signal.name.rawValue)In"
+                    ),
+                    case .signal(let type) = signal.type
+                else {
+                    return nil
+                }
+                return PortSignal(type: type, name: newName, mode: .input)
+            }
+        }
+        let stateSignalsOut = stateSignals.flatMap { state, signals in
+            signals.compactMap { (signal: LocalSignal) -> PortSignal? in
+                guard
+                    let newName = VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(state.rawValue)_\(signal.name.rawValue)"
+                    ),
+                    case .signal(let type) = signal.type
+                else {
+                    return nil
+                }
+                return PortSignal(type: type, name: newName, mode: .output)
+            }
+        }
+        guard
+            machinePorts.count == machineSignals.count,
+            machineInputs.count == machineSignals.count,
+            stateSignalsIn.count == stateCount,
+            stateSignalsOut.count == stateCount
+        else {
             return nil
         }
         let originalSignals = representation.entity.port.signals
-        self.init(signals: originalSignals + snapshots + machinePorts + machineInputs + [
-            currentStateIn,
-            currentStateOut,
-            previousRingletIn,
-            previousRingletOut,
-            internalStateIn,
-            internalStateOut,
-            targetStateIn,
-            targetStateOut,
-            PortSignal.setInternalSignals,
-            PortSignal.reset
-        ])
+        self.init(
+            signals: originalSignals + snapshots + machinePorts + machineInputs + stateSignalsOut +
+                stateSignalsIn +
+            [
+                currentStateIn,
+                currentStateOut,
+                previousRingletIn,
+                previousRingletOut,
+                internalStateIn,
+                internalStateOut,
+                targetStateIn,
+                targetStateOut,
+                PortSignal.setInternalSignals,
+                PortSignal.reset
+            ]
+        )
     }
+
+    // swiftlint:enable function_body_length
 
 }

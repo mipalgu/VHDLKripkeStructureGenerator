@@ -82,6 +82,7 @@ final class PortBlockTests: XCTestCase {
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
     // swiftlint:disable function_body_length
@@ -99,6 +100,8 @@ final class PortBlockTests: XCTestCase {
             let y2Name = VariableName(rawValue: "EXTERNAL_y2"),
             let y2Snapshot = VariableName(rawValue: "M_y2"),
             let y2SnapshotIn = VariableName(rawValue: "M_y2In"),
+            let initialXIn = VariableName(rawValue: "M_Initial_initialXIn"),
+            let initialXOut = VariableName(rawValue: "M_Initial_initialX"),
             let currentStateIn = PortSignal(currentStateInFor: machine),
             let currentStateOut = PortSignal(currentStateOutFor: machine),
             let previousRingletIn = PortSignal(previousRingletInFor: machine),
@@ -124,6 +127,8 @@ final class PortBlockTests: XCTestCase {
                 PortSignal(type: .stdLogic, name: y2Snapshot, mode: .output),
                 PortSignal(type: .stdLogic, name: yName, mode: .output),
                 PortSignal(type: .stdLogic, name: yNameIn, mode: .input),
+                PortSignal(type: .stdLogic, name: initialXOut, mode: .output),
+                PortSignal(type: .stdLogic, name: initialXIn, mode: .input),
                 currentStateIn,
                 currentStateOut,
                 previousRingletIn,
@@ -139,7 +144,8 @@ final class PortBlockTests: XCTestCase {
             XCTFail("Failed to create expected block.")
             return
         }
-        XCTAssertEqual(block, expected, "\(block.rawValue)\n\n\(expected.rawValue)")
+        // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
+        XCTAssertEqual(block, expected)
     }
 
     // swiftlint:enable function_body_length
