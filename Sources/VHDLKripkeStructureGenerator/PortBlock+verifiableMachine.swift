@@ -98,11 +98,20 @@ extension PortBlock {
         let machinePorts = machineSignals.compactMap {
             PortSignal(signal: $0, in: machine, mode: .output)
         }
-        guard machinePorts.count == machineSignals.count else {
+        let machineInputs: [PortSignal] = machineSignals.compactMap { (signal: LocalSignal) -> PortSignal? in
+            guard
+                let name = VariableName(rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"),
+                case .signal(let type) = signal.type
+            else {
+                return nil
+            }
+            return PortSignal(type: type, name: name, mode: .input)
+        }
+        guard machinePorts.count == machineSignals.count, machineInputs.count == machineSignals.count else {
             return nil
         }
         let originalSignals = representation.entity.port.signals
-        self.init(signals: originalSignals + snapshots + machinePorts + [
+        self.init(signals: originalSignals + snapshots + machinePorts + machineInputs + [
             currentStateIn,
             currentStateOut,
             previousRingletIn,

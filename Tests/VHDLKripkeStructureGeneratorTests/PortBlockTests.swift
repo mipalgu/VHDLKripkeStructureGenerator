@@ -84,6 +84,8 @@ final class PortBlockTests: XCTestCase {
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
     }
 
+    // swiftlint:disable function_body_length
+
     /// Test the `PortBlock` `init(verifiable:)` initialiser.
     func testVerifiableInit() {
         guard
@@ -93,6 +95,7 @@ final class PortBlockTests: XCTestCase {
             let xName = VariableName(rawValue: "EXTERNAL_x"),
             let xSnapshotName = VariableName(rawValue: "M_x"),
             let yName = VariableName(rawValue: "M_y"),
+            let yNameIn = VariableName(rawValue: "M_yIn"),
             let y2Name = VariableName(rawValue: "EXTERNAL_y2"),
             let y2Snapshot = VariableName(rawValue: "M_y2"),
             let y2SnapshotIn = VariableName(rawValue: "M_y2In"),
@@ -120,6 +123,7 @@ final class PortBlockTests: XCTestCase {
                 PortSignal(type: .stdLogic, name: y2SnapshotIn, mode: .input),
                 PortSignal(type: .stdLogic, name: y2Snapshot, mode: .output),
                 PortSignal(type: .stdLogic, name: yName, mode: .output),
+                PortSignal(type: .stdLogic, name: yNameIn, mode: .input),
                 currentStateIn,
                 currentStateOut,
                 previousRingletIn,
@@ -137,6 +141,8 @@ final class PortBlockTests: XCTestCase {
         }
         XCTAssertEqual(block, expected, "\(block.rawValue)\n\n\(expected.rawValue)")
     }
+
+    // swiftlint:enable function_body_length
 
     /// Test that `PortBlock.init(verifiable:)` returns `nil` when the machine has a type-aliased signal.
     func testVerifiableInitReturnsNilForAliasType() {
