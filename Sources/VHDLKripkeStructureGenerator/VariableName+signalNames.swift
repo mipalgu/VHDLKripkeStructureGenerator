@@ -62,6 +62,15 @@ extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
+    /// The `currentState` signal.
+    static let currentState = VariableName(rawValue: "currentState")!
+
+    /// The `internalState` signal.
+    static let internalState = VariableName(rawValue: "internalState")!
+
+    /// The `previousRinglet` signal.
+    static let previousRinglet = VariableName(rawValue: "previousRinglet")!
+
     /// The `PrimitiveTypes` package name.
     static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
 
@@ -76,6 +85,9 @@ extension VariableName {
 
     /// The `stdLogicTypes_t` type.
     static let stdLogicTypesT = VariableName(rawValue: "stdLogicTypes_t")!
+
+    /// The `targetState` signal.
+    static let targetState = VariableName(rawValue: "targetState")!
 
     /// Creates the equivalent port name for a signal that exists within a machines local scope. The new name
     /// namespaces the machine before the signal name.

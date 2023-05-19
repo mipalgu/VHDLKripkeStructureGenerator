@@ -1,4 +1,4 @@
-// VariableNameTests.swift
+// AsynchronousBlockTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -59,48 +59,39 @@ import VHDLMachines
 import VHDLParsing
 import XCTest
 
-/// Test class for ``VariableName`` extensions.
-final class VariableNameTests: XCTestCase {
+/// Test class for `AsynchronousBlock` extensions.
+final class AsynchronousBlockTests: XCTestCase {
 
-    // swiftlint:disable implicitly_unwrapped_optional
+    /// A machine to use for testing.
+    var machine: Machine!
 
-    /// A machine to use as test data.
-    let machine: Machine! = Machine.initial(
-        path: URL(fileURLWithPath: "path/to/M.machine", isDirectory: true)
-    )
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
+    }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
-    /// Test that the constants are correct with the given machine name.
-    func testStaticConstants() {
-        XCTAssertEqual(VariableName.internalState.rawValue, "internalState")
-        XCTAssertEqual(VariableName.currentState.rawValue, "currentState")
-        XCTAssertEqual(VariableName.previousRinglet.rawValue, "previousRinglet")
-        XCTAssertEqual(VariableName.primitiveTypes.rawValue, "PrimitiveTypes")
-        XCTAssertEqual(VariableName.reset.rawValue, "reset")
-        XCTAssertEqual(VariableName.setInternalSignals.rawValue, "setInternalSignals")
-        XCTAssertEqual(VariableName.stdLogicTypes.rawValue, "stdLogicTypes")
-        XCTAssertEqual(VariableName.stdLogicTypesT.rawValue, "stdLogicTypes_t")
-        XCTAssertEqual(VariableName.targetState.rawValue, "targetState")
-        XCTAssertEqual(VariableName.currentStateIn(for: machine).rawValue, "M_currentStateIn")
-        XCTAssertEqual(VariableName.currentStateOut(for: machine).rawValue, "M_currentStateOut")
-        XCTAssertEqual(VariableName.internalStateIn(for: machine).rawValue, "M_internalStateIn")
-        XCTAssertEqual(VariableName.internalStateOut(for: machine).rawValue, "M_internalStateOut")
-        XCTAssertEqual(VariableName.previousRingletIn(for: machine).rawValue, "M_previousRingletIn")
-        XCTAssertEqual(VariableName.previousRingletOut(for: machine).rawValue, "M_previousRingletOut")
-        XCTAssertEqual(VariableName.targetStateIn(for: machine).rawValue, "M_targetStateIn")
-        XCTAssertEqual(VariableName.targetStateOut(for: machine).rawValue, "M_targetStateOut")
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
     }
 
-    /// Tests that the port name is created correctly from the local signal and machine name.
-    func testPortNameInit() {
-        guard let signalName = VariableName(rawValue: "x") else {
-            XCTFail("Failed to create signal name.")
+    func testVerifiableProcess() {
+        guard
+            let representation,
+            case .process(let process) = representation.architectureBody,
+            let block = AsynchronousBlock(verifiable: process, in: representation.machine)
+        else {
+            XCTFail("Not a process!")
             return
         }
-        let signal = LocalSignal(type: .stdLogic, name: signalName)
-        let portName = VariableName(portNameFor: signal, in: machine)
-        XCTAssertEqual(portName.rawValue, "M_x")
+        block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
     }
 
 }
