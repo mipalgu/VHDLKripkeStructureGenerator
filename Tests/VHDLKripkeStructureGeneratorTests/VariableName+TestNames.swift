@@ -61,6 +61,9 @@ extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
+    /// A variable `initialX`.
+    static let initialX = VariableName(rawValue: "initialX")!
+
     /// A variable `x`.
     static let x = VariableName(rawValue: "x")!
 
