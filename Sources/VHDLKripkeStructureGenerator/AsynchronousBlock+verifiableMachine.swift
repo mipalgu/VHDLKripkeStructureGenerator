@@ -84,7 +84,8 @@ extension AsynchronousBlock {
             }
             return ($0.name, name)
         }
-        let snapshots: [(VariableName, VariableName)] = machine.externalSignals.compactMap {
+        let readableVariables = machine.externalSignals.filter { $0.mode == .input }
+        let snapshots: [(VariableName, VariableName)] = readableVariables.compactMap {
             guard let name = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)") else {
                 return nil
             }
@@ -92,13 +93,13 @@ extension AsynchronousBlock {
         }
         guard
             machineVariables.count == localVariables.count,
-            snapshots.count == machine.externalSignals.count
+            snapshots.count == readableVariables.count
         else {
             return nil
         }
         let assignments = (machineVariables + snapshots).map {
             AsynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: $0.0), value: .reference(variable: .variable(name: $0.0))
+                name: .variable(name: $0.1), value: .reference(variable: .variable(name: $0.0))
             ))
         }
         switch body {

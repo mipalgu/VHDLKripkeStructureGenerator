@@ -91,6 +91,14 @@ final class AsynchronousBlockTests: XCTestCase {
             XCTFail("Not a process!")
             return
         }
+        // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
+    }
+
+    func testVerifiableRepresentation() {
+        guard let representation, let block = AsynchronousBlock(verifiable: representation) else {
+            XCTFail("Invalid representation")
+            return
+        }
         block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
     }
 
