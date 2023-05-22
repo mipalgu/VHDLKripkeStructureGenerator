@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mipalgu/VHDLMachines.git",
       "state" : {
-        "revision" : "985878240e07529e111ef27dddb98af3693112ab",
-        "version" : "0.1.1"
+        "revision" : "4764cd9f3490b65634227b237b0a5d65be9d153e",
+        "version" : "1.0.0"
       }
     },
     {
