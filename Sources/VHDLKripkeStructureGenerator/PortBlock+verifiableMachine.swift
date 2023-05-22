@@ -67,7 +67,7 @@ extension PortBlock {
     /// exposes internal signals for verification.
     /// - Warning: A machine that uses type aliases will make this initialiser return nil.
     @usableFromInline
-    init?(verifiable representation: MachineRepresentation) {
+    init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
             let currentStateIn = PortSignal(currentStateInFor: machine),

@@ -70,7 +70,7 @@ extension AsynchronousBlock {
         }
     }
 
-    init?(verifiable representation: MachineRepresentation) {
+    init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         let body = representation.architectureBody
         guard body.hasProcess else {
             return nil

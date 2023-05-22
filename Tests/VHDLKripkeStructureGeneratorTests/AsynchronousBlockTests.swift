@@ -99,7 +99,7 @@ final class AsynchronousBlockTests: XCTestCase {
             XCTFail("Invalid representation")
             return
         }
-        block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
+        // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
     }
 
 }

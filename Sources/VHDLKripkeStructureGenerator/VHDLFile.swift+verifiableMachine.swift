@@ -1,4 +1,4 @@
-// MachineRepresentationTests.swift
+// VHDLFile.swift+verifiableMachine.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,50 +54,25 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
-import XCTest
 
-/// Test class for `MachineRepresentation` extensions.
-final class MachineRepresentationTests: XCTestCase {
+extension VHDLFile {
 
-    /// The external variables in `machine`.
-    let externals = [
-        PortSignal(type: .stdLogic, name: .x, mode: .input),
-        PortSignal(type: .stdLogic, name: .y, mode: .output)
-    ]
-
-    // swiftlint:disable implicitly_unwrapped_optional
-
-    /// A machine to use as test data.
-    var machine: Machine!
-
-    /// The representation under test.
-    var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
-    }
-
-    // swiftlint:enable implicitly_unwrapped_optional
-
-    /// Initialise the test data before each test.
-    override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
-        machine.states[0].externalVariables = [.x, .y]
-        machine.externalSignals = externals
-    }
-
-    /// Test that the external variables can be derived from the machine representation.
-    func testExternals() {
-        guard let representation else {return}
-        let newSignals: [PortSignal] = externals.compactMap {
-            guard let newName = VariableName(rawValue: "EXTERNAL_" + $0.name.rawValue) else {
-                return nil
-            }
-            return PortSignal(type: $0.type, name: newName, mode: $0.mode)
+    init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let port = PortBlock(verifiable: representation),
+            let behavioral = VariableName(rawValue: "Behavioral"),
+            let body = AsynchronousBlock(verifiable: representation)
+        else {
+            return nil
         }
-        XCTAssertEqual(newSignals.count, externals.count)
-        XCTAssertEqual(representation.externalVariables, newSignals)
+        let machine = representation.machine
+        let entity = Entity(name: machine.name, port: port)
+        let architecture = Architecture(
+            body: body, entity: machine.name, head: representation.architectureHead, name: behavioral
+        )
+        self.init(architectures: [architecture], entities: [entity], includes: representation.includes)
     }
 
 }
