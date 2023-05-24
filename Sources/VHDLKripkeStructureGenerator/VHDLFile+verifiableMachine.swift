@@ -59,7 +59,7 @@ import VHDLParsing
 
 extension VHDLFile {
 
-    init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
+    public init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         guard
             let port = PortBlock(verifiable: representation),
             let behavioral = VariableName(rawValue: "Behavioral"),
