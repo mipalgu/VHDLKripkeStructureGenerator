@@ -82,6 +82,145 @@ final class SynchronousBlockTests: XCTestCase {
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
+    // swiftlint:disable function_body_length
+
+    /// Test that init(internalSignal:, signal:, newSignal:) adds in additional statements correctly.
+    func testReplaceInit() {
+        let block = SynchronousBlock.blocks(blocks: [
+            .caseStatement(block: CaseStatement(
+                condition: .reference(variable: .variable(name: .x)),
+                cases: [
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .forLoop(loop: ForLoop(
+                            iterator: .x,
+                            range: .downto(
+                                upper: .reference(variable: .variable(name: .x)),
+                                lower: .reference(variable: .variable(name: .x))
+                            ),
+                            body: .statement(statement: .assignment(
+                                name: .variable(name: .x), value: .reference(variable: .variable(name: .x))
+                            ))
+                        ))
+                    ),
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .ifStatement(block: .ifElse(
+                            condition: .reference(variable: .variable(name: .x)),
+                            ifBlock: .statement(statement: .assignment(
+                                name: .indexed(
+                                    name: .x, index: .index(value: .reference(variable: .variable(name: .x)))
+                                ),
+                                value: .reference(variable: .variable(name: .x))
+                            )),
+                            elseBlock: .statement(statement: .assignment(
+                                name: .indexed(name: .x, index: .range(value: .to(
+                                    lower: .reference(variable: .variable(name: .x)),
+                                    upper: .reference(variable: .variable(name: .x))
+                                ))),
+                                value: .reference(variable: .variable(name: .x))
+                            ))
+                        ))
+                    ),
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .ifStatement(block: .ifStatement(
+                            condition: .reference(variable: .variable(name: .x)),
+                            ifBlock: .statement(statement: .assignment(
+                                name: .variable(name: .x), value: .reference(variable: .variable(name: .x))
+                            ))
+                        ))
+                    ),
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .statement(statement: .assignment(
+                            name: .variable(name: .x), value: .reference(variable: .variable(name: .x))
+                        ))
+                    ),
+                    WhenCase(condition: .others, code: .statement(statement: .null))
+                ]
+            ))
+        ])
+        let expected = SynchronousBlock.blocks(blocks: [
+            .caseStatement(block: CaseStatement(
+                condition: .reference(variable: .variable(name: .x)),
+                cases: [
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .forLoop(loop: ForLoop(
+                            iterator: .x,
+                            range: .downto(
+                                upper: .reference(variable: .variable(name: .x)),
+                                lower: .reference(variable: .variable(name: .x))
+                            ),
+                            body: .blocks(blocks: [
+                                .statement(statement: .assignment(
+                                    name: .variable(name: .x),
+                                    value: .reference(variable: .variable(name: .x))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(name: .y),
+                                    value: .reference(variable: .variable(name: .x))
+                                ))
+                            ])
+                        ))
+                    ),
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .ifStatement(block: .ifElse(
+                            condition: .reference(variable: .variable(name: .x)),
+                            ifBlock: .statement(statement: .assignment(
+                                name: .indexed(
+                                    name: .x, index: .index(value: .reference(variable: .variable(name: .x)))
+                                ),
+                                value: .reference(variable: .variable(name: .x))
+                            )),
+                            elseBlock: .statement(statement: .assignment(
+                                name: .indexed(name: .x, index: .range(value: .to(
+                                    lower: .reference(variable: .variable(name: .x)),
+                                    upper: .reference(variable: .variable(name: .x))
+                                ))),
+                                value: .reference(variable: .variable(name: .x))
+                            ))
+                        ))
+                    ),
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .ifStatement(block: .ifStatement(
+                            condition: .reference(variable: .variable(name: .x)),
+                            ifBlock: .blocks(blocks: [
+                                .statement(statement: .assignment(
+                                    name: .variable(name: .x),
+                                    value: .reference(variable: .variable(name: .x))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(name: .y),
+                                    value: .reference(variable: .variable(name: .x))
+                                ))
+                            ])
+                        ))
+                    ),
+                    WhenCase(
+                        condition: .expression(expression: .reference(variable: .variable(name: .x))),
+                        code: .blocks(blocks: [
+                            .statement(statement: .assignment(
+                                name: .variable(name: .x), value: .reference(variable: .variable(name: .x))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(name: .y), value: .reference(variable: .variable(name: .x))
+                            ))
+                        ])
+                    ),
+                    WhenCase(condition: .others, code: .statement(statement: .null))
+                ]
+            ))
+        ])
+        let result = SynchronousBlock(internalSignal: block, signal: .x, newSignal: .y)
+        XCTAssertEqual(result, expected, result.rawValue)
+    }
+
+    // swiftlint:enable function_body_length
+
     /// Test that internal mutation block is created correctly.
     func testInternalMutation() {
         guard let result = SynchronousBlock.internalMutation(for: machine) else {
