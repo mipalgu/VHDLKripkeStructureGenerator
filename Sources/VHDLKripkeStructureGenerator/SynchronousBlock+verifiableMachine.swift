@@ -105,7 +105,7 @@ extension SynchronousBlock {
     ///   - block: The ``SynchronousBlock`` containing the code to transform.
     ///   - signal: The signal to check for assignments.
     ///   - newSignal: The new signal to assign the same value as `signal`.
-    @usableFromInline
+    @inlinable
     init(internalSignal block: SynchronousBlock, signal: VariableName, newSignal: VariableName) {
         switch block {
         case .blocks(let blocks):
@@ -164,7 +164,7 @@ extension SynchronousBlock {
     /// Create the internal mutation block during the reset assertion.
     /// - Parameter machine: The machine to create the block for.
     /// - Returns: The logic performing internal signal mutation.
-    @usableFromInline
+    @inlinable
     static func internalMutation(for machine: Machine) -> SynchronousBlock? {
         let writeSnapshots = machine.externalSignals.filter { $0.mode != .input }
         let snapshotWrites: [SynchronousBlock] = writeSnapshots.compactMap {

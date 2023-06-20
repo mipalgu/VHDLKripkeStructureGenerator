@@ -66,7 +66,7 @@ extension PortBlock {
     /// - Parameter representation: The representation to convert to a verifiable machine, i.e. a format that
     /// exposes internal signals for verification.
     /// - Warning: A machine that uses type aliases will make this initialiser return nil.
-    @usableFromInline
+    @inlinable
     init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard

@@ -61,21 +61,23 @@ import VHDLParsing
 extension PortSignal {
 
     /// The `reset` signal.
-    static let reset = PortSignal(type: .stdLogic, name: .reset, mode: .input)
+    @usableFromInline static let reset = PortSignal(type: .stdLogic, name: .reset, mode: .input)
 
     /// The `setInternalSignals` signal.
-    static let setInternalSignals = PortSignal(type: .stdLogic, name: .setInternalSignals, mode: .input)
+    @usableFromInline static let setInternalSignals = PortSignal(
+        type: .stdLogic, name: .setInternalSignals, mode: .input
+    )
 
     /// Create the `currentStateIn` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(currentStateInFor machine: Machine) {
         self.init(name: .currentStateIn(for: machine), machine: machine, mode: .input)
     }
 
     /// Create the `currentStateOut` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(currentStateOutFor machine: Machine) {
         self.init(name: .currentStateOut(for: machine), machine: machine, mode: .output)
     }
@@ -89,35 +91,35 @@ extension PortSignal {
 
     /// Create the `internalStateOut` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(internalStateOutFor machine: Machine) {
         self.init(name: .internalStateOut(for: machine), bitsRequired: 3, mode: .output)
     }
 
     /// Create the `previousRingletIn` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(previousRingletInFor machine: Machine) {
         self.init(name: .previousRingletIn(for: machine), machine: machine, mode: .input)
     }
 
     /// Create the `previousRingletOut` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(previousRingletOutFor machine: Machine) {
         self.init(name: .previousRingletOut(for: machine), machine: machine, mode: .output)
     }
 
     /// Create the `targetStateIn` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(targetStateInFor machine: Machine) {
         self.init(name: .targetStateIn(for: machine), machine: machine, mode: .input)
     }
 
     /// Create the `targetStateOut` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
-    @usableFromInline
+    @inlinable
     init?(targetStateOutFor machine: Machine) {
         self.init(name: .targetStateOut(for: machine), machine: machine, mode: .output)
     }
@@ -128,7 +130,7 @@ extension PortSignal {
     ///   - bitsRequired: The number of bits in the signal.
     ///   - mode: The mode of the signal.
     /// - Warning: `bitsRequired` must be greater than 0. Values that are 0 or less will cause a fatal error.
-    @usableFromInline
+    @inlinable
     init(name: VariableName, bitsRequired: Int, mode: Mode) {
         guard bitsRequired > 0 else {
             fatalError("Invalid number of bits.")
@@ -148,7 +150,7 @@ extension PortSignal {
     ///   - name: The name of the signal.
     ///   - machine: The machine containing the states.
     ///   - mode: The mode of the signal.
-    @usableFromInline
+    @inlinable
     init?(name: VariableName, machine: Machine, mode: Mode) {
         guard
             let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1), bitsRequired >= 1
@@ -164,7 +166,7 @@ extension PortSignal {
     ///   - machine: The machine containing the signal.
     ///   - mode: The mode of the new `PortSignal`.
     /// - Warning: This init returns `nil` for signals containing alias types.
-    @usableFromInline
+    @inlinable
     init?(signal: LocalSignal, in machine: Machine, mode: Mode) {
         guard case .signal(let type) = signal.type else {
             return nil

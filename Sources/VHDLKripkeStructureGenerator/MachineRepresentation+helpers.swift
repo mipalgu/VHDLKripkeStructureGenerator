@@ -61,7 +61,7 @@ import VHDLParsing
 extension MachineRepresentation {
 
     /// Returns all the external variables in the representation.
-    var externalVariables: [PortSignal] {
+    @inlinable var externalVariables: [PortSignal] {
         self.entity.port.signals.filter {
             $0.name.rawValue.lowercased().hasPrefix("external_")
         }

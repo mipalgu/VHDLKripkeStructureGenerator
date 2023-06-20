@@ -63,37 +63,37 @@ extension VariableName {
     // swiftlint:disable force_unwrapping
 
     /// The `currentState` signal.
-    static let currentState = VariableName(rawValue: "currentState")!
+    @usableFromInline static let currentState = VariableName(rawValue: "currentState")!
 
     /// The `internalState` signal.
-    static let internalState = VariableName(rawValue: "internalState")!
+    @usableFromInline static let internalState = VariableName(rawValue: "internalState")!
 
     /// The `previousRinglet` signal.
-    static let previousRinglet = VariableName(rawValue: "previousRinglet")!
+    @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
 
     /// The `PrimitiveTypes` package name.
-    static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
+    @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
 
     /// The `reset` signal.
-    static let reset = VariableName(rawValue: "reset")!
+    @usableFromInline static let reset = VariableName(rawValue: "reset")!
 
     /// The `setInternalSignals` signal.
-    static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
+    @usableFromInline static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
 
     /// The `stdLogicTypes` constant.
-    static let stdLogicTypes = VariableName(rawValue: "stdLogicTypes")!
+    @usableFromInline static let stdLogicTypes = VariableName(rawValue: "stdLogicTypes")!
 
     /// The `stdLogicTypes_t` type.
-    static let stdLogicTypesT = VariableName(rawValue: "stdLogicTypes_t")!
+    @usableFromInline static let stdLogicTypesT = VariableName(rawValue: "stdLogicTypes_t")!
 
     /// The `targetState` signal.
-    static let targetState = VariableName(rawValue: "targetState")!
+    @usableFromInline static let targetState = VariableName(rawValue: "targetState")!
 
     /// Appends a string to the end of a `VariableName`.
     /// - Parameters:
     ///   - name: The name to modify.
     ///   - post: The string to append to the end of `name`.
-    @usableFromInline
+    @inlinable
     init?(name: VariableName, post: String) {
         self.init(rawValue: "\(name.rawValue)\(post)")
     }
@@ -103,7 +103,7 @@ extension VariableName {
     /// - Parameters:
     ///   - signal: The signal to convert to a port name.
     ///   - machine: The machine that uses this signal.
-    @usableFromInline
+    @inlinable
     init(portNameFor signal: LocalSignal, in machine: Machine) {
         self.init(rawValue: "\(machine.name)_\(signal.name)")!
     }
@@ -112,7 +112,7 @@ extension VariableName {
     /// - Parameters:
     ///   - pre: The string to prepend.
     ///   - name: The `VariableName` to modify.
-    @usableFromInline
+    @inlinable
     init?(pre: String, name: VariableName) {
         self.init(rawValue: "\(pre)\(name.rawValue)")
     }
@@ -122,7 +122,7 @@ extension VariableName {
     ///   - pre: The string to prepend to `name`.
     ///   - name: The `VariableName` to modify.
     ///   - post: The string to append to `name`.
-    @usableFromInline
+    @inlinable
     init?(pre: String, name: VariableName, post: String) {
         self.init(rawValue: "\(pre)\(name.rawValue)\(post)")
     }
@@ -130,7 +130,7 @@ extension VariableName {
     /// The `setTargetState` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func currentStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_currentStateIn")!
     }
@@ -138,7 +138,7 @@ extension VariableName {
     /// The `currentStateOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func currentStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_currentStateOut")!
     }
@@ -146,7 +146,7 @@ extension VariableName {
     /// The `internalStateIn` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func internalStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_internalStateIn")!
     }
@@ -154,7 +154,7 @@ extension VariableName {
     /// The `internalStateOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func internalStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_internalStateOut")!
     }
@@ -162,7 +162,7 @@ extension VariableName {
     /// The `previousRingletIn` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func previousRingletIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_previousRingletIn")!
     }
@@ -170,7 +170,7 @@ extension VariableName {
     /// The `previousRingletOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func previousRingletOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_previousRingletOut")!
     }
@@ -178,7 +178,7 @@ extension VariableName {
     /// The `targetStateIn` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func targetStateIn(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_targetStateIn")!
     }
@@ -186,7 +186,7 @@ extension VariableName {
     /// The `targetStateOut` signal.
     /// - Parameter machine: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
-    @usableFromInline
+    @inlinable
     static func targetStateOut(for machine: Machine) -> VariableName {
         VariableName(rawValue: "\(machine.name)_targetStateOut")!
     }
