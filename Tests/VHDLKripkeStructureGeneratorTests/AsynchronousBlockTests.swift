@@ -82,6 +82,33 @@ final class AsynchronousBlockTests: XCTestCase {
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
     }
 
+    /// Test that the `hasProcess` computed property correctly detects process blocks.
+    func testHasProcess() {
+        XCTAssertTrue(
+            AsynchronousBlock.process(
+                block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
+            ).hasProcess
+        )
+        XCTAssertFalse(AsynchronousBlock.statement(statement: .null).hasProcess)
+        XCTAssertTrue(
+            AsynchronousBlock.blocks(
+                blocks: [
+                    .statement(statement: .null),
+                    .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
+                ]
+            ).hasProcess
+        )
+        XCTAssertTrue(
+            AsynchronousBlock.blocks(blocks: [
+                .blocks(blocks: [
+                    .statement(statement: .null),
+                    .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
+                ]),
+                .statement(statement: .null)
+            ]).hasProcess
+        )
+    }
+
     func testVerifiableProcess() {
         guard
             let representation,

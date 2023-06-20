@@ -59,10 +59,11 @@ import VHDLParsing
 
 extension AsynchronousBlock {
 
-    var hasProcess: Bool {
+    /// Detect whether this block contains a ``ProcessBlock``.
+    @inlinable var hasProcess: Bool {
         switch self {
         case .blocks(let blocks):
-            return blocks.map(\.hasProcess).contains(true)
+            return blocks.lazy.map(\.hasProcess).contains(true)
         case .process:
             return true
         default:
