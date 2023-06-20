@@ -60,6 +60,52 @@ import VHDLParsing
 /// Add the new machine logic.
 extension SynchronousBlock {
 
+    // swiftlint:disable function_body_length
+
+    /// Creates a new ``SynchronousBlock`` that adds additional statements to all cases where `signal` is
+    /// assigned a value. For example, consider the `VHDL` block below.
+    /// ```vhdl
+    /// x <= '1';
+    /// ```
+    /// If we were to use this synchronous block (called `block`) with a new signal called `y`, e.g.
+    /// `SynchronousBlock(internalSignal: block, signal: x, newSignal: y)`, then the resulting block would
+    /// create an additional assignment statement immediately after the `x` assignment.
+    /// ```vhdl
+    /// x <= '1';
+    /// y <= '1';
+    /// ```
+    /// The new signal is assigned the same value that `x` is assigned. This procedure is recursive applying
+    /// to all blocks within `internalSignal`. For example,
+    /// ```vhdl
+    /// case x is
+    ///     when '1' =>
+    ///         x <= '0';
+    ///     when others =>
+    ///         if x = '0' then
+    ///             x <= '1';
+    ///         end if;
+    /// end case;
+    /// ```
+    /// This block would be transformed into the following block when called thus
+    /// `SynchronousBlock(internalSignal: block, signal: x, newSignal: y)`:
+    /// ```vhdl
+    /// case x is
+    ///     when '1' =>
+    ///         x <= '0';
+    ///         y <= '0';
+    ///     when others =>
+    ///         if x = '0' then
+    ///             x <= '1';
+    ///             y <= '1';
+    ///         end if;
+    /// end case;
+    /// ```
+    /// 
+    /// - Parameters:
+    ///   - block: The ``SynchronousBlock`` containing the code to transform.
+    ///   - signal: The signal to check for assignments.
+    ///   - newSignal: The new signal to assign the same value as `signal`.
+    @usableFromInline
     init(internalSignal block: SynchronousBlock, signal: VariableName, newSignal: VariableName) {
         switch block {
         case .blocks(let blocks):
@@ -114,8 +160,6 @@ extension SynchronousBlock {
             }
         }
     }
-
-    // swiftlint:disable function_body_length
 
     /// Create the internal mutation block during the reset assertion.
     /// - Parameter machine: The machine to create the block for.
