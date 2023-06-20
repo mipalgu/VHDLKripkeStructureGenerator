@@ -62,6 +62,8 @@ import XCTest
 /// Test class for `AsynchronousBlock` extensions.
 final class AsynchronousBlockTests: XCTestCase {
 
+    // swiftlint:disable implicitly_unwrapped_optional
+
     /// A machine to use for testing.
     var machine: Machine!
 
@@ -113,7 +115,7 @@ final class AsynchronousBlockTests: XCTestCase {
         guard
             let representation,
             case .process(let process) = representation.architectureBody,
-            let block = AsynchronousBlock(verifiable: process, in: representation.machine)
+            let newProcess = ProcessBlock(verifiable: process, in: representation.machine)
         else {
             XCTFail("Not a process!")
             return

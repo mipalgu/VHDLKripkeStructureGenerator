@@ -111,10 +111,10 @@ extension AsynchronousBlock {
             }
             self = .blocks(blocks: assignments + newBlocks)
         case .process(let process):
-            guard let newProcess = AsynchronousBlock(verifiable: process, in: machine) else {
+            guard let newProcess = ProcessBlock(verifiable: process, in: machine) else {
                 return nil
             }
-            self = .blocks(blocks: assignments + [newProcess])
+            self = .blocks(blocks: assignments + [.process(block: newProcess)])
         case .component, .statement:
             return nil
         }
@@ -129,78 +129,13 @@ extension AsynchronousBlock {
             }
             self = .blocks(blocks: newBlocks)
         case .process(let process):
-            guard let newBlock = AsynchronousBlock(verifiable: process, in: machine) else {
+            guard let newProcess = ProcessBlock(verifiable: process, in: machine) else {
                 return nil
             }
-            self = newBlock
+            self = .process(block: newProcess)
         default:
             self = block
         }
-    }
-
-    init?(verifiable process: ProcessBlock, in machine: Machine) {
-        let drivingClock = machine.clocks[machine.drivingClock].name
-        guard
-            process.sensitivityList == [drivingClock],
-            case .ifStatement(let block) = process.code,
-            case .ifStatement(let condition, let secondBlock) = block,
-            case .conditional(let ifCondition) = condition,
-            case .edge(let edge) = ifCondition,
-            case .rising(let clockExp) = edge,
-            case .reference(let ref) = clockExp,
-            case .variable(let clock) = ref,
-            drivingClock == clock,
-            case .caseStatement(let caseStatement) = secondBlock,
-            case .reference(let caseRef) = caseStatement.condition,
-            case .variable(let caseVar) = caseRef,
-            caseVar == .internalState
-        else {
-            return nil
-        }
-        let newBlock = SynchronousBlock(
-            internalSignal: SynchronousBlock(
-                internalSignal: SynchronousBlock(
-                    internalSignal: SynchronousBlock(
-                        internalSignal: secondBlock,
-                        signal: .internalState,
-                        newSignal: .internalStateOut(for: machine)
-                    ),
-                    signal: .currentState,
-                    newSignal: VariableName.currentStateOut(for: machine)
-                ),
-                signal: .previousRinglet,
-                newSignal: .previousRingletOut(for: machine)
-            ),
-            signal: .targetState,
-            newSignal: .targetStateOut(for: machine)
-        )
-        let writeExternals = machine.externalSignals.filter { $0.mode != .input }
-        let actuatorSnapshots: [SynchronousBlock] = writeExternals.compactMap {
-            guard let newName = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)") else {
-                return nil
-            }
-            return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: newName),
-                value: .reference(variable: .variable(name: $0.name))
-            ))
-        }
-        guard
-            actuatorSnapshots.count == writeExternals.count,
-            let elseBlock = SynchronousBlock.internalMutation(for: machine)
-        else {
-            return nil
-        }
-        let resetStatement = SynchronousBlock.ifStatement(block: .ifElse(
-            condition: .conditional(condition: .comparison(value: .equality(
-                lhs: .reference(variable: .variable(name: .reset)), rhs: .literal(value: .logic(value: .high))
-            ))),
-            ifBlock: .blocks(blocks: actuatorSnapshots + [newBlock]),
-            elseBlock: elseBlock
-        ))
-        self = .process(block: ProcessBlock(
-            sensitivityList: process.sensitivityList,
-            code: .ifStatement(block: .ifStatement(condition: condition, ifBlock: resetStatement))
-        ))
     }
 
 }
