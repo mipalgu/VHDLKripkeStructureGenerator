@@ -153,7 +153,6 @@ final class ProcessBlockTests: XCTestCase {
             return
         }
         XCTAssertEqual(expected, newProcess)
-        print(newProcess.rawValue)
     }
 
     // swiftlint:enable function_body_length
