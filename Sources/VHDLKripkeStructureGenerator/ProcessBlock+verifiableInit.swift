@@ -57,8 +57,17 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add verifiable init.
 extension ProcessBlock {
 
+    // swiftlint:disable function_body_length
+
+    /// Changes the logic of a `VHDL` machine to expose the internal signals to the parent entity block.
+    /// - Parameters:
+    ///   - process: The existing process block for the machine to convert.
+    ///   - machine: The machine to convert.
+    /// - Warning: This function assumes the ``ProcessBlock`` of the machine fits the standard logic.
+    @inlinable
     init?(verifiable process: ProcessBlock, in machine: Machine) {
         let drivingClock = machine.clocks[machine.drivingClock].name
         guard
@@ -123,5 +132,7 @@ extension ProcessBlock {
             code: .ifStatement(block: .ifStatement(condition: condition, ifBlock: resetStatement))
         )
     }
+
+    // swiftlint:enable function_body_length
 
 }
