@@ -239,7 +239,7 @@ final class SynchronousBlockTests: XCTestCase {
             M_targetStateOut <= M_targetStateIn;
             y2 <= M_y2In;
             y <= M_yIn;
-            STATE_Initial_initialX <= M_Initial_initialXIn;
+            STATE_Initial_initialX <= M_STATE_Initial_initialXIn;
         else
             M_currentStateOut <= currentState;
             M_previousRingletOut <= previousRinglet;
@@ -247,7 +247,7 @@ final class SynchronousBlockTests: XCTestCase {
             M_targetStateOut <= targetState;
             M_y2 <= y2;
             M_y <= y;
-            M_Initial_initialX <= STATE_Initial_initialX;
+            M_STATE_Initial_initialX <= STATE_Initial_initialX;
         end if;
         """
         XCTAssertEqual(result.rawValue, expected)

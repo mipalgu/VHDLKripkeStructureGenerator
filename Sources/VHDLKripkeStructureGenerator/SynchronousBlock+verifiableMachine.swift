@@ -213,7 +213,7 @@ extension SynchronousBlock {
             signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
                 guard
                     let newName = VariableName(
-                        pre: "\(machine.name.rawValue)_\(name.rawValue)_", name: signal.name, post: "In"
+                        pre: "\(machine.name.rawValue)_STATE_\(name.rawValue)_", name: signal.name, post: "In"
                     ),
                     let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
                 else {
@@ -229,7 +229,7 @@ extension SynchronousBlock {
             signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
                 guard
                     let newName = VariableName(
-                        pre: "\(machine.name.rawValue)_\(name.rawValue)_", name: signal.name
+                        pre: "\(machine.name.rawValue)_STATE_\(name.rawValue)_", name: signal.name
                     ),
                     let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
                 else {
