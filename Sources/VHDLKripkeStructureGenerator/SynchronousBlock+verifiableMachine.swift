@@ -245,8 +245,8 @@ extension SynchronousBlock {
             snapshotReads.count == writeSnapshots.count,
             machineWrites.count == machine.machineSignals.count,
             machineReads.count == machine.machineSignals.count,
-            stateWrites.count == machine.stateVariables,
-            stateReads.count == machine.stateVariables
+            stateWrites.count == machine.stateVariablesAmount,
+            stateReads.count == machine.stateVariablesAmount
         else {
             return nil
         }

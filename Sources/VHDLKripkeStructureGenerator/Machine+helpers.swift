@@ -60,7 +60,7 @@ import VHDLMachines
 extension Machine {
 
     /// The number of state variables in this machine.
-    @inlinable var stateVariables: Int {
+    @inlinable var stateVariablesAmount: Int {
         self.states.reduce(0) { $0 + $1.signals.count }
     }
 

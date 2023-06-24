@@ -84,8 +84,8 @@ final class MachineTests: XCTestCase {
     }
 
     /// Test that the state variables are counted correctly.
-    func testStateVariables() {
-        XCTAssertEqual(machine.stateVariables, 2)
+    func testStateVariablesAmount() {
+        XCTAssertEqual(machine.stateVariablesAmount, 2)
     }
 
 }
