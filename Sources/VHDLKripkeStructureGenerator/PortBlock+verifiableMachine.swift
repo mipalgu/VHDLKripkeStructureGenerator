@@ -117,7 +117,7 @@ extension PortBlock {
             signals.compactMap { (signal: LocalSignal) -> PortSignal? in
                 guard
                     let newName = VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(state.rawValue)_\(signal.name.rawValue)In"
+                        rawValue: "\(machine.name.rawValue)_STATE_\(state.rawValue)_\(signal.name.rawValue)In"
                     ),
                     case .signal(let type) = signal.type
                 else {
@@ -130,7 +130,7 @@ extension PortBlock {
             signals.compactMap { (signal: LocalSignal) -> PortSignal? in
                 guard
                     let newName = VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(state.rawValue)_\(signal.name.rawValue)"
+                        rawValue: "\(machine.name.rawValue)_STATE_\(state.rawValue)_\(signal.name.rawValue)"
                     ),
                     case .signal(let type) = signal.type
                 else {
