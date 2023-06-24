@@ -120,7 +120,10 @@ final class AsynchronousBlockTests: XCTestCase {
             XCTFail("Not a process!")
             return
         }
-        // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
+        XCTAssertEqual(
+            AsynchronousBlock(verifiable: representation.architectureBody, in: representation.machine),
+            AsynchronousBlock.process(block: newProcess)
+        )
     }
 
     func testVerifiableRepresentation() {
