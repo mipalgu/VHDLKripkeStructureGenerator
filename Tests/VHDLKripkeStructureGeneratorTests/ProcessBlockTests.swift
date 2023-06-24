@@ -89,6 +89,7 @@ final class ProcessBlockTests: XCTestCase {
             return
         }
         machine.states[0].externalVariables = [.x, .y]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
         let y2 = LocalSignal(type: .stdLogic, name: .y2)
         machine.machineSignals = [y2]
         guard let representation = MachineRepresentation(machine: machine) else {
@@ -106,7 +107,8 @@ final class ProcessBlockTests: XCTestCase {
             case .reference(let ref) = expression,
             case .variable(let name) = ref,
             machine.drivingClock < machine.clocks.count,
-            name == machine.clocks[machine.drivingClock].name
+            name == machine.clocks[machine.drivingClock].name,
+            let newInitialX = VariableName(rawValue: "STATE_Initial_initialX")
         else {
             XCTFail("Invalid architecture body.")
             return
@@ -141,6 +143,18 @@ final class ProcessBlockTests: XCTestCase {
                                 portNameFor: LocalSignal(type: .stdLogic, name: .y), in: machine
                             )),
                             value: .reference(variable: .variable(name: .y))
+                        )),
+                        SynchronousBlock.statement(statement: .assignment(
+                            name: .variable(name: VariableName(
+                                portNameFor: y2, in: machine
+                            )),
+                            value: .reference(variable: .variable(name: y2.name))
+                        )),
+                        SynchronousBlock.statement(statement: .assignment(
+                            name: .variable(name: VariableName(
+                                portNameFor: LocalSignal(type: .stdLogic, name: newInitialX), in: machine
+                            )),
+                            value: .reference(variable: .variable(name: newInitialX))
                         ))
                     ] + [newLogic]
                 ),
@@ -153,6 +167,8 @@ final class ProcessBlockTests: XCTestCase {
             return
         }
         XCTAssertEqual(expected, newProcess)
+        print(expected.rawValue)
+        print(newProcess.rawValue)
     }
 
     // swiftlint:enable function_body_length

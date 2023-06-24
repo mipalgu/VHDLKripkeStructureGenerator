@@ -114,8 +114,31 @@ extension ProcessBlock {
                 value: .reference(variable: .variable(name: $0.name))
             ))
         }
+        let machineAssignments = machine.machineSignals.map {
+            SynchronousBlock.statement(statement: .assignment(
+                name: .variable(name: VariableName(portNameFor: $0, in: machine)),
+                value: .reference(variable: .variable(name: $0.name))
+            ))
+        }
+        let stateAssignments = machine.stateVariables.flatMap { state, variables in
+            variables.compactMap { (variable: LocalSignal) -> SynchronousBlock? in
+                guard
+                    let externalName = VariableName(
+                        pre: "\(machine.name)_STATE_\(state)_", name: variable.name
+                    ),
+                    let stateName = VariableName(pre: "STATE_\(state)_", name: variable.name)
+                else {
+                    return nil
+                }
+                return SynchronousBlock.statement(statement: .assignment(
+                    name: .variable(name: externalName),
+                    value: .reference(variable: .variable(name: stateName))
+                ))
+            }
+        }
         guard
             actuatorSnapshots.count == writeExternals.count,
+            stateAssignments.count == machine.stateVariablesAmount,
             let elseBlock = SynchronousBlock.internalMutation(for: machine)
         else {
             return nil
@@ -124,7 +147,7 @@ extension ProcessBlock {
             condition: .conditional(condition: .comparison(value: .equality(
                 lhs: .reference(variable: .variable(name: .reset)), rhs: .literal(value: .logic(value: .high))
             ))),
-            ifBlock: .blocks(blocks: actuatorSnapshots + [newBlock]),
+            ifBlock: .blocks(blocks: actuatorSnapshots + machineAssignments + stateAssignments + [newBlock]),
             elseBlock: elseBlock
         ))
         self.init(
