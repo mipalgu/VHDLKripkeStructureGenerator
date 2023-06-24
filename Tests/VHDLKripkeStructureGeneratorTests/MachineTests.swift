@@ -88,4 +88,17 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.stateVariablesAmount, 2)
     }
 
+    /// Test that all state variables are returned correctly.
+    func testStateVariables() {
+        machine.states[0].signals.append(LocalSignal(type: .stdLogic, name: .initialY))
+        machine.states += [
+            State(name: .s0, actions: machine.states[0].actions, signals: [], externalVariables: [])
+        ]
+        let stateVariables = machine.stateVariables
+        XCTAssertEqual(stateVariables.count, 2)
+        XCTAssertEqual(stateVariables[machine.states[0].name], machine.states[0].signals)
+        XCTAssertEqual(stateVariables[machine.states[1].name], machine.states[1].signals)
+        XCTAssertNil(stateVariables[.s0])
+    }
+
 }
