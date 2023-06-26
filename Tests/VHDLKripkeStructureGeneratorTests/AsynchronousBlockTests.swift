@@ -126,6 +126,23 @@ final class AsynchronousBlockTests: XCTestCase {
         )
     }
 
+    func testVerifiableBlocks() {
+        guard
+            let representation,
+            case .process(let process) = representation.architectureBody,
+            let newProcess = ProcessBlock(verifiable: process, in: representation.machine)
+        else {
+            XCTFail("Not a process!")
+            return
+        }
+        let nullStatement = AsynchronousBlock.statement(statement: .null)
+        let blocks = AsynchronousBlock.blocks(
+            blocks: [nullStatement, representation.architectureBody]
+        )
+        let expected = AsynchronousBlock.blocks(blocks: [nullStatement, .process(block: newProcess)])
+        XCTAssertEqual(AsynchronousBlock(verifiable: blocks, in: representation.machine), expected)
+    }
+
     func testVerifiableRepresentation() {
         guard let representation, let block = AsynchronousBlock(verifiable: representation) else {
             XCTFail("Invalid representation")
