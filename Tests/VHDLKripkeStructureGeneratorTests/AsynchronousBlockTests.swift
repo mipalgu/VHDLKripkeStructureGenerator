@@ -140,7 +140,22 @@ final class AsynchronousBlockTests: XCTestCase {
             blocks: [nullStatement, representation.architectureBody]
         )
         let expected = AsynchronousBlock.blocks(blocks: [nullStatement, .process(block: newProcess)])
-        XCTAssertEqual(AsynchronousBlock(verifiable: blocks, in: representation.machine), expected)
+        XCTAssertEqual(AsynchronousBlock(verifiable: blocks, in: machine), expected)
+    }
+
+    func testVerifiableProcessReturnsNil() {
+        let block = AsynchronousBlock.process(
+            block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
+        )
+        XCTAssertNil(AsynchronousBlock(verifiable: block, in: machine))
+    }
+
+    func testVerifiableBlocksReturnsNil() {
+        let blocks = AsynchronousBlock.blocks(blocks: [
+            .statement(statement: .null),
+            .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
+        ])
+        XCTAssertNil(AsynchronousBlock(verifiable: blocks, in: machine))
     }
 
     func testVerifiableRepresentation() {
