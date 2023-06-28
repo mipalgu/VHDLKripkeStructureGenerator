@@ -120,6 +120,12 @@ extension AsynchronousBlock {
         }
     }
 
+    /// Convers all process blocks within `block` into their verifiable versions. If any process block cannot
+    /// be converted, this initializer will return `nil`.
+    /// - Parameters:
+    ///   - block: The block to convert.
+    ///   - machine: The machine this block represents.
+    @inlinable
     init?(verifiable block: AsynchronousBlock, in machine: Machine) {
         switch block {
         case .blocks(let blocks):
