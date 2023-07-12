@@ -166,4 +166,8 @@ final class AsynchronousBlockTests: XCTestCase {
         // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
     }
 
+    func testVerifiableReturnsNilForInvalidRepresentation() {
+        XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation()))
+    }
+
 }

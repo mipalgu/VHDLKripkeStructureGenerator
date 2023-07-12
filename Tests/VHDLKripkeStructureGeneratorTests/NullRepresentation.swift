@@ -1,4 +1,4 @@
-// TestNames.swift
+// NullRepresentation.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,45 +52,60 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
+import Foundation
+import VHDLMachines
 import VHDLParsing
 
-/// Adds common test variable names.
-extension VariableName {
+class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+
+    let architectureBody: AsynchronousBlock
+
+    let architectureHead = ArchitectureHead(statements: [])
+
+    let architectureName = VariableName.behavioral
 
     // swiftlint:disable force_unwrapping
 
-    /// The `Behavioral` name for an architecture.
-    static let behavioral = VariableName(rawValue: "Behavioral")!
-
-    /// A variable `initialX`.
-    static let initialX = VariableName(rawValue: "initialX")!
-
-    /// A variable `initialY`.
-    static let initialY = VariableName(rawValue: "initialY")!
-
-    /// The name of `Machine1`.
-    static let machine1 = VariableName(rawValue: "Machine1")!
-
-    /// A variable name `NullRepresentation`.
-    static let nullRepresentation = VariableName(rawValue: "NullRepresentation")!
-
-    /// A variable `S0`.
-    static let s0 = VariableName(rawValue: "S0")!
-
-    /// A variable `suspendedX`.
-    static let suspendedX = VariableName(rawValue: "suspendedX")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `y2`
-    static let y2 = VariableName(rawValue: "y2")!
+    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
 
     // swiftlint:enable force_unwrapping
+
+    let includes: [VHDLParsing.Include] = []
+
+    let machine: Machine
+
+    init(
+        body: AsynchronousBlock = .statement(statement: .null),
+        machine: Machine = Machine(
+            actions: [],
+            name: .machine1,
+            // swiftlint:disable:next force_unwrapping
+            path: URL(string: "/dev/null")!,
+            includes: [],
+            externalSignals: [],
+            clocks: [],
+            drivingClock: 0,
+            dependentMachines: [:],
+            machineSignals: [],
+            isParameterised: false,
+            parameterSignals: [],
+            returnableSignals: [],
+            states: [],
+            transitions: [],
+            initialState: 0,
+            suspendedState: nil
+        )
+    ) {
+        self.architectureBody = body
+        self.machine = machine
+    }
+
+    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
+        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
+            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
+            lhs.includes == rhs.includes && lhs.machine == rhs.machine
+    }
 
 }
