@@ -111,6 +111,7 @@ final class AsynchronousBlockTests: XCTestCase {
         )
     }
 
+    /// Test verifiable process is created correctly.
     func testVerifiableProcess() {
         guard
             let representation,
@@ -126,6 +127,7 @@ final class AsynchronousBlockTests: XCTestCase {
         )
     }
 
+    /// Test that only the process is changed in the blocks.
     func testVerifiableBlocks() {
         guard
             let representation,
@@ -143,6 +145,7 @@ final class AsynchronousBlockTests: XCTestCase {
         XCTAssertEqual(AsynchronousBlock(verifiable: blocks, in: machine), expected)
     }
 
+    /// Test init returns nil when `ProcessBlock.init(verifiable:in:)` returns nil.
     func testVerifiableProcessReturnsNil() {
         let block = AsynchronousBlock.process(
             block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
@@ -150,6 +153,7 @@ final class AsynchronousBlockTests: XCTestCase {
         XCTAssertNil(AsynchronousBlock(verifiable: block, in: machine))
     }
 
+    /// Test blocks return nil when containing invalid process.
     func testVerifiableBlocksReturnsNil() {
         let blocks = AsynchronousBlock.blocks(blocks: [
             .statement(statement: .null),
@@ -158,18 +162,12 @@ final class AsynchronousBlockTests: XCTestCase {
         XCTAssertNil(AsynchronousBlock(verifiable: blocks, in: machine))
     }
 
-    func testVerifiableRepresentation() {
-        guard let representation, let block = AsynchronousBlock(verifiable: representation) else {
-            XCTFail("Invalid representation")
-            return
-        }
-        // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
-    }
-
+    /// Test init returns nil without a process.
     func testVerifiableReturnsNilForInvalidRepresentation() {
         XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation()))
     }
 
+    /// Test init returns nil for incorrect process.
     func testVerifiableReturnsNilForInvalidProcess() {
         XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation(
             body: .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))),
@@ -177,7 +175,8 @@ final class AsynchronousBlockTests: XCTestCase {
         )))
     }
 
-    func testVerifibaleReturnsNilForComponentAndStatement() {
+    /// Test init returns nil for components and statements.
+    func testVerifiableReturnsNilForComponentAndStatement() {
         XCTAssertNil(AsynchronousBlock(
             verifiable: NullRepresentation(
                 body: .component(block: ComponentInstantiation(
@@ -191,6 +190,7 @@ final class AsynchronousBlockTests: XCTestCase {
         ))
     }
 
+    /// Test init returns nil for invalid process in blocks.
     func testBlocksReturnsNilWhenInitFailsInVerifiable() {
         XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation(
             body: .blocks(blocks: [
@@ -201,6 +201,7 @@ final class AsynchronousBlockTests: XCTestCase {
         )))
     }
 
+    /// Test init correctly creates a process from a valid machine blocks format.
     func testBlocksWorksForValidMachineFormat() {
         machine.architectureBody = .statement(statement: .null)
         guard
