@@ -58,24 +58,35 @@ import Foundation
 import VHDLMachines
 import VHDLParsing
 
+/// A machine representation containing no code.
 class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
 
+    /// The implementation.
     let architectureBody: AsynchronousBlock
 
+    /// The architecture head.
     let architectureHead = ArchitectureHead(statements: [])
 
+    /// The name of the architecture.
     let architectureName = VariableName.behavioral
 
     // swiftlint:disable force_unwrapping
 
+    /// The entity for the machine.
     let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
 
     // swiftlint:enable force_unwrapping
 
+    /// The includes of the machine.
     let includes: [VHDLParsing.Include] = []
 
+    /// The machine this representation is for.
     let machine: Machine
 
+    /// Create a null representation for a machine.
+    /// - Parameters:
+    ///   - body: A parameterisable body for the machine.
+    ///   - machine: The machine this representation is for.
     init(
         body: AsynchronousBlock = .statement(statement: .null),
         machine: Machine = Machine(
@@ -102,6 +113,7 @@ class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
         self.machine = machine
     }
 
+    /// Equality conformance.
     static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
         lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
             lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
