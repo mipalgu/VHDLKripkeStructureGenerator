@@ -150,7 +150,8 @@ extension SynchronousBlock {
                             value: .reference(variable: .variable(name: .waitToStart))
                         ))
                     ))
-                )
+                ),
+                WhenCase(condition: .others, code: .statement(statement: .null))
             ]
         ))
     ))
