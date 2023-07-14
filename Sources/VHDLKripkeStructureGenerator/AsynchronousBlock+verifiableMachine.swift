@@ -71,6 +71,10 @@ extension AsynchronousBlock {
         }
     }
 
+    /// Converts a machine representation body into a new format for verification. This init exposes internal
+    /// signals so that they may be included in a Kripke structure.
+    /// - Parameter representation: The representation of the machine to convert.
+    @inlinable
     init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         let body = representation.architectureBody
         guard body.hasProcess else {
