@@ -62,6 +62,23 @@ import XCTest
 /// Test class for ``VHDLFile`` extensions.
 final class VHDLFileTests: XCTestCase {
 
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use as test data.
+    var machine: Machine!
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialise the test data before every test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/tmp/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+    }
+
     /// Test the `PrimitiveTypes` file is generated correctly.
     func testPrimitiveTypes() {
         // swiftlint:disable line_length
@@ -77,6 +94,36 @@ final class VHDLFileTests: XCTestCase {
         """
         // swiftlint:enable line_length
         XCTAssertEqual(VHDLFile.primitiveTypes.rawValue, expected)
+    }
+
+    /// Test verifiable init returns nil for invalid Port and body.
+    func testVerifiableInitReturnsNilForInvalidPortAndBody() {
+        XCTAssertNil(VHDLFile(verifiable: NullRepresentation()))
+        XCTAssertNil(VHDLFile(verifiable: NullRepresentation(machine: machine)))
+    }
+
+    /// Test verifiable init creates the correct file.
+    func testVerifiableInit() {
+        guard
+            let representation = MachineRepresentation(machine: machine),
+            let port = PortBlock(verifiable: representation),
+            let body = AsynchronousBlock(verifiable: representation)
+        else {
+            XCTFail("Failed to create file components!")
+            return
+        }
+        let entity = Entity(name: machine.name, port: port)
+        let architecture = Architecture(
+            body: body,
+            entity: machine.name,
+            head: representation.architectureHead,
+            name: representation.architectureName
+        )
+        let expected = VHDLFile(
+            architectures: [architecture], entities: [entity], includes: machine.includes, packages: []
+        )
+        let result = VHDLFile(verifiable: representation)
+        XCTAssertEqual(result, expected)
     }
 
 }

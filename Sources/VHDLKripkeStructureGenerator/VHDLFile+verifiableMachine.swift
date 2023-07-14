@@ -57,8 +57,12 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add verifiable initialisers.
 extension VHDLFile {
 
+    /// Creates a verifiable representation for an LLFSM.
+    /// - Parameter representation: The representation to convert to a verifiable representation.
+    @inlinable
     public init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         guard
             let port = PortBlock(verifiable: representation),
