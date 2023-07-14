@@ -61,7 +61,7 @@ import VHDLParsing
 extension ArchitectureHead {
 
     init?<T>(runner representation: T) where T: MachineVHDLRepresentable {
-        guard let component = ComponentDefinition(runner: representation) else {
+        guard let component = ComponentDefinition(verifiable: representation) else {
             return nil
         }
         self.init(statements: [

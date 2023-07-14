@@ -1,4 +1,4 @@
-// Component+runnerInit.swift
+// ComponentDefinitionTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,21 +54,45 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add init for verifiable machine.
-extension ComponentDefinition {
+/// Test class for `ComponentDefinition` inits.
+final class ComponentDefinitionTests: XCTestCase {
 
-    /// Creates a component for a verifiable machine.
-    /// - Parameter representation: The representation to create the component from. This representation
-    /// is first converted into a verifiable representation.
-    @inlinable
-    init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
-        guard let port = PortBlock(verifiable: representation) else {
-            return nil
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to test.
+    var machine: Machine!
+
+    /// The representation of `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialise the test data before every test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+    }
+
+    /// Test that `ComponentDefinition.init(runner:)` returns nil for an invalid representation.
+    func testRunnerInitReturnsNilForInvalidRepresentation() {
+        XCTAssertNil(ComponentDefinition(verifiable: NullRepresentation()))
+    }
+
+    /// Test that the `ComponentDefinition.init(runner:)` initialises correctly.
+    func testRunnerInit() {
+        guard let representation, let port = PortBlock(verifiable: representation) else {
+            XCTFail("Failed to initialise PortBlock.")
+            return
         }
-        self.init(name: representation.entity.name, port: port)
+        let expected = ComponentDefinition(name: representation.entity.name, port: port)
+        let result = ComponentDefinition(verifiable: representation)
+        XCTAssertEqual(expected, result)
     }
 
 }
