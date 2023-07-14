@@ -57,6 +57,7 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add verifiable initialisers.
 extension AsynchronousBlock {
 
     /// Detect whether this block contains a ``ProcessBlock``.
