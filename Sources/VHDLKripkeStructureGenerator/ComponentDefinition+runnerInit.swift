@@ -1,4 +1,4 @@
-// ArchitectureHead+machineRunner.swift
+// Component+runnerInit.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,25 +57,13 @@
 import VHDLMachines
 import VHDLParsing
 
-/// Add heads for pre-defined types.
-extension ArchitectureHead {
+extension ComponentDefinition {
 
     init?<T>(runner representation: T) where T: MachineVHDLRepresentable {
-        guard let component = ComponentDefinition(runner: representation) else {
+        guard let port = PortBlock(verifiable: representation) else {
             return nil
         }
-        self.init(statements: [
-            .definition(value: .signal(value: .stateTracker)),
-            .definition(value: .constant(value: .waitToStart)),
-            .definition(value: .constant(value: .startExecuting)),
-            .definition(value: .constant(value: .executing)),
-            .definition(value: .constant(value: .waitForFinish)),
-            .definition(value: .signal(value: .internalState)),
-            .definition(value: .signal(value: .rst)),
-            .definition(value: .signal(value: .setInternalSignals)),
-            .definition(value: .signal(value: .goalInternal)),
-            .definition(value: .component(value: component))
-        ])
+        self.init(name: representation.entity.name, port: port)
     }
 
 }
