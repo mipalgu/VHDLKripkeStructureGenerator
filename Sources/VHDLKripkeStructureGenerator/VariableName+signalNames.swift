@@ -65,6 +65,12 @@ extension VariableName {
     /// The `currentState` signal.
     @usableFromInline static let currentState = VariableName(rawValue: "currentState")!
 
+    /// The `Executing` constant.
+    @usableFromInline static let executing = VariableName(rawValue: "Executing")!
+
+    /// The `goalInternal` signal.
+    @usableFromInline static let goalInternal = VariableName(rawValue: "goalInternal")!
+
     /// The `internalState` signal.
     @usableFromInline static let internalState = VariableName(rawValue: "internalState")!
 
@@ -77,8 +83,17 @@ extension VariableName {
     /// The `reset` signal.
     @usableFromInline static let reset = VariableName(rawValue: "reset")!
 
+    /// The `rst` signal.
+    @usableFromInline static let rst = VariableName(rawValue: "rst")!
+
     /// The `setInternalSignals` signal.
     @usableFromInline static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
+
+    /// The `StartExecuting` constant.
+    @usableFromInline static let startExecuting = VariableName(rawValue: "StartExecuting")!
+
+    /// The `stateTracker` signal.
+    @usableFromInline static let stateTracker = VariableName(rawValue: "stateTracker")!
 
     /// The `stdLogicTypes` constant.
     @usableFromInline static let stdLogicTypes = VariableName(rawValue: "stdLogicTypes")!
@@ -88,6 +103,12 @@ extension VariableName {
 
     /// The `targetState` signal.
     @usableFromInline static let targetState = VariableName(rawValue: "targetState")!
+
+    /// The `WaitForFinish` signal.
+    @usableFromInline static let waitForFinish = VariableName(rawValue: "WaitForFinish")!
+
+    /// The `WaitToStart` constant.
+    @usableFromInline static let waitToStart = VariableName(rawValue: "WaitToStart")!
 
     /// Appends a string to the end of a `VariableName`.
     /// - Parameters:
