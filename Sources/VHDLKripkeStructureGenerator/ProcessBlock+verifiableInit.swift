@@ -60,6 +60,9 @@ import VHDLParsing
 /// Add verifiable init.
 extension ProcessBlock {
 
+    /// The `ProcessBlock` for a machine runner.
+    @usableFromInline static let runnerLogic = ProcessBlock(sensitivityList: [.clk], code: .runnerLogic)
+
     // swiftlint:disable function_body_length
 
     /// Changes the logic of a `VHDL` machine to expose the internal signals to the parent entity block.

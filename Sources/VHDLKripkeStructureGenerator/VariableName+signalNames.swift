@@ -62,14 +62,23 @@ extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
+    /// The `clk` signal.
+    @usableFromInline static let clk = VariableName(rawValue: "clk")!
+
     /// The `currentState` signal.
     @usableFromInline static let currentState = VariableName(rawValue: "currentState")!
 
     /// The `Executing` constant.
     @usableFromInline static let executing = VariableName(rawValue: "Executing")!
 
+    /// The `finished` signal.
+    @usableFromInline static let finished = VariableName(rawValue: "finished")!
+
     /// The `goalInternal` signal.
     @usableFromInline static let goalInternal = VariableName(rawValue: "goalInternal")!
+
+    /// The `goalInternalState` signal.
+    @usableFromInline static let goalInternalState = VariableName(rawValue: "goalInternalState")!
 
     /// The `internalState` signal.
     @usableFromInline static let internalState = VariableName(rawValue: "internalState")!
