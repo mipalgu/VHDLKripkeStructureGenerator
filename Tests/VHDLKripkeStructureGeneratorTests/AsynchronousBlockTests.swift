@@ -220,11 +220,13 @@ final class AsynchronousBlockTests: XCTestCase {
                 .statement(statement: .assignment(
                     name: .variable(name: xName), value: .reference(variable: .variable(name: .x))
                 )),
-                blocks[0]
-            ] + [.statement(statement: .null), .process(block: verifiableProcess)]
+                blocks[0],
+                .statement(statement: .null),
+                .process(block: verifiableProcess)
+            ]
         )
         let result = AsynchronousBlock(verifiable: representation)
-        XCTAssertEqual(result, expected, result!.rawValue)
+        XCTAssertEqual(result, expected)
     }
 
 }

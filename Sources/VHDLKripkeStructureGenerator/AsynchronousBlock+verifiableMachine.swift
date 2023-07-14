@@ -77,14 +77,6 @@ extension AsynchronousBlock {
             return nil
         }
         let machine = representation.machine
-        let stateVariables = machine.states.flatMap { $0.signals }
-        let localVariables = stateVariables + machine.machineSignals
-        let machineVariables: [(VariableName, VariableName)] = localVariables.compactMap {
-            guard let name = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)") else {
-                return nil
-            }
-            return ($0.name, name)
-        }
         let readableVariables = machine.externalSignals.filter { $0.mode == .input }
         let snapshots: [(VariableName, VariableName)] = readableVariables.compactMap {
             guard let name = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)") else {
@@ -92,13 +84,10 @@ extension AsynchronousBlock {
             }
             return ($0.name, name)
         }
-        guard
-            machineVariables.count == localVariables.count,
-            snapshots.count == readableVariables.count
-        else {
+        guard snapshots.count == readableVariables.count else {
             return nil
         }
-        let assignments = (machineVariables + snapshots).map {
+        let assignments = snapshots.map {
             AsynchronousBlock.statement(statement: .assignment(
                 name: .variable(name: $0.1), value: .reference(variable: .variable(name: $0.0))
             ))
