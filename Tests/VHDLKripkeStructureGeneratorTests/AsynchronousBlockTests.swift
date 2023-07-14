@@ -170,4 +170,61 @@ final class AsynchronousBlockTests: XCTestCase {
         XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation()))
     }
 
+    func testVerifiableReturnsNilForInvalidProcess() {
+        XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation(
+            body: .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))),
+            machine: machine
+        )))
+    }
+
+    func testVerifibaleReturnsNilForComponentAndStatement() {
+        XCTAssertNil(AsynchronousBlock(
+            verifiable: NullRepresentation(
+                body: .component(block: ComponentInstantiation(
+                    label: .y, name: .y2, port: PortMap(variables: [])
+                )),
+                machine: machine
+            )
+        ))
+        XCTAssertNil(AsynchronousBlock(
+            verifiable: NullRepresentation(body: .statement(statement: .null), machine: machine)
+        ))
+    }
+
+    func testBlocksReturnsNilWhenInitFailsInVerifiable() {
+        XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation(
+            body: .blocks(blocks: [
+                .statement(statement: .null),
+                .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
+            ]),
+            machine: machine
+        )))
+    }
+
+    func testBlocksWorksForValidMachineFormat() {
+        machine.architectureBody = .statement(statement: .null)
+        guard
+            let representation,
+            case .blocks(let blocks) = representation.architectureBody,
+            blocks.count == 3,
+            case .statement(statement: .comment) = blocks[0],
+            case .process(let process) = blocks[2],
+            let verifiableProcess = ProcessBlock(verifiable: process, in: machine),
+            let xName = VariableName(rawValue: "M_x")
+        else {
+            XCTFail("Not a block!")
+            return
+        }
+        let expected = AsynchronousBlock.blocks(
+            blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(name: xName), value: .reference(variable: .variable(name: .x))
+                )),
+                blocks[0]
+            ] + [.statement(statement: .null), .process(block: verifiableProcess)]
+        )
+        let result = AsynchronousBlock(verifiable: representation)
+        XCTAssertEqual(result, expected, result!.rawValue)
+    }
+
 }
