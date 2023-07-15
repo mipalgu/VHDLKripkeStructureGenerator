@@ -61,6 +61,10 @@ import VHDLParsing
 /// Add initialiser for the runner.
 extension PortBlock {
 
+    /// Create the port block for the machine runner that enacts the given machine representation.
+    /// - Parameter representation: The representation of the machine that is controlled by this machine
+    /// runner.
+    @inlinable
     init?<T>(runnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let label = "\(String(labelFor: representation.entity.name))_"
@@ -110,6 +114,15 @@ extension PortBlock {
         )
     }
 
+    /// Initialise a `PortBlock` with the given converted representations for the machine's variables. This
+    /// initialiser assumes the port definitions are already correct and verified for a given machine.
+    /// - Parameters:
+    ///   - numberOfStates: The number of states in the machine.
+    ///   - externals: The external signals in the machine.
+    ///   - snapshots: The snapshot definitions for the machine.
+    ///   - machineVariables: The machine variables in the machine.
+    ///   - stateSignals: The state variables in the machine.
+    @inlinable
     init?(
         numberOfStates: Int,
         externals: [PortSignal],
