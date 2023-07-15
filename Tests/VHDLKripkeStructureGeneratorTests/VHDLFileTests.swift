@@ -126,4 +126,30 @@ final class VHDLFileTests: XCTestCase {
         XCTAssertEqual(result, expected)
     }
 
+    /// Test runner init returns nil for invalid representation.
+    func testInvalidRunnerInit() {
+        XCTAssertNil(VHDLFile(runnerFor: NullRepresentation()))
+    }
+
+    /// Test runner init returns correct file.
+    func testRunnerInit() {
+        guard
+            let representation = MachineRepresentation(machine: machine),
+            let head = ArchitectureHead(runner: representation),
+            let body = AsynchronousBlock(runnerFor: representation),
+            let name = VariableName(rawValue: "MMachineRunner"),
+            let port = PortBlock(runnerFor: representation)
+        else {
+            XCTFail("Failed to create file components!")
+            return
+        }
+        let result = VHDLFile(runnerFor: representation)
+        let expected = VHDLFile(
+            architectures: [Architecture(body: body, entity: name, head: head, name: .behavioral)],
+            entities: [Entity(name: name, port: port)],
+            includes: machine.includes
+        )
+        XCTAssertEqual(result, expected)
+    }
+
 }
