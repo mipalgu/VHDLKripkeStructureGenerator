@@ -68,6 +68,12 @@ extension VariableName {
     /// The `currentState` signal.
     @usableFromInline static let currentState = VariableName(rawValue: "currentState")!
 
+    /// The `currentStateIn` signal.
+    @usableFromInline static let currentStateIn = VariableName(rawValue: "currentStateIn")!
+
+    /// The `currentStateOut` signal.
+    @usableFromInline static let currentStateOut = VariableName(rawValue: "currentStateOut")!
+
     /// The `Executing` constant.
     @usableFromInline static let executing = VariableName(rawValue: "Executing")!
 
@@ -83,8 +89,20 @@ extension VariableName {
     /// The `internalState` signal.
     @usableFromInline static let internalState = VariableName(rawValue: "internalState")!
 
+    /// The `internalStateIn` signal.
+    @usableFromInline static let internalStateIn = VariableName(rawValue: "internalStateIn")!
+
+    /// The `internalStateOut` signal.
+    @usableFromInline static let internalStateOut = VariableName(rawValue: "internalStateOut")!
+
     /// The `previousRinglet` signal.
     @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
+
+    /// The `previousRingletIn` signal.
+    @usableFromInline static let previousRingletIn = VariableName(rawValue: "previousRingletIn")!
+
+    /// The `previousRingletOut` signal.
+    @usableFromInline static let previousRingletOut = VariableName(rawValue: "previousRingletOut")!
 
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
@@ -112,6 +130,12 @@ extension VariableName {
 
     /// The `targetState` signal.
     @usableFromInline static let targetState = VariableName(rawValue: "targetState")!
+
+    /// The `targetStateIn` signal.
+    @usableFromInline static let targetStateIn = VariableName(rawValue: "targetStateIn")!
+
+    /// The `targetStateOut` signal.
+    @usableFromInline static let targetStateOut = VariableName(rawValue: "targetStateOut")!
 
     /// The `WaitForFinish` signal.
     @usableFromInline static let waitForFinish = VariableName(rawValue: "WaitForFinish")!
