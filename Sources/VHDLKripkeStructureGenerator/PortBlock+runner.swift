@@ -155,19 +155,24 @@ extension PortBlock {
 
 }
 
+/// Add label init to string.
 extension String {
 
+    /// Create a label for a `VariableName` that contains lowercase versions of all uppercase letters. For
+    /// example, the name `HelloWorld` would be shortened to `hw`.
+    /// - Parameter name: The name to convert into a label.
+    @inlinable
     init(labelFor name: VariableName) {
         let prepending = String(
             name.rawValue.lazy
                 .compactMap { $0.unicodeScalars.first }
-                .filter { CharacterSet.capitalizedLetters.contains($0) }
+                .filter { CharacterSet.uppercaseLetters.contains($0) }
                 .map { Character($0) }
-        ).lowercased()
+        )
         if prepending.isEmpty {
             self = name.rawValue
         } else {
-            self = prepending
+            self = prepending.lowercased()
         }
     }
 
