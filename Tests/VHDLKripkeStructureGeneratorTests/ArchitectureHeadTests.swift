@@ -1,4 +1,4 @@
-// ArchitectureHead+machineRunner.swift
+// ArchitectureHeadTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,31 +54,61 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add heads for pre-defined types.
-extension ArchitectureHead {
+/// Test class for `ArchitectureHead` extensions.
+final class ArchitectureHeadTests: XCTestCase {
 
-    /// Create the head definitions for the machine runner.
-    /// - Parameter representation: The machine representation that is invoked by the machine runner.
-    @inlinable
-    init?<T>(runner representation: T) where T: MachineVHDLRepresentable {
-        guard let component = ComponentDefinition(verifiable: representation) else {
-            return nil
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use as test data.
+    var machine: Machine!
+
+    /// The representation of the machine.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialises the machine before each test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+    }
+
+    /// Test `init(runner:)` returns nil for invalid representation.
+    func testRunnerInitReturnsNil() {
+        XCTAssertNil(ArchitectureHead(runner: NullRepresentation()))
+    }
+
+    /// Test `init(runner:)` creates the correct signals.
+    func testInit() {
+        let raw = """
+        signal stateTracker: std_logic_vector(1 downto 0) := "00";
+        constant WaitToStart: std_logic_vector(1 downto 0) := "00";
+        constant StartExecuting: std_logic_vector(1 downto 0) := "01";
+        constant Executing: std_logic_vector(1 downto 0) := "10";
+        constant WaitForFinish: std_logic_vector(1 downto 0) := "11";
+        signal internalState: std_logic_vector(2 downto 0);
+        signal rst: std_logic := '0';
+        signal setInternalSignals: std_logic := '0';
+        signal goalInternal: std_logic_vector(2 downto 0);
+        """
+        guard
+            let representation,
+            let signals = ArchitectureHead(rawValue: raw),
+            let component = ComponentDefinition(verifiable: representation)
+        else {
+            XCTFail("Failed to create architecture head from raw signals.")
+            return
         }
-        self.init(statements: [
-            .definition(value: .signal(value: .stateTracker)),
-            .definition(value: .constant(value: .waitToStart)),
-            .definition(value: .constant(value: .startExecuting)),
-            .definition(value: .constant(value: .executing)),
-            .definition(value: .constant(value: .waitForFinish)),
-            .definition(value: .signal(value: .internalState)),
-            .definition(value: .signal(value: .rst)),
-            .definition(value: .signal(value: .setInternalSignals)),
-            .definition(value: .signal(value: .goalInternal)),
-            .definition(value: .component(value: component))
-        ])
+        let expected = ArchitectureHead(
+            statements: signals.statements + [.definition(value: .component(value: component))]
+        )
+        XCTAssertEqual(ArchitectureHead(runner: representation), expected)
     }
 
 }
