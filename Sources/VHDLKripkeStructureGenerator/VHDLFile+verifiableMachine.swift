@@ -66,7 +66,6 @@ extension VHDLFile {
     public init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         guard
             let port = PortBlock(verifiable: representation),
-            let behavioral = VariableName(rawValue: "Behavioral"),
             let body = AsynchronousBlock(verifiable: representation)
         else {
             return nil
@@ -74,7 +73,7 @@ extension VHDLFile {
         let machine = representation.machine
         let entity = Entity(name: machine.name, port: port)
         let architecture = Architecture(
-            body: body, entity: machine.name, head: representation.architectureHead, name: behavioral
+            body: body, entity: machine.name, head: representation.architectureHead, name: .behavioral
         )
         self.init(architectures: [architecture], entities: [entity], includes: representation.includes)
     }
