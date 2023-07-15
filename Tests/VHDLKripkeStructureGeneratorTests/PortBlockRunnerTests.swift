@@ -74,6 +74,26 @@ final class PortBlockRunnerTests: XCTestCase {
 
     // swiftlint:enable implicitly_unwrapped_optional
 
+    /// The tracker signals.
+    let trackersRaw = [
+        "clk: in std_logic",
+        "internalStateIn: in std_logic_vector(2 downto 0)",
+        "internalStateOut: out std_logic_vector(2 downto 0)",
+        "currentStateIn: in std_logic_vector(0 downto 0)",
+        "currentStateOut: out std_logic_vector(0 downto 0)",
+        "previousRingletIn: in std_logic_vector(0 downto 0)",
+        "previousRingletOut: out std_logic_vector(0 downto 0)",
+        "targetStateIn: in std_logic_vector(0 downto 0)",
+        "targetStateOut: out std_logic_vector(0 downto 0)"
+    ]
+
+    /// The control signals.
+    let controlSignals = [
+        "reset: in std_logic",
+        "goalInternalState: in std_logic_vector(2 downto 0)",
+        "finished: out boolean := true"
+    ]
+
     /// Initialises the machine before each test.
     override func setUp() {
         machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
@@ -93,6 +113,82 @@ final class PortBlockRunnerTests: XCTestCase {
             return
         }
         XCTAssertEqual(String(labelFor: name), "machine")
+    }
+
+    /// Test property init returns nil for invalid parameters
+    func testPropertyInitReturnsNil() {
+        XCTAssertNil(PortBlock(
+            numberOfStates: -1, externals: [], snapshots: [], machineVariables: [], stateSignals: []
+        ))
+        XCTAssertNil(PortBlock(
+            numberOfStates: 2,
+            externals: machine.externalSignals,
+            snapshots: [],
+            machineVariables: [],
+            stateSignals: []
+        ))
+    }
+
+    /// Test the init works correctly.
+    func testInit() {
+        let raw = [
+            "x: in std_logic",
+            "y2: out std_logic",
+            "m_x: out std_logic",
+            "m_y2: out std_logic",
+            "m_y: out std_logic",
+            "m_STATE_Initial_initialX: out std_logic"
+        ]
+        let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
+        let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
+        let variables = raw.compactMap(PortSignal.init(rawValue:))
+        guard
+            trackers.count == trackersRaw.count,
+            controls.count == controlSignals.count,
+            variables.count == raw.count
+        else {
+            XCTFail("Failed to create signals")
+            return
+        }
+        let expected = PortBlock(signals: trackers + variables + controls)
+        let result = PortBlock(runnerFor: representation)
+        XCTAssertEqual(result, expected)
+    }
+
+    /// Test that the property init works correctly.
+    func testPropertyInit() {
+        let snapshotsRaw = [
+            "m_x: out std_logic",
+            "m_y2: out std_logic"
+        ]
+        let machinesRaw = ["m_y: out std_logic"]
+        let statesRaw = ["m_STATE_Initial_initialX: out std_logic"]
+        let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
+        let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
+        let snapshots = snapshotsRaw.compactMap(PortSignal.init(rawValue:))
+        let machines = machinesRaw.compactMap(PortSignal.init(rawValue:))
+        let states = statesRaw.compactMap(PortSignal.init(rawValue:))
+        guard
+            trackers.count == trackersRaw.count,
+            controls.count == controlSignals.count,
+            snapshots.count == snapshotsRaw.count,
+            machines.count == machinesRaw.count,
+            states.count == statesRaw.count
+        else {
+            XCTFail("Failed to create signals")
+            return
+        }
+        let expected = PortBlock(
+            signals: trackers + machine.externalSignals + snapshots + machines + states + controls
+        )
+        let result = PortBlock(
+            numberOfStates: 2,
+            externals: machine.externalSignals,
+            snapshots: snapshots,
+            machineVariables: machines,
+            stateSignals: states
+        )
+        XCTAssertEqual(expected, result)
     }
 
 }

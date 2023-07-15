@@ -90,7 +90,7 @@ extension PortBlock {
         let stateSignals: [PortSignal] = machine.states.flatMap { (state: State) -> [PortSignal] in
             state.signals.compactMap { (signal: LocalSignal) -> PortSignal? in
                 guard
-                    let name = VariableName(pre: "\(label)_STATE_\(state.name.rawValue)", name: signal.name),
+                    let name = VariableName(pre: "\(label)STATE_\(state.name.rawValue)_", name: signal.name),
                     case .signal(let type) = signal.type
                 else {
                     return nil
@@ -120,7 +120,7 @@ extension PortBlock {
         guard
             externals.count == snapshots.count,
             numberOfStates > 0,
-            let bitsRequired = BitLiteral.bitsRequired(for: numberOfStates),
+            let bitsRequired = BitLiteral.bitsRequired(for: numberOfStates - 1),
             bitsRequired > 0
         else {
             return nil
@@ -146,7 +146,12 @@ extension PortBlock {
         let controlSignals: [PortSignal] = [
             PortSignal(type: .stdLogic, name: .reset, mode: .input),
             PortSignal(type: internalStateSize, name: .goalInternalState, mode: .input),
-            PortSignal(type: .boolean, name: .finished, mode: .output)
+            PortSignal(
+                type: .boolean,
+                name: .finished,
+                mode: .output,
+                defaultValue: .literal(value: .boolean(value: true))
+            )
         ]
         self.init(
             signals: trackers + externals + snapshots + machineVariables + stateSignals + controlSignals
