@@ -77,6 +77,7 @@ final class VHDLFileTests: XCTestCase {
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
     /// Test the `PrimitiveTypes` file is generated correctly.

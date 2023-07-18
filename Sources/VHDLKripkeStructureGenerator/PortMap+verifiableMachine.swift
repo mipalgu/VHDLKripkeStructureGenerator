@@ -65,33 +65,23 @@ extension PortMap {
     /// - Parameter representation: The representation to instantitate in the runner.
     @inlinable
     init?<T>(runnerMachineInst representation: T) where T: MachineVHDLRepresentable {
+        let machineName = representation.machine.name
         let machineVariables: [VariableMap] = representation.machine.machineSignals.compactMap {
-            guard let name = VariableName(
-                pre: "\(representation.machine.name.rawValue)_", name: $0.name
-            ) else {
-                return nil
-            }
-            return VariableMap(
-                lhs: .variable(name: name), rhs: .reference(variable: .variable(name: $0.name))
-            )
+            [VariableMap](machineName: machineName, variable: $0.name)
         }
-        guard machineVariables.count == representation.machine.machineSignals.count else {
+        .flatMap { $0 }
+        guard machineVariables.count == representation.machine.machineSignals.count * 2 else {
             return nil
         }
         let stateVariables: [VariableMap] = representation.machine.states.flatMap { state in
-            state.signals.compactMap { variable in
-                guard let name = VariableName(
-                    pre: "\(representation.machine.name.rawValue)_STATE_\(state.name.rawValue)_",
-                    name: variable.name
-                ) else {
-                    return nil
-                }
-                return VariableMap(
-                    lhs: .variable(name: name), rhs: .reference(variable: .variable(name: variable.name))
-                )
+            let variables = state.signals.map(\.name)
+            let mappings: [VariableMap] = variables.compactMap {
+                [VariableMap](state: state, machineName: machineName, variable: $0)
             }
+            .flatMap { $0 }
+            return mappings
         }
-        guard stateVariables.count == representation.machine.stateVariablesAmount else {
+        guard stateVariables.count == representation.machine.stateVariablesAmount * 2 else {
             return nil
         }
         let externals = representation.machine.externalSignals.map {
@@ -100,16 +90,11 @@ extension PortMap {
             )
         }
         let snapshots: [VariableMap] = representation.machine.externalSignals.compactMap {
-            guard let name = VariableName(
-                pre: "\(representation.machine.name.rawValue)_", name: $0.name
-            ) else {
-                return nil
-            }
-            return VariableMap(
-                lhs: .variable(name: name), rhs: .reference(variable: .variable(name: $0.name))
-            )
+            [VariableMap](machineName: machineName, snapshot: $0)
         }
-        guard snapshots.count == externals.count else {
+        .flatMap { $0 }
+        let inputExternals = representation.machine.externalSignals.filter { $0.mode != .output }
+        guard snapshots.count == (externals.count + inputExternals.count) else {
             return nil
         }
         let clkMap = VariableMap(lhs: .variable(name: .clk), rhs: .reference(variable: .variable(name: .clk)))
@@ -165,6 +150,82 @@ extension Array where Element == VariableMap {
                 rhs: .reference(variable: .variable(name: .setInternalSignals))
             ),
             VariableMap(lhs: .variable(name: .reset), rhs: .reference(variable: .variable(name: .rst)))
+        ]
+    }
+
+}
+
+extension VariableName {
+
+    @inlinable
+    init?(machineName: VariableName, stateName: VariableName, variable: VariableName, post: String = "") {
+        let pre = "\(machineName.rawValue)_STATE_\(stateName.rawValue)_"
+        self.init(rawValue: "\(pre)\(variable.rawValue)\(post)")
+    }
+
+    @inlinable
+    init?(machineName: VariableName, variable: VariableName, post: String = "") {
+        let pre = "\(machineName.rawValue)_"
+        self.init(rawValue: "\(pre)\(variable.rawValue)\(post)")
+    }
+
+}
+
+extension Array where Element == VariableMap {
+
+    @inlinable
+    init?(state: State, machineName: VariableName, variable: VariableName) {
+        guard
+            let name = VariableName(machineName: machineName, stateName: state.name, variable: variable),
+            let inputName = VariableName(
+                machineName: machineName, stateName: state.name, variable: variable, post: "In"
+            )
+        else {
+            return nil
+        }
+        self.init(name: name, inputName: inputName)
+    }
+
+    @inlinable
+    init?(machineName: VariableName, variable: VariableName) {
+        guard
+            let name = VariableName(machineName: machineName, variable: variable),
+            let inputName = VariableName(
+                machineName: machineName, variable: variable, post: "In"
+            )
+        else {
+            return nil
+        }
+        self.init(name: name, inputName: inputName)
+    }
+
+    @inlinable
+    init?(machineName: VariableName, snapshot signal: PortSignal) {
+        guard signal.mode == .input else {
+            self.init(machineName: machineName, variable: signal.name)
+            return
+        }
+        guard let name = VariableName(machineName: machineName, variable: signal.name) else {
+            return nil
+        }
+        self = [
+            VariableMap(
+                lhs: .variable(name: name),
+                rhs: .reference(variable: .variable(name: name))
+            )
+        ]
+    }
+
+    @inlinable
+    init(name: VariableName, inputName: VariableName) {
+        self = [
+            VariableMap(
+                lhs: .variable(name: name), rhs: .reference(variable: .variable(name: name))
+            ),
+            VariableMap(
+                lhs: .variable(name: inputName),
+                rhs: .reference(variable: .variable(name: inputName))
+            )
         ]
     }
 
