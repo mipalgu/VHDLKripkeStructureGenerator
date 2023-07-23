@@ -134,10 +134,10 @@ final class PortBlockRunnerTests: XCTestCase {
         let raw = [
             "x: in std_logic",
             "y2: out std_logic",
-            "m_x: out std_logic",
-            "m_y2: out std_logic",
-            "m_y: out std_logic",
-            "m_STATE_Initial_initialX: out std_logic"
+            "M_x: out std_logic",
+            "M_y2: out std_logic",
+            "M_y: out std_logic",
+            "M_STATE_Initial_initialX: out std_logic"
         ]
         let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
         let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
@@ -152,17 +152,17 @@ final class PortBlockRunnerTests: XCTestCase {
         }
         let expected = PortBlock(signals: trackers + variables + controls)
         let result = PortBlock(runnerFor: representation)
-        XCTAssertEqual(result, expected)
+        XCTAssertEqual(result, expected, result?.rawValue ?? "")
     }
 
     /// Test that the property init works correctly.
     func testPropertyInit() {
         let snapshotsRaw = [
-            "m_x: out std_logic",
-            "m_y2: out std_logic"
+            "M_x: out std_logic",
+            "M_y2: out std_logic"
         ]
-        let machinesRaw = ["m_y: out std_logic"]
-        let statesRaw = ["m_STATE_Initial_initialX: out std_logic"]
+        let machinesRaw = ["M_y: out std_logic"]
+        let statesRaw = ["M_STATE_Initial_initialX: out std_logic"]
         let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
         let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
         let snapshots = snapshotsRaw.compactMap(PortSignal.init(rawValue:))
