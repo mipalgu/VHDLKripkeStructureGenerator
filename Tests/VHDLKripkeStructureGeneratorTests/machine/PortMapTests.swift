@@ -92,11 +92,11 @@ final class PortMapTests: XCTestCase {
             "M_currentStateIn => currentStateIn",
             "M_previousRingletIn => previousRingletIn",
             "M_internalStateIn => internalStateIn",
-            "M_currentStateOut => currentStateOut",
             "M_targetStateIn => targetStateIn",
-            "M_targetStateOut => targetStateOut",
+            "M_currentStateOut => currentStateOut",
             "M_previousRingletOut => previousRingletOut",
             "M_internalStateOut => internalState",
+            "M_targetStateOut => targetStateOut",
             "setInternalSignals => setInternalSignals",
             "reset => rst"
         ]
@@ -120,11 +120,11 @@ final class PortMapTests: XCTestCase {
             M_currentStateIn => currentStateIn,
             M_previousRingletIn => previousRingletIn,
             M_internalStateIn => internalStateIn,
-            M_currentStateOut => currentStateOut,
             M_targetStateIn => targetStateIn,
-            M_targetStateOut => targetStateOut,
+            M_currentStateOut => currentStateOut,
             M_previousRingletOut => previousRingletOut,
             M_internalStateOut => internalState,
+            M_targetStateOut => targetStateOut,
             setInternalSignals => setInternalSignals,
             reset => rst
         );

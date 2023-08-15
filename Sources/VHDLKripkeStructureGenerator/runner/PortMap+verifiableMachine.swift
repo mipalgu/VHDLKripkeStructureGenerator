@@ -126,16 +126,12 @@ extension Array where Element == VariableMap {
                 rhs: .reference(variable: .variable(name: .internalStateIn))
             ),
             VariableMap(
-                lhs: .variable(name: .currentStateOut(for: machine)),
-                rhs: .reference(variable: .variable(name: .currentStateOut))
-            ),
-            VariableMap(
                 lhs: .variable(name: .targetStateIn(for: machine)),
                 rhs: .reference(variable: .variable(name: .targetStateIn))
             ),
             VariableMap(
-                lhs: .variable(name: .targetStateOut(for: machine)),
-                rhs: .reference(variable: .variable(name: .targetStateOut))
+                lhs: .variable(name: .currentStateOut(for: machine)),
+                rhs: .reference(variable: .variable(name: .currentStateOut))
             ),
             VariableMap(
                 lhs: .variable(name: .previousRingletOut(for: machine)),
@@ -144,6 +140,10 @@ extension Array where Element == VariableMap {
             VariableMap(
                 lhs: .variable(name: .internalStateOut(for: machine)),
                 rhs: .reference(variable: .variable(name: .internalState))
+            ),
+            VariableMap(
+                lhs: .variable(name: .targetStateOut(for: machine)),
+                rhs: .reference(variable: .variable(name: .targetStateOut))
             ),
             VariableMap(
                 lhs: .variable(name: .setInternalSignals),

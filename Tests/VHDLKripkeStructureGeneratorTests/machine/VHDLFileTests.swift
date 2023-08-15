@@ -151,6 +151,7 @@ final class VHDLFileTests: XCTestCase {
             includes: machine.includes
         )
         XCTAssertEqual(result, expected)
+        (result!.rawValue).components(separatedBy: .newlines).forEach { print($0) }
     }
 
 }
