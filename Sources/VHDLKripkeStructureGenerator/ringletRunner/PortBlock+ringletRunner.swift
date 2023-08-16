@@ -57,11 +57,52 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add inits for creating a ringlet runner port block.
 extension PortBlock {
 
+    /// Create the ringlet runner port block for a machine representation.
+    /// - Parameter representation: The representation to create the ringlet runner for.
+    @inlinable
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let stateSize = VectorSize(supporting: machine.states)
+        let machineSignals = machine.machineSignals.map {
+            PortSignal(type: $0.type, name: $0.name, mode: .input)
+        }
+        let stateSignals = machine.states.flatMap { (state: State) -> [PortSignal]  in
+            state.signals.compactMap { signal in
+                guard let newName = VariableName(
+                    rawValue: "STATE_\(state.name.rawValue)_\(signal.name.rawValue)"
+                ) else {
+                    return nil
+                }
+                return PortSignal(type: signal.type, name: newName, mode: .input)
+            }
+        }
+        guard stateSignals.count == machine.stateVariablesAmount else {
+            return nil
+        }
+        self.init(
+            externals: machine.externalSignals,
+            machineSignals: machineSignals,
+            stateSignals: stateSignals,
+            stateSize: stateSize
+        )
+    }
+
+    /// Create a port block that contains all the signals required for the ringlet runner.
+    /// - Parameters:
+    ///   - externals: The external signals of a machine.
+    ///   - machineSignals: The machine signals inside a machine.
+    ///   - stateSignals: The state signals in a machine.
+    ///   - stateSize: The size of the state representation for a machine.
+    @inlinable
+    init?(
+        externals: [PortSignal],
+        machineSignals: [PortSignal],
+        stateSignals: [PortSignal],
+        stateSize: VectorSize
+    ) {
         guard
             let bits = stateSize.size,
             let defaultState = LogicVector(unsigned: 0, bits: bits)
@@ -98,9 +139,10 @@ extension PortBlock {
             mode: .output,
             defaultValue: .literal(value: .boolean(value: true))
         )
-        let signals = [.clk, .reset, stateSignal] + machine.externalSignals +
-            [previousRinglet, readSnapshot, writeSnapshot, nextState, finished]
-        self.init(signals: signals)
+        self.init(
+            signals: [.clk, .reset, stateSignal] + externals + machineSignals + stateSignals +
+                [previousRinglet, readSnapshot, writeSnapshot, nextState, finished]
+        )
     }
 
 }
