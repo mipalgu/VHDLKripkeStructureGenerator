@@ -109,6 +109,9 @@ extension PortBlock {
         else {
             return nil
         }
+        let reset = PortSignal(
+            type: .stdLogic, name: .reset, mode: .input, defaultValue: .literal(value: .bit(value: .low))
+        )
         let stateSignal = PortSignal(
             type: .ranged(type: .stdLogicVector(size: stateSize)),
             name: .state,
@@ -140,7 +143,7 @@ extension PortBlock {
             defaultValue: .literal(value: .boolean(value: true))
         )
         self.init(
-            signals: [.clk, .reset, stateSignal] + externals + machineSignals + stateSignals +
+            signals: [.clk, reset, stateSignal] + externals + machineSignals + stateSignals +
                 [previousRinglet, readSnapshot, writeSnapshot, nextState, finished]
         )
     }

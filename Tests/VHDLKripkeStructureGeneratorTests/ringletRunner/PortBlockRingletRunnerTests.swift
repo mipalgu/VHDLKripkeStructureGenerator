@@ -90,7 +90,7 @@ final class PortBlockRingletRunnerTests: XCTestCase {
         let expectedRaw = """
         port(
             clk: in std_logic;
-            reset: in std_logic;
+            reset: in std_logic := '0';
             state: in std_logic_vector(0 downto 0) := "0";
             x: in std_logic;
             y2: out std_logic;
