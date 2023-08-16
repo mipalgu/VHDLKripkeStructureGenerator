@@ -69,40 +69,62 @@ extension PortBlock {
         let machine = representation.machine
         let label = "\(machine.name.rawValue)_"
         let snapshots: [PortSignal] = machine.externalSignals
-            .compactMap { (signal: PortSignal) -> PortSignal? in
-                guard let name = VariableName(pre: label, name: signal.name) else {
+            .compactMap { (signal: PortSignal) -> [PortSignal]? in
+                guard
+                    let name = VariableName(pre: label, name: signal.name),
+                    let inName = VariableName(name: name, post: "In")
+                else {
                     return nil
                 }
-                return PortSignal(type: signal.type, name: name, mode: .output)
+                let signals = [PortSignal(type: signal.type, name: name, mode: .output)]
+                if signal.mode == .output {
+                    return signals + [PortSignal(type: signal.type, name: inName, mode: .input)]
+                } else {
+                    return signals
+                }
             }
-        guard snapshots.count == machine.externalSignals.count else {
+            .flatMap { $0 }
+        let expectedSnapshotCount = machine.externalSignals.count + machine.externalSignals.filter {
+            $0.mode == .output
+        }.count
+        guard snapshots.count == expectedSnapshotCount else {
             return nil
         }
         let machineVariables: [PortSignal] = machine.machineSignals
-            .compactMap { (signal: LocalSignal) -> PortSignal? in
+            .compactMap { (signal: LocalSignal) -> [PortSignal]? in
                 guard
                     let name = VariableName(pre: label, name: signal.name),
+                    let inName = VariableName(name: name, post: "In"),
                     case .signal(let type) = signal.type
                 else {
                     return nil
                 }
-                return PortSignal(type: type, name: name, mode: .output)
+                return [
+                    PortSignal(type: type, name: name, mode: .output),
+                    PortSignal(type: type, name: inName, mode: .input)
+                ]
             }
-        guard machineVariables.count == machine.machineSignals.count else {
+            .flatMap { $0 }
+        guard machineVariables.count == machine.machineSignals.count * 2 else {
             return nil
         }
         let stateSignals: [PortSignal] = machine.states.flatMap { (state: State) -> [PortSignal] in
-            state.signals.compactMap { (signal: LocalSignal) -> PortSignal? in
+            state.signals.compactMap { (signal: LocalSignal) -> [PortSignal]? in
                 guard
                     let name = VariableName(pre: "\(label)STATE_\(state.name.rawValue)_", name: signal.name),
+                    let inName = VariableName(name: name, post: "In"),
                     case .signal(let type) = signal.type
                 else {
                     return nil
                 }
-                return PortSignal(type: type, name: name, mode: .output)
+                return [
+                    PortSignal(type: type, name: name, mode: .output),
+                    PortSignal(type: type, name: inName, mode: .input)
+                ]
             }
+            .flatMap { $0 }
         }
-        guard stateSignals.count == machine.stateVariablesAmount else {
+        guard stateSignals.count == machine.stateVariablesAmount * 2 else {
             return nil
         }
         self.init(
@@ -131,7 +153,6 @@ extension PortBlock {
         stateSignals: [PortSignal]
     ) {
         guard
-            externals.count == snapshots.count,
             numberOfStates > 0,
             let bitsRequired = BitLiteral.bitsRequired(for: numberOfStates - 1),
             bitsRequired > 0

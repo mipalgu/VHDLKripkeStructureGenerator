@@ -120,13 +120,6 @@ final class PortBlockRunnerTests: XCTestCase {
         XCTAssertNil(PortBlock(
             numberOfStates: -1, externals: [], snapshots: [], machineVariables: [], stateSignals: []
         ))
-        XCTAssertNil(PortBlock(
-            numberOfStates: 2,
-            externals: machine.externalSignals,
-            snapshots: [],
-            machineVariables: [],
-            stateSignals: []
-        ))
     }
 
     /// Test the init works correctly.
@@ -136,8 +129,11 @@ final class PortBlockRunnerTests: XCTestCase {
             "y2: out std_logic",
             "M_x: out std_logic",
             "M_y2: out std_logic",
+            "M_y2In: in std_logic",
             "M_y: out std_logic",
-            "M_STATE_Initial_initialX: out std_logic"
+            "M_yIn: in std_logic",
+            "M_STATE_Initial_initialX: out std_logic",
+            "M_STATE_Initial_initialXIn: in std_logic"
         ]
         let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
         let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
@@ -159,10 +155,13 @@ final class PortBlockRunnerTests: XCTestCase {
     func testPropertyInit() {
         let snapshotsRaw = [
             "M_x: out std_logic",
-            "M_y2: out std_logic"
+            "M_y2: out std_logic",
+            "M_y2In: in std_logic"
         ]
-        let machinesRaw = ["M_y: out std_logic"]
-        let statesRaw = ["M_STATE_Initial_initialX: out std_logic"]
+        let machinesRaw = ["M_y: out std_logic", "M_yIn: in std_logic"]
+        let statesRaw = [
+            "M_STATE_Initial_initialX: out std_logic", "M_STATE_Initial_initialXIn: in std_logic"
+        ]
         let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
         let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
         let snapshots = snapshotsRaw.compactMap(PortSignal.init(rawValue:))
