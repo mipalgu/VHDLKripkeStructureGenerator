@@ -68,6 +68,9 @@ extension PortSignal {
         type: .stdLogic, name: .setInternalSignals, mode: .input
     )
 
+    /// The `clk` signal.
+    @usableFromInline static let clk = PortSignal(type: .stdLogic, name: .clk, mode: .input)
+
     /// Create the `currentStateIn` signal for a machine.
     /// - Parameter machine: The machine to create the signal for.
     @inlinable
