@@ -77,6 +77,9 @@ extension VariableName {
     /// The `currentStateOut` signal.
     @usableFromInline static let currentStateOut = VariableName(rawValue: "currentStateOut")!
 
+    /// The `executeOnEntry` signal.
+    @usableFromInline static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
+
     /// The `Executing` constant.
     @usableFromInline static let executing = VariableName(rawValue: "Executing")!
 
@@ -98,8 +101,14 @@ extension VariableName {
     /// The `internalStateOut` signal.
     @usableFromInline static let internalStateOut = VariableName(rawValue: "internalStateOut")!
 
+    /// The `machine` signal.
+    @usableFromInline static let machine = VariableName(rawValue: "machine")!
+
     /// The `nextState` signal.
     @usableFromInline static let nextState = VariableName(rawValue: "nextState")!
+
+    /// The `observed` signal.
+    @usableFromInline static let observed = VariableName(rawValue: "observed")!
 
     /// The `previousRinglet` signal.
     @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
@@ -112,6 +121,9 @@ extension VariableName {
 
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
+
+    /// The `ReadSnapshot` constant.
+    @usableFromInline static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
 
     /// The `readSnapshotState` signal.
     @usableFromInline static let readSnapshotState = VariableName(rawValue: "readSnapshotState")!
@@ -152,11 +164,26 @@ extension VariableName {
     /// The `targetStateOut` signal.
     @usableFromInline static let targetStateOut = VariableName(rawValue: "targetStateOut")!
 
+    /// The `TotalSnapshot_t` record.
+    @usableFromInline static let totalSnapshot = VariableName(rawValue: "TotalSnapshot_t")!
+
+    /// The `tracker` signal.
+    @usableFromInline static let tracker = VariableName(rawValue: "tracker")!
+
     /// The `WaitForFinish` signal.
     @usableFromInline static let waitForFinish = VariableName(rawValue: "WaitForFinish")!
 
+    /// The `WaitForMachineStart` constant.
+    @usableFromInline static let waitForMachineStart = VariableName(rawValue: "WaitForMachineStart")!
+
+    /// The `WaitForStart` constant.
+    @usableFromInline static let waitForStart = VariableName(rawValue: "WaitForStart")!
+
     /// The `WaitToStart` constant.
     @usableFromInline static let waitToStart = VariableName(rawValue: "WaitToStart")!
+
+    /// The `WriteSnapshot` constant.
+    @usableFromInline static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!
 
     /// The `writeSnapshotState` signal.
     @usableFromInline static let writeSnapshotState = VariableName(rawValue: "writeSnapshotState")!
