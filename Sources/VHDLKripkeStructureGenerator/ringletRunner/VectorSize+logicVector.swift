@@ -63,8 +63,8 @@ extension VectorSize {
     /// Create a `VectorSize` that supports the number of elements within the given array. This init will
     /// create a `VectorSize` large enough to encode the indices of the given array.
     /// - Parameter supporting: The array of elements to support.
-    /// - Note: This init will always produce a size with a minimum of 1 bit regardless of the number of bits
-    /// provided.
+    /// - Note: This init will always produce a size with a minimum of 1 bit regardless of the size of the
+    /// array.
     @inlinable
     init<T>(supporting: [T]) {
         guard !supporting.isEmpty else {
