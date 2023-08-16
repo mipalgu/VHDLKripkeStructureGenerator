@@ -98,6 +98,9 @@ extension VariableName {
     /// The `internalStateOut` signal.
     @usableFromInline static let internalStateOut = VariableName(rawValue: "internalStateOut")!
 
+    /// The `nextState` signal.
+    @usableFromInline static let nextState = VariableName(rawValue: "nextState")!
+
     /// The `previousRinglet` signal.
     @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
 
@@ -110,6 +113,12 @@ extension VariableName {
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
 
+    /// The `readSnapshotState` signal.
+    @usableFromInline static let readSnapshotState = VariableName(rawValue: "readSnapshotState")!
+
+    /// The `ReadSnapshot_t` type.
+    @usableFromInline static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
+
     /// The `reset` signal.
     @usableFromInline static let reset = VariableName(rawValue: "reset")!
 
@@ -121,6 +130,9 @@ extension VariableName {
 
     /// The `StartExecuting` constant.
     @usableFromInline static let startExecuting = VariableName(rawValue: "StartExecuting")!
+
+    /// The `state` signal.
+    @usableFromInline static let state = VariableName(rawValue: "state")!
 
     /// The `stateTracker` signal.
     @usableFromInline static let stateTracker = VariableName(rawValue: "stateTracker")!
@@ -145,6 +157,12 @@ extension VariableName {
 
     /// The `WaitToStart` constant.
     @usableFromInline static let waitToStart = VariableName(rawValue: "WaitToStart")!
+
+    /// The `writeSnapshotState` signal.
+    @usableFromInline static let writeSnapshotState = VariableName(rawValue: "writeSnapshotState")!
+
+    /// The `WriteSnapshot_t` type.
+    @usableFromInline static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
 
     /// Appends a string to the end of a `VariableName`.
     /// - Parameters:
