@@ -61,6 +61,8 @@ import VHDLParsing
 /// Add initialiser for the runner.
 extension PortBlock {
 
+    // swiftlint:disable function_body_length
+
     /// Create the port block for the machine runner that enacts the given machine representation.
     /// - Parameter representation: The representation of the machine that is controlled by this machine
     /// runner.
@@ -135,6 +137,8 @@ extension PortBlock {
             stateSignals: stateSignals
         )
     }
+
+    // swiftlint:enable function_body_length
 
     /// Initialise a `PortBlock` with the given converted representations for the machine's variables. This
     /// initialiser assumes the port definitions are already correct and verified for a given machine.
