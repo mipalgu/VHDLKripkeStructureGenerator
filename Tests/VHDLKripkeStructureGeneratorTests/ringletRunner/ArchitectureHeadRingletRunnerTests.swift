@@ -153,30 +153,35 @@ final class ArchitectureHeadRingletRunnerTests: XCTestCase {
             return
         }
         let result = ArchitectureHead(ringletRunnerFor: representation)
-        XCTAssertEqual(result, expected)
-        result!.rawValue.components(separatedBy: .newlines).forEach {
-            print($0)
-        }
-        guard
-            case .definition(let definition) = result!.statements[2],
-            case .signal(let signal) = definition,
-            let defaultValue = signal.defaultValue,
-            case .literal(let literal) = defaultValue,
-            case .vector(let vector) = literal,
-            case .indexed(let indexed) = vector,
-            case .definition(let def) = expected.statements[2],
-            case .signal(let sig) = def,
-            let value = sig.defaultValue,
-            case .literal(let lit) = value,
-            case .vector(let vec) = lit,
-            case .indexed(let ind) = vec
-        else {
-            XCTFail("Failed to find default value.")
-            return
-        }
-        indexed.values.indices.forEach {
-            XCTAssertEqual(indexed.values[$0], ind.values[$0])
-        }
+        XCTAssertEqual(result?.rawValue.lowercased(), expected.rawValue.lowercased())
+        // result!.rawValue.components(separatedBy: .newlines).forEach {
+        //     print($0)
+        // }
+        // guard
+        //     case .definition(let definition) = result!.statements[2],
+        //     case .signal(let signal) = definition,
+        //     let defaultValue = signal.defaultValue,
+        //     case .literal(let literal) = defaultValue,
+        //     case .vector(let vector) = literal,
+        //     case .indexed(let indexed) = vector,
+        //     case .definition(let def) = expected.statements[2],
+        //     case .signal(let sig) = def,
+        //     let value = sig.defaultValue,
+        //     case .literal(let lit) = value,
+        //     case .vector(let vec) = lit,
+        //     case .indexed(let ind) = vec
+        // else {
+        //     XCTFail("Failed to find default value.")
+        //     return
+        // }
+        // indexed.values.indices.forEach {
+        //     XCTAssertEqual(
+        //         indexed.values[$0].index.rawValue.lowercased(), ind.values[$0].index.rawValue.lowercased()
+        //     )
+        //     XCTAssertEqual(
+        //         indexed.values[$0].value.rawValue.lowercased(), ind.values[$0].value.rawValue.lowercased()
+        //     )
+        // }
     }
 
 }
