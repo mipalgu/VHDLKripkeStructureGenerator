@@ -86,7 +86,8 @@ extension PortMap {
         }
         let externals = representation.machine.externalSignals.map {
             VariableMap(
-                lhs: .variable(name: .name(for: $0)), rhs: .reference(variable: .variable(name: $0.name))
+                lhs: .variable(reference: .variable(name: .name(for: $0))),
+                rhs: .reference(variable: .variable(reference: .variable(name: $0.name)))
             )
         }
         let snapshots: [VariableMap] = representation.machine.externalSignals.compactMap {
@@ -97,7 +98,10 @@ extension PortMap {
         guard snapshots.count == (externals.count + inputExternals.count) else {
             return nil
         }
-        let clkMap = VariableMap(lhs: .variable(name: .clk), rhs: .reference(variable: .variable(name: .clk)))
+        let clkMap = VariableMap(
+            lhs: .variable(reference: .variable(name: .clk)),
+            rhs: .reference(variable: .variable(reference: .variable(name: .clk)))
+        )
         let constants = [VariableMap](runner: representation)
         self.init(variables: [clkMap] + externals + snapshots + machineVariables + stateVariables + constants)
     }
@@ -114,42 +118,45 @@ extension Array where Element == VariableMap {
         let machine = representation.machine
         self = [
             VariableMap(
-                lhs: .variable(name: .currentStateIn(for: machine)),
-                rhs: .reference(variable: .variable(name: .currentStateIn))
+                lhs: .variable(reference: .variable(name: .currentStateIn(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .currentStateIn)))
             ),
             VariableMap(
-                lhs: .variable(name: .previousRingletIn(for: machine)),
-                rhs: .reference(variable: .variable(name: .previousRingletIn))
+                lhs: .variable(reference: .variable(name: .previousRingletIn(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .previousRingletIn)))
             ),
             VariableMap(
-                lhs: .variable(name: .internalStateIn(for: machine)),
-                rhs: .reference(variable: .variable(name: .internalStateIn))
+                lhs: .variable(reference: .variable(name: .internalStateIn(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .internalStateIn)))
             ),
             VariableMap(
-                lhs: .variable(name: .targetStateIn(for: machine)),
-                rhs: .reference(variable: .variable(name: .targetStateIn))
+                lhs: .variable(reference: .variable(name: .targetStateIn(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .targetStateIn)))
             ),
             VariableMap(
-                lhs: .variable(name: .currentStateOut(for: machine)),
-                rhs: .reference(variable: .variable(name: .currentStateOut))
+                lhs: .variable(reference: .variable(name: .currentStateOut(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .currentStateOut)))
             ),
             VariableMap(
-                lhs: .variable(name: .previousRingletOut(for: machine)),
-                rhs: .reference(variable: .variable(name: .previousRingletOut))
+                lhs: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .previousRingletOut)))
             ),
             VariableMap(
-                lhs: .variable(name: .internalStateOut(for: machine)),
-                rhs: .reference(variable: .variable(name: .internalState))
+                lhs: .variable(reference: .variable(name: .internalStateOut(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .internalState)))
             ),
             VariableMap(
-                lhs: .variable(name: .targetStateOut(for: machine)),
-                rhs: .reference(variable: .variable(name: .targetStateOut))
+                lhs: .variable(reference: .variable(name: .targetStateOut(for: machine))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .targetStateOut)))
             ),
             VariableMap(
-                lhs: .variable(name: .setInternalSignals),
-                rhs: .reference(variable: .variable(name: .setInternalSignals))
+                lhs: .variable(reference: .variable(name: .setInternalSignals)),
+                rhs: .reference(variable: .variable(reference: .variable(name: .setInternalSignals)))
             ),
-            VariableMap(lhs: .variable(name: .reset), rhs: .reference(variable: .variable(name: .rst)))
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .reset)),
+                rhs: .reference(variable: .variable(reference: .variable(name: .rst)))
+            )
         ]
     }
 
@@ -210,8 +217,8 @@ extension Array where Element == VariableMap {
         }
         self = [
             VariableMap(
-                lhs: .variable(name: name),
-                rhs: .reference(variable: .variable(name: name))
+                lhs: .variable(reference: .variable(name: name)),
+                rhs: .reference(variable: .variable(reference: .variable(name: name)))
             )
         ]
     }
@@ -220,11 +227,12 @@ extension Array where Element == VariableMap {
     init(name: VariableName, inputName: VariableName) {
         self = [
             VariableMap(
-                lhs: .variable(name: name), rhs: .reference(variable: .variable(name: name))
+                lhs: .variable(reference: .variable(name: name)),
+                rhs: .reference(variable: .variable(reference: .variable(name: name)))
             ),
             VariableMap(
-                lhs: .variable(name: inputName),
-                rhs: .reference(variable: .variable(name: inputName))
+                lhs: .variable(reference: .variable(name: inputName)),
+                rhs: .reference(variable: .variable(reference: .variable(name: inputName)))
             )
         ]
     }

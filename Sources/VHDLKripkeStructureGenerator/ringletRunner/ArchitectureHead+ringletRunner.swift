@@ -179,22 +179,28 @@ extension IndexedVector {
             }
             var declarations: [IndexedValue] = []
             declarations.append(IndexedValue(
-                index: .index(value: .reference(variable: .variable(name: signal.name))),
+                index: .index(value: .reference(
+                    variable: .variable(reference: .variable(name: signal.name))
+                )),
                 value: type.defaultValue
             ))
             declarations.append(IndexedValue(
-                index: .index(value: .reference(variable: .variable(name: VariableName(
+                index: .index(value: .reference(variable: .variable(reference: .variable(name: VariableName(
                     rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)"
                 // swiftlint:disable:next force_unwrapping
-                )!))),
+                )!)))),
                 value: type.defaultValue
             ))
             if signal.mode == .output {
                 declarations.append(IndexedValue(
-                    index: .index(value: .reference(variable: .variable(name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"
-                    // swiftlint:disable:next force_unwrapping
-                    )!))),
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(
+                            name: VariableName(
+                                rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"
+                            // swiftlint:disable:next force_unwrapping
+                            )!
+                        )
+                    ))),
                     value: type.defaultValue
                 ))
             }
@@ -209,17 +215,29 @@ extension IndexedVector {
             }
             return [
                 IndexedValue(
-                    index: .index(value: .reference(variable: .variable(name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)"
-                    // swiftlint:disable:next force_unwrapping
-                    )!))),
+                    index: .index(
+                        value: .reference(
+                            variable: .variable(
+                                reference: .variable(
+                                    name: VariableName(
+                                        rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)"
+                                    // swiftlint:disable:next force_unwrapping
+                                    )!
+                                )
+                            )
+                        )
+                    ),
                     value: type.defaultValue
                 ),
                 IndexedValue(
-                    index: .index(value: .reference(variable: .variable(name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"
-                    // swiftlint:disable:next force_unwrapping
-                    )!))),
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(
+                            name: VariableName(
+                                rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"
+                            // swiftlint:disable:next force_unwrapping
+                            )!
+                        )
+                    ))),
                     value: type.defaultValue
                 )
             ]
@@ -234,19 +252,23 @@ extension IndexedVector {
                 }
                 return [
                     IndexedValue(
-                        index: .index(value: .reference(variable: .variable(name: VariableName(
-                            rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_" +
-                                "\(signal.name.rawValue)"
-                        // swiftlint:disable:next force_unwrapping
-                        )!))),
+                        index: .index(value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(
+                                rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_" +
+                                    "\(signal.name.rawValue)"
+                            // swiftlint:disable:next force_unwrapping
+                            )!
+                        )))),
                         value: type.defaultValue
                     ),
                     IndexedValue(
-                        index: .index(value: .reference(variable: .variable(name: VariableName(
-                            rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_" +
-                                "\(signal.name.rawValue)In"
-                        // swiftlint:disable:next force_unwrapping
-                        )!))),
+                        index: .index(value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(
+                                rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_" +
+                                    "\(signal.name.rawValue)In"
+                            // swiftlint:disable:next force_unwrapping
+                            )!
+                        )))),
                         value: type.defaultValue
                     )
                 ]
@@ -268,55 +290,75 @@ extension IndexedVector {
         stateSignals: [IndexedValue]
     ) {
         let currentStateIn = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .currentStateIn))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .currentStateIn)))
+            ),
             value: SignalType.ranged(type: RangedType.stdLogicVector(size: stateSize)).defaultValue
         )
         let currentStateOut = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .currentStateOut))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .currentStateOut)))
+            ),
             value: SignalType.ranged(type: RangedType.stdLogicVector(size: stateSize)).defaultValue
         )
         let previousRingletIn = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .previousRingletIn))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .previousRingletIn)))
+            ),
             value: SignalType.ranged(type: RangedType.stdLogicVector(size: stateSize)).defaultValue
         )
         let previousRingletOut = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .previousRingletOut))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .previousRingletOut)))
+            ),
             value: SignalType.ranged(type: RangedType.stdLogicVector(size: stateSize)).defaultValue
         )
         let internalStateIn = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .internalStateIn))),
-            value: .reference(variable: .variable(name: .readSnapshot))
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .internalStateIn)))
+            ),
+            value: .reference(variable: .variable(reference: .variable(name: .readSnapshot)))
         )
         let internalStateOut = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .internalStateOut))),
-            value: .reference(variable: .variable(name: .readSnapshot))
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .internalStateOut)))
+            ),
+            value: .reference(variable: .variable(reference: .variable(name: .readSnapshot)))
         )
         let targetStateIn = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .targetStateIn))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .targetStateIn)))
+            ),
             value: SignalType.ranged(type: RangedType.stdLogicVector(size: stateSize)).defaultValue
         )
         let targetStateOut = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .targetStateOut))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .targetStateOut)))
+            ),
             value: SignalType.ranged(type: RangedType.stdLogicVector(size: stateSize)).defaultValue
         )
         let reset = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .reset))),
+            index: .index(value: .reference(variable: .variable(reference: .variable(name: .reset)))),
             value: SignalType.stdLogic.defaultValue
         )
         let goalInternalState = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .goalInternalState))),
-            value: .reference(variable: .variable(name: .writeSnapshot))
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .goalInternalState)))
+            ),
+            value: .reference(variable: .variable(reference: .variable(name: .writeSnapshot)))
         )
         let finished = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .finished))),
+            index: .index(value: .reference(variable: .variable(reference: .variable(name: .finished)))),
             value: SignalLiteral.boolean(value: true)
         )
         let executeOnEntry = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .executeOnEntry))),
+            index: .index(
+                value: .reference(variable: .variable(reference: .variable(name: .executeOnEntry)))
+            ),
             value: .boolean(value: true)
         )
         let observed = IndexedValue(
-            index: .index(value: .reference(variable: .variable(name: .observed))),
+            index: .index(value: .reference(variable: .variable(reference: .variable(name: .observed)))),
             value: .boolean(value: false)
         )
         self.init(values: externals + machineSignals + stateSignals + [

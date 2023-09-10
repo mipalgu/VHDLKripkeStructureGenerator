@@ -62,33 +62,39 @@ extension SynchronousBlock {
     /// The machine runner logic inside a `ProcessBlock`.
     @usableFromInline static let runnerLogic = SynchronousBlock.ifStatement(block: .ifStatement(
         condition: .conditional(condition: .edge(
-            value: .rising(expression: .reference(variable: .variable(name: .clk)))
+            value: .rising(expression: .reference(variable: .variable(reference: .variable(name: .clk))))
         )),
         ifBlock: .caseStatement(block: CaseStatement(
-            condition: .reference(variable: .variable(name: .stateTracker)),
+            condition: .reference(variable: .variable(reference: .variable(name: .stateTracker))),
             cases: [
                 WhenCase(
-                    condition: .expression(expression: .reference(variable: .variable(name: .waitToStart))),
+                    condition: .expression(expression: .reference(
+                        variable: .variable(reference: .variable(name: .waitToStart))
+                    )),
                     code: .ifStatement(block: .ifElse(
                         condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .variable(name: .reset)),
+                            lhs: .reference(variable: .variable(reference: .variable(name: .reset))),
                             rhs: .literal(value: .bit(value: .high))
                         ))),
                         ifBlock: .statement(statement: .assignment(
-                            name: .variable(name: .stateTracker),
-                            value: .reference(variable: .variable(name: .startExecuting))
+                            name: .variable(reference: .variable(name: .stateTracker)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .startExecuting)
+                            ))
                         )),
                         elseBlock: .blocks(blocks: [
                             .statement(statement: .assignment(
-                                name: .variable(name: .setInternalSignals),
+                                name: .variable(reference: .variable(name: .setInternalSignals)),
                                 value: .literal(value: .bit(value: .high))
                             )),
                             .statement(statement: .assignment(
-                                name: .variable(name: .goalInternal),
-                                value: .reference(variable: .variable(name: .goalInternalState))
+                                name: .variable(reference: .variable(name: .goalInternal)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .goalInternalState)
+                                ))
                             )),
                             .statement(statement: .assignment(
-                                name: .variable(name: .finished),
+                                name: .variable(reference: .variable(name: .finished)),
                                 value: .literal(value: .boolean(value: true))
                             ))
                         ])
@@ -96,58 +102,70 @@ extension SynchronousBlock {
                 ),
                 WhenCase(
                     condition: .expression(
-                        expression: .reference(variable: .variable(name: .startExecuting))
+                        expression: .reference(variable: .variable(
+                            reference: .variable(name: .startExecuting)
+                        ))
                     ),
                     code: .blocks(blocks: [
                         .statement(statement: .assignment(
-                            name: .variable(name: .rst), value: .literal(value: .bit(value: .high))
+                            name: .variable(reference: .variable(name: .rst)),
+                            value: .literal(value: .bit(value: .high))
                         )),
                         .statement(statement: .assignment(
-                            name: .variable(name: .setInternalSignals),
+                            name: .variable(reference: .variable(name: .setInternalSignals)),
                             value: .literal(value: .bit(value: .low))
                         )),
                         .statement(statement: .assignment(
-                            name: .variable(name: .stateTracker),
-                            value: .reference(variable: .variable(name: .executing))
+                            name: .variable(reference: .variable(name: .stateTracker)),
+                            value: .reference(variable: .variable(reference: .variable(name: .executing)))
                         )),
                         .statement(statement: .assignment(
-                            name: .variable(name: .finished),
+                            name: .variable(reference: .variable(name: .finished)),
                             value: .literal(value: .boolean(value: false))
                         ))
                     ])
                 ),
                 WhenCase(
-                    condition: .expression(expression: .reference(variable: .variable(name: .executing))),
+                    condition: .expression(expression: .reference(
+                        variable: .variable(reference: .variable(name: .executing))
+                    )),
                     code: .ifStatement(block: .ifStatement(
                         condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .variable(name: .internalState)),
-                            rhs: .reference(variable: .variable(name: .goalInternalState))
+                            lhs: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                            rhs: .reference(variable: .variable(
+                                reference: .variable(name: .goalInternalState)
+                            ))
                         ))),
                         ifBlock: .blocks(blocks: [
                             .statement(statement: .assignment(
-                                name: .variable(name: .rst), value: .literal(value: .bit(value: .low))
+                                name: .variable(reference: .variable(name: .rst)),
+                                value: .literal(value: .bit(value: .low))
                             )),
                             .statement(statement: .assignment(
-                                name: .variable(name: .finished),
+                                name: .variable(reference: .variable(name: .finished)),
                                 value: .literal(value: .boolean(value: true))
                             )),
                             .statement(statement: .assignment(
-                                name: .variable(name: .stateTracker),
-                                value: .reference(variable: .variable(name: .waitForFinish))
+                                name: .variable(reference: .variable(name: .stateTracker)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .waitForFinish)
+                                ))
                             ))
                         ])
                     ))
                 ),
                 WhenCase(
-                    condition: .expression(expression: .reference(variable: .variable(name: .waitForFinish))),
+                    condition: .expression(expression: .reference(
+                        variable: .variable(reference: .variable(name: .waitForFinish))
+                    )),
                     code: .ifStatement(block: .ifStatement(
                         condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .variable(name: .reset)),
+                            lhs: .reference(variable: .variable(reference: .variable(name: .reset))),
                             rhs: .literal(value: .bit(value: .low))
                         ))),
                         ifBlock: .statement(statement: .assignment(
-                            name: .variable(name: .stateTracker),
-                            value: .reference(variable: .variable(name: .waitToStart))
+                            name: .variable(reference: .variable(name: .stateTracker)),
+                            value: .reference(variable: .variable(reference: .variable(name: .waitToStart)))
                         ))
                     ))
                 ),

@@ -73,8 +73,10 @@ extension AsynchronousBlock {
         }
         let process = ProcessBlock.runnerLogic
         let statement = AsynchronousBlock.statement(statement: .assignment(
-            name: .variable(name: .internalStateOut),
-            value: .reference(variable: .variable(name: .internalState))
+            name: .variable(reference: .variable(name: .internalStateOut)),
+            value: .expression(value: .reference(
+                variable: .variable(reference: .variable(name: .internalState))
+            ))
         ))
         let portMap = AsynchronousBlock.component(
             block: ComponentInstantiation(label: instLabel, name: representation.entity.name, port: map)

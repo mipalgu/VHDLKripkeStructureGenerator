@@ -64,7 +64,10 @@ extension VHDLFile {
     static let primitiveTypes = VHDLFile(
         architectures: [],
         entities: [],
-        includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.all")],
+        includes: [
+            .library(value: VariableName(rawValue: "IEEE")!),
+            .include(statement: UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!)
+        ],
         packages: [.primitiveTypes]
     )
 

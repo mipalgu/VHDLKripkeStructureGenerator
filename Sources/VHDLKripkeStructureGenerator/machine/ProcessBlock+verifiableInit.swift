@@ -81,11 +81,13 @@ extension ProcessBlock {
             case .edge(let edge) = ifCondition,
             case .rising(let clockExp) = edge,
             case .reference(let ref) = clockExp,
-            case .variable(let clock) = ref,
+            case .variable(let clockRef) = ref,
+            case .variable(let clock) = clockRef,
             drivingClock == clock,
             case .caseStatement(let caseStatement) = secondBlock,
             case .reference(let caseRef) = caseStatement.condition,
-            case .variable(let caseVar) = caseRef,
+            case .variable(let caseVarRef) = caseRef,
+            case .variable(let caseVar) = caseVarRef,
             caseVar == .internalState
         else {
             return nil
@@ -113,14 +115,14 @@ extension ProcessBlock {
                 return nil
             }
             return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: newName),
-                value: .reference(variable: .variable(name: $0.name))
+                name: .variable(reference: .variable(name: newName)),
+                value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
         let machineAssignments = machine.machineSignals.map {
             SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: VariableName(portNameFor: $0, in: machine)),
-                value: .reference(variable: .variable(name: $0.name))
+                name: .variable(reference: .variable(name: VariableName(portNameFor: $0, in: machine))),
+                value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
         let stateAssignments = machine.stateVariables.flatMap { state, variables in
@@ -134,8 +136,8 @@ extension ProcessBlock {
                     return nil
                 }
                 return SynchronousBlock.statement(statement: .assignment(
-                    name: .variable(name: externalName),
-                    value: .reference(variable: .variable(name: stateName))
+                    name: .variable(reference: .variable(name: externalName)),
+                    value: .reference(variable: .variable(reference: .variable(name: stateName)))
                 ))
             }
         }
@@ -148,7 +150,8 @@ extension ProcessBlock {
         }
         let resetStatement = SynchronousBlock.ifStatement(block: .ifElse(
             condition: .conditional(condition: .comparison(value: .equality(
-                lhs: .reference(variable: .variable(name: .reset)), rhs: .literal(value: .logic(value: .high))
+                lhs: .reference(variable: .variable(reference: .variable(name: .reset))),
+                rhs: .literal(value: .logic(value: .high))
             ))),
             ifBlock: .blocks(blocks: actuatorSnapshots + machineAssignments + stateAssignments + [newBlock]),
             elseBlock: elseBlock

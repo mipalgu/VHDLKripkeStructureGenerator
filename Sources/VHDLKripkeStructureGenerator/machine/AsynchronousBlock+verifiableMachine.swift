@@ -94,7 +94,8 @@ extension AsynchronousBlock {
         }
         let assignments = snapshots.map {
             AsynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: $0.1), value: .reference(variable: .variable(name: $0.0))
+                name: .variable(reference: .variable(name: $0.1)),
+                value: .expression(value: .reference(variable: .variable(reference: .variable(name: $0.0))))
             ))
         }
         switch body {
@@ -109,7 +110,7 @@ extension AsynchronousBlock {
                 return nil
             }
             self = .blocks(blocks: assignments + [.process(block: newProcess)])
-        case .component, .statement:
+        case .component, .statement, .function:
             return nil
         }
     }
