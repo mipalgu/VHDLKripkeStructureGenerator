@@ -65,8 +65,10 @@ extension VHDLFile {
         architectures: [],
         entities: [],
         includes: [
+            // swiftlint:disable force_unwrapping
             .library(value: VariableName(rawValue: "IEEE")!),
             .include(statement: UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!)
+            // swiftlint:enable force_unwrapping
         ],
         packages: [.primitiveTypes]
     )

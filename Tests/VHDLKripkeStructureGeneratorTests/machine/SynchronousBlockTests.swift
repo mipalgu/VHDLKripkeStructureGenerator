@@ -91,7 +91,9 @@ final class SynchronousBlockTests: XCTestCase {
                 condition: .reference(variable: .variable(reference: .variable(name: .x))),
                 cases: [
                     WhenCase(
-                        condition: .expression(expression: .reference(variable: .variable(reference: .variable(name: .x)))),
+                        condition: .expression(expression: .reference(
+                            variable: .variable(reference: .variable(name: .x))
+                        )),
                         code: .forLoop(loop: ForLoop(
                             iterator: .x,
                             range: .downto(
