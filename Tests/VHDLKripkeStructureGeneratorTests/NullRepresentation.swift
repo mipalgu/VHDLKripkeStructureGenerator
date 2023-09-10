@@ -88,7 +88,10 @@ class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
     ///   - body: A parameterisable body for the machine.
     ///   - machine: The machine this representation is for.
     init(
-        body: AsynchronousBlock = .statement(statement: .null),
+        body: AsynchronousBlock = AsynchronousBlock.statement(
+            // swiftlint:disable:next force_unwrapping
+            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
+        ),
         machine: Machine = Machine(
             actions: [],
             name: .machine1,

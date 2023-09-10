@@ -64,6 +64,12 @@ final class AsynchronousBlockTests: XCTestCase {
 
     // swiftlint:disable implicitly_unwrapped_optional
 
+    /// A comment.
+    let comment = AsynchronousBlock.statement(
+        // swiftlint:disable:next force_unwrapping
+        statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
+    )
+
     /// A machine to use for testing.
     var machine: Machine!
 
@@ -91,11 +97,11 @@ final class AsynchronousBlockTests: XCTestCase {
                 block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
             ).hasProcess
         )
-        XCTAssertFalse(AsynchronousBlock.statement(statement: .null).hasProcess)
+        XCTAssertFalse(comment.hasProcess)
         XCTAssertTrue(
             AsynchronousBlock.blocks(
                 blocks: [
-                    .statement(statement: .null),
+                    comment,
                     .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
                 ]
             ).hasProcess
@@ -103,10 +109,10 @@ final class AsynchronousBlockTests: XCTestCase {
         XCTAssertTrue(
             AsynchronousBlock.blocks(blocks: [
                 .blocks(blocks: [
-                    .statement(statement: .null),
+                    comment,
                     .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
                 ]),
-                .statement(statement: .null)
+                comment
             ]).hasProcess
         )
     }
@@ -137,7 +143,7 @@ final class AsynchronousBlockTests: XCTestCase {
             XCTFail("Not a process!")
             return
         }
-        let nullStatement = AsynchronousBlock.statement(statement: .null)
+        let nullStatement = comment
         let blocks = AsynchronousBlock.blocks(
             blocks: [nullStatement, representation.architectureBody]
         )
@@ -156,7 +162,7 @@ final class AsynchronousBlockTests: XCTestCase {
     /// Test blocks return nil when containing invalid process.
     func testVerifiableBlocksReturnsNil() {
         let blocks = AsynchronousBlock.blocks(blocks: [
-            .statement(statement: .null),
+            comment,
             .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
         ])
         XCTAssertNil(AsynchronousBlock(verifiable: blocks, in: machine))
@@ -186,7 +192,7 @@ final class AsynchronousBlockTests: XCTestCase {
             )
         ))
         XCTAssertNil(AsynchronousBlock(
-            verifiable: NullRepresentation(body: .statement(statement: .null), machine: machine)
+            verifiable: NullRepresentation(body: comment, machine: machine)
         ))
     }
 
@@ -194,7 +200,7 @@ final class AsynchronousBlockTests: XCTestCase {
     func testBlocksReturnsNilWhenInitFailsInVerifiable() {
         XCTAssertNil(AsynchronousBlock(verifiable: NullRepresentation(
             body: .blocks(blocks: [
-                .statement(statement: .null),
+                comment,
                 .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
             ]),
             machine: machine
@@ -203,7 +209,7 @@ final class AsynchronousBlockTests: XCTestCase {
 
     /// Test init correctly creates a process from a valid machine blocks format.
     func testBlocksWorksForValidMachineFormat() {
-        machine.architectureBody = .statement(statement: .null)
+        machine.architectureBody = comment
         guard
             let representation,
             case .blocks(let blocks) = representation.architectureBody,
@@ -219,10 +225,11 @@ final class AsynchronousBlockTests: XCTestCase {
         let expected = AsynchronousBlock.blocks(
             blocks: [
                 .statement(statement: .assignment(
-                    name: .variable(name: xName), value: .reference(variable: .variable(name: .x))
+                    name: .variable(reference: .variable(name: xName)),
+                    value: .expression(value: .reference(variable: .variable(reference: .variable(name: .x))))
                 )),
                 blocks[0],
-                .statement(statement: .null),
+                comment,
                 .process(block: verifiableProcess)
             ]
         )

@@ -100,8 +100,10 @@ final class AsynchronousBlockRunnerTests: XCTestCase {
                 block: ComponentInstantiation(label: label, name: representation.entity.name, port: map)
             ),
             .statement(statement: .assignment(
-                name: .variable(name: .internalStateOut),
-                value: .reference(variable: .variable(name: .internalState))
+                name: .variable(reference: .variable(name: .internalStateOut)),
+                value: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .internalState))
+                ))
             )),
             .process(block: .runnerLogic)
         ])
