@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// Component+runnerInit.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,23 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
-import Foundation
 import VHDLMachines
 import VHDLParsing
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Add init for verifiable machine.
+extension ComponentDefinition {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
-
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
-
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
-
-    // swiftlint:disable force_unwrapping
-
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
-    /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
-        )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
-    }
-
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
+    /// Creates a component for a verifiable machine.
+    /// - Parameter representation: The representation to create the component from. This representation
+    /// is first converted into a verifiable representation.
+    @inlinable
+    init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
+        guard let port = PortBlock(verifiable: representation) else {
+            return nil
+        }
+        self.init(name: representation.entity.name, port: port)
     }
 
 }

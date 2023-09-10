@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// VHDLFile+initForMachine.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,41 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
-import Foundation
 import VHDLMachines
 import VHDLParsing
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Add helpers for kripke structure generation.
+extension VHDLFile {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
+    /// The `PrimitiveTypes` package.
+    static let primitiveTypes = VHDLFile(
+        architectures: [],
+        entities: [],
+        includes: [
+            // swiftlint:disable force_unwrapping
+            .library(value: VariableName(rawValue: "IEEE")!),
+            .include(statement: UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!)
+            // swiftlint:enable force_unwrapping
+        ],
+        packages: [.primitiveTypes]
+    )
 
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
-
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
-
-    // swiftlint:disable force_unwrapping
-
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
-    /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
-        )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
-    }
-
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
-    }
+    // init?(kripke machine: Machine) {
+    //     guard let representation = MachineRepresentation(machine: machine) else {
+    //         return nil
+    //     }
+    //     let existingFormat = VHDLFile(representation: representation)
+    //     guard
+    //         existingFormat.entities.count == 1,
+    //         let entity = existingFormat.entities.first,
+    //         existingFormat.architectures.count == 1,
+    //         let architecture = existingFormat.architectures.first
+    //     else {
+    //         return nil
+    //     }
+    //     let includes = existingFormat.includes
+    // }
 
 }

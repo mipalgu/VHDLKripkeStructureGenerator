@@ -105,7 +105,8 @@ final class ProcessBlockTests: XCTestCase {
             case .edge(value: let edge) = operation,
             case .rising(let expression) = edge,
             case .reference(let ref) = expression,
-            case .variable(let name) = ref,
+            case .variable(let nameRef) = ref,
+            case .variable(let name) = nameRef,
             machine.drivingClock < machine.clocks.count,
             name == machine.clocks[machine.drivingClock].name,
             let newInitialX = VariableName(rawValue: "STATE_Initial_initialX")
@@ -129,32 +130,34 @@ final class ProcessBlockTests: XCTestCase {
         }
         let expectedLogic = SynchronousBlock.ifStatement(block: .ifStatement(
             condition: .conditional(
-                condition: .edge(value: .rising(expression: .reference(variable: .variable(name: clk))))
+                condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clk))
+                )))
             ),
             ifBlock: .ifStatement(block: .ifElse(
                 condition: .conditional(condition: .comparison(value: .equality(
-                    lhs: .reference(variable: .variable(name: .reset)),
+                    lhs: .reference(variable: .variable(reference: .variable(name: .reset))),
                     rhs: .literal(value: .logic(value: .high))
                 ))),
                 ifBlock: .blocks(
                     blocks: [
                         SynchronousBlock.statement(statement: .assignment(
-                            name: .variable(name: VariableName(
+                            name: .variable(reference: .variable(name: VariableName(
                                 portNameFor: LocalSignal(type: .stdLogic, name: .y), in: machine
-                            )),
-                            value: .reference(variable: .variable(name: .y))
+                            ))),
+                            value: .reference(variable: .variable(reference: .variable(name: .y)))
                         )),
                         SynchronousBlock.statement(statement: .assignment(
-                            name: .variable(name: VariableName(
+                            name: .variable(reference: .variable(name: VariableName(
                                 portNameFor: y2, in: machine
-                            )),
-                            value: .reference(variable: .variable(name: y2.name))
+                            ))),
+                            value: .reference(variable: .variable(reference: .variable(name: y2.name)))
                         )),
                         SynchronousBlock.statement(statement: .assignment(
-                            name: .variable(name: VariableName(
+                            name: .variable(reference: .variable(name: VariableName(
                                 portNameFor: LocalSignal(type: .stdLogic, name: newInitialX), in: machine
-                            )),
-                            value: .reference(variable: .variable(name: newInitialX))
+                            ))),
+                            value: .reference(variable: .variable(reference: .variable(name: newInitialX)))
                         ))
                     ] + [newLogic]
                 ),

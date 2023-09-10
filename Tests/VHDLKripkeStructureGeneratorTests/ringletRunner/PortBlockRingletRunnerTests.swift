@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// PortBlockRingletRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,71 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
-import Foundation
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Test class for `PortBlock` extensions containing ringlet runner code.
+final class PortBlockRingletRunnerTests: XCTestCase {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
+    /// A machine to use for testing.
+    var machine: Machine!
 
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
-
-    // swiftlint:disable force_unwrapping
-
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
-    /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
-        )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
     }
 
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test that the ringlet runner port block is created correctly.
+    func testRingletRunnerInit() {
+        let expectedRaw = """
+        port(
+            clk: in std_logic;
+            reset: in std_logic := '0';
+            state: in std_logic_vector(0 downto 0) := "0";
+            x: in std_logic;
+            y2: out std_logic;
+            y: in std_logic;
+            STATE_Initial_initialX: in std_logic;
+            previousRinglet: in std_logic_vector(0 downto 0) := "Z";
+            readSnapshotState: out ReadSnapshot_t;
+            writeSnapshotState: out WriteSnapshot_t;
+            nextState: out std_logic_vector(0 downto 0);
+            finished: out boolean := true
+        );
+        """
+        guard let expected = PortBlock(rawValue: expectedRaw) else {
+            XCTFail("Failed to create expected code.")
+            return
+        }
+        let result = PortBlock(ringletRunnerFor: representation)
+        XCTAssertEqual(result, expected)
+        XCTAssertNil(PortBlock(
+            externals: [],
+            machineSignals: [],
+            stateSignals: [],
+            stateSize: .to(
+                lower: .literal(value: .boolean(value: false)), upper: .literal(value: .boolean(value: true))
+            )
+        ))
     }
 
 }

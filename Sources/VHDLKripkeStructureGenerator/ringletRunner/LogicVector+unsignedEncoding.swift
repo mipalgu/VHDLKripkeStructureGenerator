@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// Expression+stateEncoding.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,39 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
 import Foundation
-import VHDLMachines
 import VHDLParsing
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Add init for unsigned encoding.
+extension LogicVector {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
-
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
-
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
-
-    // swiftlint:disable force_unwrapping
-
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
+    /// Create a new LogicVector representing the unsigned encoding of a non-negative integer value.
     /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
-        )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
-    }
-
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
+    ///   - unsigned: The non-negative integer to represent as a LogicVector.
+    ///   - bits: The number of bits available in the encoding.
+    /// - Warning: Please make sure the number of bits supports the magnitude of the unsigned value. This init
+    /// will return `nil` when this is not the case.
+    @inlinable
+    init?(unsigned: Int, bits: Int) {
+        guard unsigned >= 0, pow(2.0, Double(bits)) > Double(unsigned) else {
+            return nil
+        }
+        let binary = (0..<bits).map { pow(Double(2), Double($0)) }.reversed()
+        var remaining = unsigned
+        let values: [LogicLiteral] = binary.reduce(into: []) {
+            if $1 <= Double(remaining) {
+                $0.append(LogicLiteral.high)
+                remaining -= Int($1)
+            } else {
+                $0.append(LogicLiteral.low)
+            }
+        }
+        guard remaining == 0 else {
+            return nil
+        }
+        self.init(values: values)
     }
 
 }

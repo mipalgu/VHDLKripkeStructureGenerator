@@ -1,4 +1,4 @@
-// VHDLFile+initForMachine.swift
+// VectorSize+logicVector.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,34 +54,39 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
+import Foundation
 import VHDLParsing
 
-/// Add helpers for kripke structure generation.
-extension VHDLFile {
+/// Add helper inits for VectorSize.
+extension VectorSize {
 
-    /// The `PrimitiveTypes` package.
-    static let primitiveTypes = VHDLFile(
-        architectures: [],
-        entities: [],
-        includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.all")],
-        packages: [.primitiveTypes]
-    )
+    /// Create a `VectorSize` that supports the number of elements within the given array. This init will
+    /// create a `VectorSize` large enough to encode the indices of the given array.
+    /// - Parameter supporting: The array of elements to support.
+    /// - Note: This init will always produce a size with a minimum of 1 bit regardless of the size of the
+    /// array.
+    @inlinable
+    init<T>(supporting: [T]) {
+        guard !supporting.isEmpty else {
+            self.init(numberOfBits: 1)
+            return
+        }
+        let size = Double(supporting.count)
+        let numberOfBits = Int(ceil(log2(size)))
+        self.init(numberOfBits: numberOfBits)
+    }
 
-    // init?(kripke machine: Machine) {
-    //     guard let representation = MachineRepresentation(machine: machine) else {
-    //         return nil
-    //     }
-    //     let existingFormat = VHDLFile(representation: representation)
-    //     guard
-    //         existingFormat.entities.count == 1,
-    //         let entity = existingFormat.entities.first,
-    //         existingFormat.architectures.count == 1,
-    //         let architecture = existingFormat.architectures.first
-    //     else {
-    //         return nil
-    //     }
-    //     let includes = existingFormat.includes
-    // }
+    /// Create a `VectorSize` with a number of bits equal to the given number of bits. The size is represented
+    /// in `VHDL` using the `downto` notation.
+    /// - Parameter numberOfBits: The number of bits to use.
+    /// - Note: This init will always produce a size with a minimum of 1 bit regardless of the number of bits
+    /// provided.
+    @inlinable
+    init(numberOfBits: Int) {
+        let upperBound = Swift.max(numberOfBits - 1, 0)
+        self = .downto(
+            upper: .literal(value: .integer(value: upperBound)), lower: .literal(value: .integer(value: 0))
+        )
+    }
 
 }

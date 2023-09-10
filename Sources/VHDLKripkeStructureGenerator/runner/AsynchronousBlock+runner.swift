@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// AsynchronousBlock+runner.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,36 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
-import Foundation
 import VHDLMachines
 import VHDLParsing
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Add runner logic.
+extension AsynchronousBlock {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
-
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
-
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
-
-    // swiftlint:disable force_unwrapping
-
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
-    /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
+    /// Create the runner logic for the given representation.
+    /// - Parameter representation: The representation to create the runner logic for.
+    @inlinable
+    init?<T>(runnerFor representation: T) where T: MachineVHDLRepresentable {
+        let label = String(labelFor: representation.entity.name)
+        guard
+            let instLabel = VariableName(rawValue: "\(label)_inst"),
+            let map = PortMap(runnerMachineInst: representation)
+        else {
+            return nil
+        }
+        let process = ProcessBlock.runnerLogic
+        let statement = AsynchronousBlock.statement(statement: .assignment(
+            name: .variable(reference: .variable(name: .internalStateOut)),
+            value: .expression(value: .reference(
+                variable: .variable(reference: .variable(name: .internalState))
+            ))
+        ))
+        let portMap = AsynchronousBlock.component(
+            block: ComponentInstantiation(label: instLabel, name: representation.entity.name, port: map)
         )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
-    }
-
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
+        self = .blocks(blocks: [portMap, statement, .process(block: process)])
     }
 
 }

@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// AsynchronousBlockRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,62 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
-import Foundation
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Test class for `AsynchronousBlock` runner extensions.
+final class AsynchronousBlockRunnerTests: XCTestCase {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
+    /// A machine to use as test data.
+    var machine: Machine!
 
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
-
-    // swiftlint:disable force_unwrapping
-
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
-    /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
-        )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
+    /// The representation of the machine.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
     }
 
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialises the machine before each test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test init returns correct behaviour.
+    func testInit() {
+        let result = AsynchronousBlock(runnerFor: representation)
+        guard
+            let map = PortMap(runnerMachineInst: representation),
+            let label = VariableName(rawValue: "m_inst")
+        else {
+            XCTFail("Failed to create map.")
+            return
+        }
+        let expected = AsynchronousBlock.blocks(blocks: [
+            .component(
+                block: ComponentInstantiation(label: label, name: representation.entity.name, port: map)
+            ),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalStateOut)),
+                value: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .internalState))
+                ))
+            )),
+            .process(block: .runnerLogic)
+        ])
+        XCTAssertEqual(result, expected)
     }
 
 }

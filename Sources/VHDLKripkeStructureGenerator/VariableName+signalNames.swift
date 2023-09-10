@@ -62,23 +62,92 @@ extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
+    /// The `Behavioral` name.
+    @usableFromInline static let behavioral = VariableName(rawValue: "Behavioral")!
+
+    /// The `clk` signal.
+    @usableFromInline static let clk = VariableName(rawValue: "clk")!
+
     /// The `currentState` signal.
     @usableFromInline static let currentState = VariableName(rawValue: "currentState")!
+
+    /// The `currentStateIn` signal.
+    @usableFromInline static let currentStateIn = VariableName(rawValue: "currentStateIn")!
+
+    /// The `currentStateOut` signal.
+    @usableFromInline static let currentStateOut = VariableName(rawValue: "currentStateOut")!
+
+    /// The `executeOnEntry` signal.
+    @usableFromInline static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
+
+    /// The `Executing` constant.
+    @usableFromInline static let executing = VariableName(rawValue: "Executing")!
+
+    /// The `finished` signal.
+    @usableFromInline static let finished = VariableName(rawValue: "finished")!
+
+    /// The `goalInternal` signal.
+    @usableFromInline static let goalInternal = VariableName(rawValue: "goalInternal")!
+
+    /// The `goalInternalState` signal.
+    @usableFromInline static let goalInternalState = VariableName(rawValue: "goalInternalState")!
 
     /// The `internalState` signal.
     @usableFromInline static let internalState = VariableName(rawValue: "internalState")!
 
+    /// The `internalStateIn` signal.
+    @usableFromInline static let internalStateIn = VariableName(rawValue: "internalStateIn")!
+
+    /// The `internalStateOut` signal.
+    @usableFromInline static let internalStateOut = VariableName(rawValue: "internalStateOut")!
+
+    /// The `machine` signal.
+    @usableFromInline static let machine = VariableName(rawValue: "machine")!
+
+    /// The `nextState` signal.
+    @usableFromInline static let nextState = VariableName(rawValue: "nextState")!
+
+    /// The `observed` signal.
+    @usableFromInline static let observed = VariableName(rawValue: "observed")!
+
     /// The `previousRinglet` signal.
     @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
+
+    /// The `previousRingletIn` signal.
+    @usableFromInline static let previousRingletIn = VariableName(rawValue: "previousRingletIn")!
+
+    /// The `previousRingletOut` signal.
+    @usableFromInline static let previousRingletOut = VariableName(rawValue: "previousRingletOut")!
 
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
 
+    /// The `ReadSnapshot` constant.
+    @usableFromInline static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
+
+    /// The `readSnapshotState` signal.
+    @usableFromInline static let readSnapshotState = VariableName(rawValue: "readSnapshotState")!
+
+    /// The `ReadSnapshot_t` type.
+    @usableFromInline static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
+
     /// The `reset` signal.
     @usableFromInline static let reset = VariableName(rawValue: "reset")!
 
+    /// The `rst` signal.
+    @usableFromInline static let rst = VariableName(rawValue: "rst")!
+
     /// The `setInternalSignals` signal.
     @usableFromInline static let setInternalSignals = VariableName(rawValue: "setInternalSignals")!
+
+    /// The `StartExecuting` constant.
+    @usableFromInline static let startExecuting = VariableName(rawValue: "StartExecuting")!
+
+    /// The `state` signal.
+    @usableFromInline static let state = VariableName(rawValue: "state")!
+
+    /// The `stateTracker` signal.
+    @usableFromInline static let stateTracker = VariableName(rawValue: "stateTracker")!
 
     /// The `stdLogicTypes` constant.
     @usableFromInline static let stdLogicTypes = VariableName(rawValue: "stdLogicTypes")!
@@ -88,6 +157,39 @@ extension VariableName {
 
     /// The `targetState` signal.
     @usableFromInline static let targetState = VariableName(rawValue: "targetState")!
+
+    /// The `targetStateIn` signal.
+    @usableFromInline static let targetStateIn = VariableName(rawValue: "targetStateIn")!
+
+    /// The `targetStateOut` signal.
+    @usableFromInline static let targetStateOut = VariableName(rawValue: "targetStateOut")!
+
+    /// The `TotalSnapshot_t` record.
+    @usableFromInline static let totalSnapshot = VariableName(rawValue: "TotalSnapshot_t")!
+
+    /// The `tracker` signal.
+    @usableFromInline static let tracker = VariableName(rawValue: "tracker")!
+
+    /// The `WaitForFinish` signal.
+    @usableFromInline static let waitForFinish = VariableName(rawValue: "WaitForFinish")!
+
+    /// The `WaitForMachineStart` constant.
+    @usableFromInline static let waitForMachineStart = VariableName(rawValue: "WaitForMachineStart")!
+
+    /// The `WaitForStart` constant.
+    @usableFromInline static let waitForStart = VariableName(rawValue: "WaitForStart")!
+
+    /// The `WaitToStart` constant.
+    @usableFromInline static let waitToStart = VariableName(rawValue: "WaitToStart")!
+
+    /// The `WriteSnapshot` constant.
+    @usableFromInline static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!
+
+    /// The `writeSnapshotState` signal.
+    @usableFromInline static let writeSnapshotState = VariableName(rawValue: "writeSnapshotState")!
+
+    /// The `WriteSnapshot_t` type.
+    @usableFromInline static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
 
     /// Appends a string to the end of a `VariableName`.
     /// - Parameters:

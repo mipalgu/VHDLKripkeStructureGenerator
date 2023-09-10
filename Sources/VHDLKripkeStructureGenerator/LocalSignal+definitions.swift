@@ -1,4 +1,4 @@
-// NullRepresentation.swift
+// LocalSignal+definitions.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,75 +52,50 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-//
+// 
 
-import Foundation
-import VHDLMachines
 import VHDLParsing
 
-/// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+/// Add common signals.
+extension LocalSignal {
 
-    /// The implementation.
-    let architectureBody: AsynchronousBlock
+    /// The `goalInternal` signal.
+    @usableFromInline static let goalInternal = LocalSignal(
+        type: .ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
+        ))),
+        name: .goalInternal
+    )
 
-    /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
+    /// The `internalState` signal.
+    @usableFromInline static let internalState = LocalSignal(
+        type: .ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
+        ))),
+        name: .internalState
+    )
 
-    /// The name of the architecture.
-    let architectureName = VariableName.behavioral
+    /// The `rst` signal.
+    @usableFromInline static let rst = LocalSignal(
+        type: .stdLogic,
+        name: .rst,
+        defaultValue: .literal(value: .bit(value: .low))
+    )
 
-    // swiftlint:disable force_unwrapping
+    /// the `setInternalSignals` signal.
+    @usableFromInline static let setInternalSignals = LocalSignal(
+        type: .stdLogic,
+        name: .setInternalSignals,
+        defaultValue: .literal(value: .bit(value: .low))
+    )
 
-    /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
-
-    // swiftlint:enable force_unwrapping
-
-    /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
-
-    /// The machine this representation is for.
-    let machine: Machine
-
-    /// Create a null representation for a machine.
-    /// - Parameters:
-    ///   - body: A parameterisable body for the machine.
-    ///   - machine: The machine this representation is for.
-    init(
-        body: AsynchronousBlock = AsynchronousBlock.statement(
-            // swiftlint:disable:next force_unwrapping
-            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
-        ),
-        machine: Machine = Machine(
-            actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
-            includes: [],
-            externalSignals: [],
-            clocks: [],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [],
-            isParameterised: false,
-            parameterSignals: [],
-            returnableSignals: [],
-            states: [],
-            transitions: [],
-            initialState: 0,
-            suspendedState: nil
-        )
-    ) {
-        self.architectureBody = body
-        self.machine = machine
-    }
-
-    /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
-        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
-            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
-            lhs.includes == rhs.includes && lhs.machine == rhs.machine
-    }
+    /// The `stateTracker` signal.
+    @usableFromInline static let stateTracker = LocalSignal(
+        type: .ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+        ))),
+        name: .stateTracker,
+        defaultValue: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .low]))))
+    )
 
 }

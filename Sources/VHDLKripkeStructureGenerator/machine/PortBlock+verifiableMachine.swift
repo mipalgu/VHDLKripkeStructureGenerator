@@ -94,7 +94,7 @@ extension PortBlock {
             }
             // swiftlint:disable:next force_unwrapping
             let newName = VariableName(rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)")!
-            return ports + [PortSignal(type: signal.type, name: newName, mode: .output)]
+            return [PortSignal(type: signal.type, name: newName, mode: .output)] + ports
         }
         let machineSignals = machine.machineSignals
         let machinePorts = machineSignals.compactMap {
@@ -153,12 +153,12 @@ extension PortBlock {
                 stateSignalsIn +
             [
                 currentStateIn,
-                currentStateOut,
                 previousRingletIn,
-                previousRingletOut,
                 internalStateIn,
-                internalStateOut,
                 targetStateIn,
+                currentStateOut,
+                previousRingletOut,
+                internalStateOut,
                 targetStateOut,
                 PortSignal.setInternalSignals,
                 PortSignal.reset

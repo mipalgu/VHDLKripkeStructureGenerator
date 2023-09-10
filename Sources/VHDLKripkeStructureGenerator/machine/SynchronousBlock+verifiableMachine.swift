@@ -147,13 +147,19 @@ extension SynchronousBlock {
         case .statement(let statement):
             switch statement {
             case .assignment(let ref, let value):
-                guard case .variable(let variable) = ref, variable == signal else {
+                guard
+                    case .variable(let variableRef) = ref,
+                    case .variable(let variable) = variableRef,
+                    variable == signal
+                else {
                     self = .statement(statement: statement)
                     return
                 }
                 self = .blocks(blocks: [
                     .statement(statement: statement),
-                    .statement(statement: .assignment(name: .variable(name: newSignal), value: value))
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: newSignal)), value: value
+                    ))
                 ])
             default:
                 self = .statement(statement: statement)
@@ -174,7 +180,8 @@ extension SynchronousBlock {
                 return nil
             }
             return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: $0.name), value: .reference(variable: .variable(name: newName))
+                name: .variable(reference: .variable(name: $0.name)),
+                value: .reference(variable: .variable(reference: .variable(name: newName)))
             ))
         }
         let snapshotReads: [SynchronousBlock] = writeSnapshots.compactMap {
@@ -184,7 +191,8 @@ extension SynchronousBlock {
                 return nil
             }
             return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: newName), value: .reference(variable: .variable(name: $0.name))
+                name: .variable(reference: .variable(name: newName)),
+                value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
         let machineWrites: [SynchronousBlock] = machine.machineSignals.compactMap {
@@ -194,7 +202,8 @@ extension SynchronousBlock {
                 return nil
             }
             return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: $0.name), value: .reference(variable: .variable(name: newName))
+                name: .variable(reference: .variable(name: $0.name)),
+                value: .reference(variable: .variable(reference: .variable(name: newName)))
             ))
         }
         let machineReads: [SynchronousBlock] = machine.machineSignals.compactMap {
@@ -204,7 +213,8 @@ extension SynchronousBlock {
                 return nil
             }
             return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(name: newName), value: .reference(variable: .variable(name: $0.name))
+                name: .variable(reference: .variable(name: newName)),
+                value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
         let stateSignals = machine.states.map { ($0.name, $0.signals) }
@@ -220,7 +230,8 @@ extension SynchronousBlock {
                     return nil
                 }
                 return SynchronousBlock.statement(statement: .assignment(
-                    name: .variable(name: stateName), value: .reference(variable: .variable(name: newName))
+                    name: .variable(reference: .variable(name: stateName)),
+                    value: .reference(variable: .variable(reference: .variable(name: newName)))
                 ))
             }
         }
@@ -236,7 +247,8 @@ extension SynchronousBlock {
                     return nil
                 }
                 return SynchronousBlock.statement(statement: .assignment(
-                    name: .variable(name: newName), value: .reference(variable: .variable(name: stateName))
+                    name: .variable(reference: .variable(name: newName)),
+                    value: .reference(variable: .variable(reference: .variable(name: stateName)))
                 ))
             }
         }
@@ -252,59 +264,75 @@ extension SynchronousBlock {
         }
         return .ifStatement(block: .ifElse(
             condition: .conditional(condition: .comparison(value: .equality(
-                lhs: .reference(variable: .variable(name: .setInternalSignals)),
+                lhs: .reference(variable: .variable(reference: .variable(name: .setInternalSignals))),
                 rhs: .literal(value: .logic(value: .high))
             ))),
             ifBlock: .blocks(blocks: [
                 .statement(statement: .assignment(
-                    name: .variable(name: .currentState),
-                    value: .reference(variable: .variable(name: .currentStateIn(for: machine)))
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .currentStateIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .previousRinglet),
-                    value: .reference(variable: .variable(name: .previousRingletIn(for: machine)))
+                    name: .variable(reference: .variable(name: .previousRinglet)),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .previousRingletIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .internalState),
-                    value: .reference(variable: .variable(name: .internalStateIn(for: machine)))
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .internalStateIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .targetState),
-                    value: .reference(variable: .variable(name: .targetStateIn(for: machine)))
+                    name: .variable(reference: .variable(name: .targetState)),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .targetStateIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .currentStateOut(for: machine)),
-                    value: .reference(variable: .variable(name: .currentStateIn(for: machine)))
+                    name: .variable(reference: .variable(name: .currentStateOut(for: machine))),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .currentStateIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .previousRingletOut(for: machine)),
-                    value: .reference(variable: .variable(name: .previousRingletIn(for: machine)))
+                    name: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .previousRingletIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .internalStateOut(for: machine)),
-                    value: .reference(variable: .variable(name: .internalStateIn(for: machine)))
+                    name: .variable(reference: .variable(name: .internalStateOut(for: machine))),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .internalStateIn(for: machine))
+                    ))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .targetStateOut(for: machine)),
-                    value: .reference(variable: .variable(name: .targetStateIn(for: machine)))
+                    name: .variable(reference: .variable(name: .targetStateOut(for: machine))),
+                    value: .reference(variable: .variable(
+                        reference: .variable(name: .targetStateIn(for: machine))
+                    ))
                 ))
             ] + snapshotWrites + machineWrites + stateWrites),
             elseBlock: .blocks(blocks: [
                 .statement(statement: .assignment(
-                    name: .variable(name: .currentStateOut(for: machine)),
-                    value: .reference(variable: .variable(name: .currentState))
+                    name: .variable(reference: .variable(name: .currentStateOut(for: machine))),
+                    value: .reference(variable: .variable(reference: .variable(name: .currentState)))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .previousRingletOut(for: machine)),
-                    value: .reference(variable: .variable(name: .previousRinglet))
+                    name: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
+                    value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .internalStateOut(for: machine)),
-                    value: .reference(variable: .variable(name: .internalState))
+                    name: .variable(reference: .variable(name: .internalStateOut(for: machine))),
+                    value: .reference(variable: .variable(reference: .variable(name: .internalState)))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(name: .targetStateOut(for: machine)),
-                    value: .reference(variable: .variable(name: .targetState))
+                    name: .variable(reference: .variable(name: .targetStateOut(for: machine))),
+                    value: .reference(variable: .variable(reference: .variable(name: .targetState)))
                 ))
             ] + snapshotReads + machineReads + stateReads)
         ))

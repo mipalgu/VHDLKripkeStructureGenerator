@@ -59,7 +59,7 @@ import VHDLParsing
 
 /// A protocol for defining a generator that creates the `VHDL` files that will generate a Kripke structure
 /// from a ``VHDLMachines.Machine``.
-protocol KripkeStructureGenerator {
+public protocol KripkeStructureGenerator {
 
     /// Create the Kripke Structure Generator program in `VHDL`.
     /// - Parameter machine: The machine to generate the Kripke structure for.
