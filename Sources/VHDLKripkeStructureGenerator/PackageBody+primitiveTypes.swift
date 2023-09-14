@@ -60,7 +60,7 @@ import VHDLParsing
 extension PackageBody {
 
     /// The `PrimitiveTypes` package body.
-    static let primitiveTypes = PackageBody(
+    @usableFromInline static let primitiveTypes = PackageBody(
         name: .primitiveTypes,
         body: .blocks(values: [
             .fnImplementation(value: FunctionImplementation(
