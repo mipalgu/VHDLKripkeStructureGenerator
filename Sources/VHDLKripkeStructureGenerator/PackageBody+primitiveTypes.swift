@@ -1,4 +1,4 @@
-// VHDLFile+initForMachine.swift
+// PackageBody+primitiveTypes.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,37 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-/// Add helpers for kripke structure generation.
-extension VHDLFile {
+/// Add primitive types package.
+extension PackageBody {
 
-    /// The `PrimitiveTypes` package.
-    static let primitiveTypes = VHDLFile(
-        architectures: [],
-        entities: [],
-        includes: [
-            // swiftlint:disable force_unwrapping
-            .library(value: VariableName(rawValue: "IEEE")!),
-            .include(statement: UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!)
-            // swiftlint:enable force_unwrapping
-        ],
-        packages: [.primitiveTypes],
-        packageBodies: [.primitiveTypes]
+    /// The `PrimitiveTypes` package body.
+    static let primitiveTypes = PackageBody(
+        name: .primitiveTypes,
+        body: .blocks(values: [
+            .fnImplementation(value: FunctionImplementation(
+                name: .boolToStdLogic,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .boolean))],
+                returnTube: .signal(type: .stdLogic),
+                body: .ifStatement(block: .ifElse(
+                    condition: .reference(variable: .variable(reference: .variable(name: .value))),
+                    ifBlock: .statement(statement: .returns(value: .literal(value: .bit(value: .high)))),
+                    elseBlock: .statement(statement: .returns(value: .literal(value: .bit(value: .low))))
+                ))
+            )),
+            .fnImplementation(value: FunctionImplementation(
+                name: .stdLogicToBool,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
+                returnTube: .signal(type: .boolean),
+                body: .statement(statement: .returns(value: .conditional(condition: .comparison(
+                    value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                        rhs: .literal(value: .bit(value: .high))
+                    )
+                ))))
+            ))
+        ])
     )
-
-    // init?(kripke machine: Machine) {
-    //     guard let representation = MachineRepresentation(machine: machine) else {
-    //         return nil
-    //     }
-    //     let existingFormat = VHDLFile(representation: representation)
-    //     guard
-    //         existingFormat.entities.count == 1,
-    //         let entity = existingFormat.entities.first,
-    //         existingFormat.architectures.count == 1,
-    //         let architecture = existingFormat.architectures.first
-    //     else {
-    //         return nil
-    //     }
-    //     let includes = existingFormat.includes
-    // }
 
 }

@@ -94,6 +94,21 @@ final class VHDLFileTests: XCTestCase {
             function stdLogicToBool(value: std_logic) return boolean;
         end package PrimitiveTypes;
 
+        package body PrimitiveTypes is
+            function boolToStdLogic(value: boolean) return std_logic is
+            begin
+                if (value) then
+                    return '1';
+                else
+                    return '0';
+                end if;
+            end function;
+            function stdLogicToBool(value: std_logic) return boolean is
+            begin
+                return value = '1';
+            end function;
+        end package body PrimitiveTypes;
+
         """
         // swiftlint:enable line_length
         XCTAssertEqual(VHDLFile.primitiveTypes.rawValue, expected)
