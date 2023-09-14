@@ -1,4 +1,4 @@
-// SignalType+bits.swift
+// VHDLFile+stateGenerator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,72 +54,33 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
 import VHDLMachines
 import VHDLParsing
 
-extension SignalType {
+extension VHDLFile {
 
-    var bits: Int {
-        switch self {
-        case .bit, .boolean:
-            return 1
-        case .integer, .natural, .positive, .real:
-            return 32
-        case .stdLogic, .stdULogic:
-            return 2
-        case .ranged(let type):
-            return type.bits
+    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        guard
+            let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;"),
+            let entity = Entity(stateGeneratorFor: state, in: representation),
+            let body = AsynchronousBlock(stateGeneratorFor: state, in: representation)
+        else{
+            return nil
         }
-    }
-
-}
-
-extension RangedType {
-
-    var bits: Int {
-        switch self {
-        case .bitVector(let size), .signed(let size), .unsigned(let size):
-            return size.size!
-        case .integer(let size):
-            guard
-                case .literal(let maxLiteral) = size.max,
-                case .integer(let maxValue) = maxLiteral,
-                case .literal(let minLiteral) = size.min,
-                case .integer(let minValue) = minLiteral
-            else {
-                fatalError("Cannot discern size of \(self)")
-            }
-            let bits = maxValue.bits.max(other: minValue.bits)
-            if minValue < 0 && maxValue >= 0 {
-                return bits + 1
-            }
-            return bits
-        case .stdLogicVector(let size), .stdULogicVector(let size):
-            return size.size!
-        }
-    }
-
-}
-
-extension Int {
-
-    var bits: Int {
-        let calculation = log2(abs(Double(self)))
-        if ceil(calculation) == calculation {
-            if self < 0 {
-                return Int(calculation) + 2
-            }
-            return Int(calculation) + 1
-        }
-        if self < 0 {
-            return Int(ceil(calculation)) + 1
-        }
-        return Int(ceil(calculation))
-    }
-
-    func max(other: Int) -> Int {
-        self > other ? self : other
+        let architecture = Architecture(
+            body: body,
+            entity: entity.name,
+            head: ArchitectureHead(statements: []),
+            name: .behavioral
+        )
+        let includes = [
+            Include.library(value: .ieee),
+            .include(statement: .stdLogic1164),
+            .include(statement: typesInclude),
+            .include(statement: .primitiveTypes)
+        ]
+        self.init(architectures: [architecture], entities: [entity], includes: includes)
     }
 
 }

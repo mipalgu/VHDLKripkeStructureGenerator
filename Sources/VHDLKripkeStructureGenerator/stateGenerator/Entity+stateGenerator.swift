@@ -1,4 +1,4 @@
-// SignalType+bits.swift
+// Entity+stateGenerator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,72 +54,48 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
 import VHDLMachines
 import VHDLParsing
 
-extension SignalType {
+extension Entity {
 
-    var bits: Int {
-        switch self {
-        case .bit, .boolean:
-            return 1
-        case .integer, .natural, .positive, .real:
-            return 32
-        case .stdLogic, .stdULogic:
-            return 2
-        case .ranged(let type):
-            return type.bits
+    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let name = VariableName(rawValue: "\(state.name.rawValue)KripkeGenerator"),
+            let readSnapshot = VariableName(rawValue: "readSnapshot"),
+            let writeSnapshot = VariableName(rawValue: "writeSnapshot")
+        else {
+            return nil
         }
-    }
-
-}
-
-extension RangedType {
-
-    var bits: Int {
-        switch self {
-        case .bitVector(let size), .signed(let size), .unsigned(let size):
-            return size.size!
-        case .integer(let size):
-            guard
-                case .literal(let maxLiteral) = size.max,
-                case .integer(let maxValue) = maxLiteral,
-                case .literal(let minLiteral) = size.min,
-                case .integer(let minValue) = minLiteral
-            else {
-                fatalError("Cannot discern size of \(self)")
+        let machine = representation.machine
+        guard machine.drivingClock >= 0, machine.drivingClock < machine.clocks.count else {
+            return nil
+        }
+        let clock = machine.clocks[machine.drivingClock]
+        guard let writeSnapshotSize = Record(writeSnapshotFor: state, in: representation)?.types.reduce(0, {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Cannot determine size of \($1.type.rawValue)")
             }
-            let bits = maxValue.bits.max(other: minValue.bits)
-            if minValue < 0 && maxValue >= 0 {
-                return bits + 1
-            }
-            return bits
-        case .stdLogicVector(let size), .stdULogicVector(let size):
-            return size.size!
+            return $0 + type.bits
+        }) else {
+            return nil
         }
-    }
-
-}
-
-extension Int {
-
-    var bits: Int {
-        let calculation = log2(abs(Double(self)))
-        if ceil(calculation) == calculation {
-            if self < 0 {
-                return Int(calculation) + 2
-            }
-            return Int(calculation) + 1
-        }
-        if self < 0 {
-            return Int(ceil(calculation)) + 1
-        }
-        return Int(ceil(calculation))
-    }
-
-    func max(other: Int) -> Int {
-        self > other ? self : other
+        let pendingStateSize = writeSnapshotSize + 1
+        let pendingStateType = Type.signal(type: .ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: pendingStateSize - 1)),
+            lower: .literal(value: .integer(value: 0))
+        ))))
+        self.init(name: name, port: PortBlock(signals: [
+            PortSignal(clock: clock),
+            PortSignal(type: .alias(name: .readSnapshotType), name: readSnapshot, mode: .input),
+            PortSignal(type: .alias(name: .writeSnapshotType), name: writeSnapshot, mode: .input),
+            PortSignal(
+                type: .alias(name: VariableName(pre: "\(state.name.rawValue)_", name: .ringletType)!),
+                name: .ringlet,
+                mode: .output
+            ),
+            PortSignal(type: pendingStateType, name: .pendingState, mode: .output)
+        ])!)
     }
 
 }

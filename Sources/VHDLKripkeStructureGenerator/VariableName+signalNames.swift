@@ -95,6 +95,9 @@ extension VariableName {
     /// The `goalInternalState` signal.
     @usableFromInline static let goalInternalState = VariableName(rawValue: "goalInternalState")!
 
+    /// The `IEEE` library.
+    @usableFromInline static let ieee = VariableName(rawValue: "IEEE")!
+
     /// The `internalState` signal.
     @usableFromInline static let internalState = VariableName(rawValue: "internalState")!
 
@@ -113,6 +116,9 @@ extension VariableName {
     /// The `observed` signal.
     @usableFromInline static let observed = VariableName(rawValue: "observed")!
 
+    /// The `pendingState` signal.
+    @usableFromInline static let pendingState = VariableName(rawValue: "pendingState")!
+
     /// The `previousRinglet` signal.
     @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
 
@@ -125,6 +131,9 @@ extension VariableName {
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
 
+    /// The `readSnapshot` signal.
+    @usableFromInline static let readSnapshotSignal = VariableName(rawValue: "readSnapshot")!
+
     /// The `ReadSnapshot` constant.
     @usableFromInline static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
 
@@ -136,6 +145,9 @@ extension VariableName {
 
     /// The `reset` signal.
     @usableFromInline static let reset = VariableName(rawValue: "reset")!
+
+    /// The `ringlet` signal.
+    @usableFromInline static let ringlet = VariableName(rawValue: "ringlet")!
 
     /// The `Ringlet_t` type.
     @usableFromInline static let ringletType = VariableName(rawValue: "Ringlet_t")!
@@ -193,6 +205,9 @@ extension VariableName {
 
     /// The `WaitToStart` constant.
     @usableFromInline static let waitToStart = VariableName(rawValue: "WaitToStart")!
+
+    /// The `writeSnapshot` signal.
+    @usableFromInline static let writeSnapshotSignal = VariableName(rawValue: "writeSnapshot")!
 
     /// The `WriteSnapshot` constant.
     @usableFromInline static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!

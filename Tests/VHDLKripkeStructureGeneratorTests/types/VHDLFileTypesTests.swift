@@ -62,7 +62,7 @@ import XCTest
 /// Test class for `VHDLFile` type extensions.
 final class VHDLFileTypesTests: XCTestCase {
 
-        // swiftlint:disable implicitly_unwrapped_optional
+    // swiftlint:disable implicitly_unwrapped_optional
 
     /// A machine to use for testing.
     var machine: Machine!
