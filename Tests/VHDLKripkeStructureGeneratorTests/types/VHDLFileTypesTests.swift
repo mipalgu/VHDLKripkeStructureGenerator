@@ -122,6 +122,39 @@ final class VHDLFileTypesTests: XCTestCase {
             executeOnEntry: boolean;
             observed: boolean;
         end record TotalSnapshot_t;
+        type Initial_ReadSnapshot_t is record
+            x: std_logic;
+            M_y2: std_logic;
+            M_y: std_logic;
+            M_STATE_Initial_initialX: std_logic;
+            executeOnEntry: boolean;
+        end record Initial_ReadSnapshot_t;
+        type Initial_WriteSnapshot_t is record
+            M_y2: std_logic;
+            M_y: std_logic;
+            M_STATE_Initial_initialX: std_logic;
+            nextState: std_logic_vector(0 downto 0);
+            executeOnEntry: boolean;
+        end record Initial_WriteSnapshot_t;
+        type Initial_Ringlet_t is record
+            readSnapshot: Initial_ReadSnapshot_t;
+            writeSnapshot: Initial_WriteSnapshot_t;
+            observed: boolean;
+        end record Initial_Ringlet_t;
+        type Suspended_ReadSnapshot_t is record
+            M_y: std_logic;
+            executeOnEntry: boolean;
+        end record Suspended_ReadSnapshot_t;
+        type Suspended_WriteSnapshot_t is record
+            M_y: std_logic;
+            nextState: std_logic_vector(0 downto 0);
+            executeOnEntry: boolean;
+        end record Suspended_WriteSnapshot_t;
+        type Suspended_Ringlet_t is record
+            readSnapshot: Suspended_ReadSnapshot_t;
+            writeSnapshot: Suspended_WriteSnapshot_t;
+            observed: boolean;
+        end record Suspended_Ringlet_t;
         constant CheckTransition: std_logic_vector(3 downto 0) := "0000";
         constant Internal: std_logic_vector(3 downto 0) := "0001";
         constant NoOnEntry: std_logic_vector(3 downto 0) := "0010";
@@ -150,6 +183,7 @@ final class VHDLFileTypesTests: XCTestCase {
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+        machine.states[0].externalVariables = [.x, .y2]
     }
 
     /// Test package is created correctly.

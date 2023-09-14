@@ -137,6 +137,9 @@ extension VariableName {
     /// The `reset` signal.
     @usableFromInline static let reset = VariableName(rawValue: "reset")!
 
+    /// The `Ringlet_t` type.
+    @usableFromInline static let ringletType = VariableName(rawValue: "Ringlet_t")!
+
     /// The `rst` signal.
     @usableFromInline static let rst = VariableName(rawValue: "rst")!
 
