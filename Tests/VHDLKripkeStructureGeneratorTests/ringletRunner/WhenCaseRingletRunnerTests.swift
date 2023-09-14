@@ -138,7 +138,6 @@ final class WhenCaseRingletRunnerTests: XCTestCase {
     func testWaitForStart() {
         let result = WhenCase(waitForStartFor: representation)
         XCTAssertEqual(result?.rawValue, waitForStart)
-        print(result!.rawValue)
     }
 
 }

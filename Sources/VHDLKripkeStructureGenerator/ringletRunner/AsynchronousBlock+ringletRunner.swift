@@ -114,24 +114,25 @@ extension WhenCase {
         waitForStartFor representation: T, record: VariableName = .machine, tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let allOutputs: [VariableName] = machine.externalSignals.filter { $0.mode == .output }.map(\.name)
-            + machine.machineSignals.map(\.name)
+        let allOutputs: [(VariableName, VariableName)] = machine.externalSignals.filter { $0.mode == .output }
+            .map { (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!, $0.name) }
+            + machine.machineSignals.map {
+                let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
+                return (name, name)
+            }
             + machine.stateVariables.flatMap { (state, variables) in
-                let preamble = "STATE_\(state.rawValue)_"
+                let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
                 // swiftlint:disable:next force_unwrapping
-                return variables.map { VariableName(pre: preamble, name: $0.name)! }
+                return variables.map {
+                    let name = VariableName(pre: preamble, name: $0.name)!
+                    return (name, name)
+                }
             }
-        let machineInputs: [IndexedValue] = allOutputs.compactMap {
-            guard let recordName = VariableName(pre: "\(machine.name.rawValue)_", name: $0) else {
-                return nil
-            }
-            return IndexedValue(
-                index: .index(value: .reference(variable: .variable(reference: .variable(name: recordName)))),
-                value: .reference(variable: .variable(reference: .variable(name: $0)))
+        let machineInputs: [IndexedValue] = allOutputs.map {
+            IndexedValue(
+                index: .index(value: .reference(variable: .variable(reference: .variable(name: $0.0)))),
+                value: .reference(variable: .variable(reference: .variable(name: $0.1)))
             )
-        }
-        guard allOutputs.count == machineInputs.count else {
-            return nil
         }
         let inputs = machine.externalSignals.filter { $0.mode != .output }.map {
             IndexedValue(
@@ -147,25 +148,31 @@ extension WhenCase {
                 value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
-        let allInternals = machine.externalSignals.filter { $0.mode != .input }.map(\.name)
-            + machine.machineSignals.map(\.name)
+        let allInternals: [(VariableName, VariableName)] = machine.externalSignals.filter {
+            $0.mode != .input
+        }.map {
+            return (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")!, $0.name)
+        }
+            + machine.machineSignals.map {
+                let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
+                return (VariableName(name: name, post: "In")!, name)
+            }
             + machine.stateVariables.flatMap { (state, variables) in
-                let preamble = "STATE_\(state.rawValue)_"
+                let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
                 // swiftlint:disable:next force_unwrapping
-                return variables.map { VariableName(pre: preamble, name: $0.name)! }
+                return variables.map {
+                    (
+                        VariableName(pre: preamble, name: $0.name, post: "In")!,
+                        VariableName(pre: preamble, name: $0.name)!
+                    )
+                }
             }
-        let internalsUpdate: [SynchronousBlock] = allInternals.compactMap {
-            guard
-                let member = VariableName(pre: "\(machine.name.rawValue)_", name: $0, post: "In"),
-                let value = VariableName(pre: "\(machine.name.rawValue)_", name: $0)
-            else {
-                return nil
-            }
+        let internalsUpdate: [SynchronousBlock] = allInternals.map {
             return SynchronousBlock.statement(statement: .assignment(
                 name: .variable(reference: .member(access: MemberAccess(
-                    record: record, member: .variable(name: member)
+                    record: record, member: .variable(name: $0.0)
                 ))),
-                value: .reference(variable: .variable(reference: .variable(name: value)))
+                value: .reference(variable: .variable(reference: .variable(name: $0.1)))
             ))
         }
         let code = SynchronousBlock.ifStatement(block: .ifElse(
