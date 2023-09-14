@@ -57,8 +57,12 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add type package.
 extension VHDLFile {
 
+    /// Create the types package for a machine.
+    /// - Parameter representation: The machine to create the package for.
+    @inlinable
     init?<T>(typesFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let package = VHDLPackage(typesFor: representation),
