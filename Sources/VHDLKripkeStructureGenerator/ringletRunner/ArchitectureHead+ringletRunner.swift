@@ -57,8 +57,14 @@
 import VHDLMachines
 import VHDLParsing
 
+// swiftlint:disable function_body_length
+
+/// Add ringlet runner architecture head.
 extension ArchitectureHead {
 
+    /// Create the ringlet runners architecture head for a machine.
+    /// - Parameter representation: The representation to create the runner for.
+    @inlinable
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let constantSize = VectorSize.downto(
@@ -167,9 +173,14 @@ extension ConstantSignal {
 
 }
 
+/// Add ringlet runner signals.
 extension IndexedVector {
 
+    /// Create snapshot default for machine.
+    /// - Parameter machine: The machine to create the snapshot default for.
+    @inlinable
     init(snapshotDefaultsFor machine: Machine) {
+        // swiftlint:disable:next closure_body_length
         let externals = machine.externalSignals.flatMap { (signal: PortSignal) -> [IndexedValue] in
             guard case .signal(let type) = signal.type else {
                 fatalError(
@@ -206,6 +217,7 @@ extension IndexedVector {
             }
             return declarations
         }
+        // swiftlint:disable:next closure_body_length
         let machineVariables = machine.machineSignals.flatMap { (signal: LocalSignal) -> [IndexedValue] in
             guard case .signal(let type) = signal.type else {
                 fatalError(
@@ -283,6 +295,13 @@ extension IndexedVector {
         )
     }
 
+    /// Create snapshot for machine.
+    /// - Parameters:
+    ///   - stateSize: the size of the state vector.
+    ///   - externals: The external mappings.
+    ///   - machineSignals: The machine mappings.
+    ///   - stateSignals: The state mappings.
+    @inlinable
     init(
         defaultSnapshotForStateSize stateSize: VectorSize,
         externals: [IndexedValue],
@@ -380,10 +399,14 @@ extension IndexedVector {
 
 }
 
+/// Create helper property.
 extension SignalType {
 
-    var defaultValue: SignalLiteral {
+    /// Create helper property for default value.
+    @inlinable var defaultValue: SignalLiteral {
         SignalLiteral.default(for: self)
     }
 
 }
+
+// swiftlint:enable function_body_length

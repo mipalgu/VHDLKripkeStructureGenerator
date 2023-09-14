@@ -60,6 +60,8 @@ import VHDLParsing
 /// Add invocation for machine runner.
 extension ComponentInstantiation {
 
+    // swiftlint:disable function_body_length
+
     /// Create a component invocation for the machine runner. This invocation assumes that signals will be
     /// mapped into a record type.
     /// - Parameters:
@@ -106,7 +108,7 @@ extension ComponentInstantiation {
             return nil
         }
         let machineVariablesUnwrapped = machineVariables.flatMap { $0 }
-        let stateVariables: [VariableName] = machine.stateVariables.flatMap { (stateName, variables) in
+        let stateVariables: [VariableName] = machine.stateVariables.flatMap { stateName, variables in
             let preamble = "\(machine.name.rawValue)_STATE_\(stateName.rawValue)_"
             return variables.compactMap { (variable: LocalSignal) -> [VariableName]? in
                 guard
@@ -201,5 +203,7 @@ extension Array where Element == VariableMap {
             )
         ])
     }
+
+    // swiftlint:enable function_body_length
 
 }
