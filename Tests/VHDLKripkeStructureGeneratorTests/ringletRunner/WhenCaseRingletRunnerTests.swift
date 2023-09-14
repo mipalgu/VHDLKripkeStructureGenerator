@@ -155,7 +155,7 @@ final class WhenCaseRingletRunnerTests: XCTestCase {
     /// Test executing is correct.
     func testExecuting() {
         let result = WhenCase(executingFor: representation)
-        XCTAssertEqual(result?.rawValue, executing)
+        XCTAssertEqual(result.rawValue, executing)
     }
 
 }

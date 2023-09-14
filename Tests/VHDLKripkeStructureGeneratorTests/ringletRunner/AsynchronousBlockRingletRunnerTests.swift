@@ -90,40 +90,54 @@ final class AsynchronousBlockRingletRunnerTests: XCTestCase {
         end if;
     """
 
+    /// The assignment of readSnapshotState
+    let readSnapshotState = "readSnapshotState <= (x => x, state => state, M_y2 => y2, M_y => M_y," +
+        " M_STATE_Initial_initialX => M_STATE_Initial_initialX, executeOnEntry => previousRinglet /= state);"
+
     /// The WaitForStart case.
-    let waitForStart = """
-    when WaitForStart =>
-        if (reset = '1') then
-            tracker <= WaitForMachineStart;
-            machine.reset <= '1';
-            readSnapshotState <= (x => x, state => state, M_y2 => y2, M_y => M_y, M_STATE_Initial_initialX => M_STATE_Initial_initialX, executeOnEntry => previousRinglet /= state);
-            finished <= false;
-        else
-            machine.x <= x;
-            machine.currentStateIn <= state;
-            machine.internalStateIn <= ReadSnapshot;
-            machine.targetStateIn <= state;
-            machine.reset <= '0';
-            machine.goalInternalState <= WriteSnapshot;
-            machine.previousRingletIn <= previousRinglet;
-            machine.M_y2In <= y2;
-            machine.M_yIn <= M_y;
-            machine.M_STATE_Initial_initialXIn <= M_STATE_Initial_initialX;
-        end if;
-        currentState <= state;
-    """
+    var waitForStart: String {
+        """
+        when WaitForStart =>
+            if (reset = '1') then
+                tracker <= WaitForMachineStart;
+                machine.reset <= '1';
+                \(readSnapshotState)
+                finished <= false;
+            else
+                machine.x <= x;
+                machine.currentStateIn <= state;
+                machine.internalStateIn <= ReadSnapshot;
+                machine.targetStateIn <= state;
+                machine.reset <= '0';
+                machine.goalInternalState <= WriteSnapshot;
+                machine.previousRingletIn <= previousRinglet;
+                machine.M_y2In <= y2;
+                machine.M_yIn <= M_y;
+                machine.M_STATE_Initial_initialXIn <= M_STATE_Initial_initialX;
+            end if;
+            currentState <= state;
+        """
+    }
+
+    /// The assignment of writeSnapshotState.
+    let writeSnapshotState = "writeSnapshotState <= (x => machine.M_x, y2 => machine.M_y2," +
+        " M_y => machine.M_y, M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX," +
+        " state => currentState, nextState => machine.currentStateOut," +
+        " executeOnEntry => machine.currentStateOut /= currentState);"
 
     /// The executing case.
-    let executing = """
-    when Executing =>
-        machine.reset <= '1';
-        if (machine.finished) then
-            writeSnapshotState <= (x => machine.M_x, y2 => machine.M_y2, M_y => machine.M_y, M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX, state => currentState, nextState => machine.currentStateOut, executeOnEntry => machine.currentStateOut /= currentState);
-            nextState <= machine.currentStateOut;
-            finished <= true;
-            tracker <= WaitForFinish;
-        end if;
-    """
+    var executing: String {
+        """
+        when Executing =>
+            machine.reset <= '1';
+            if (machine.finished) then
+                \(writeSnapshotState)
+                nextState <= machine.currentStateOut;
+                finished <= true;
+                tracker <= WaitForFinish;
+            end if;
+        """
+    }
 
     /// The raw VHDL for the ringlet runner process of `machine`.
     var process: String {

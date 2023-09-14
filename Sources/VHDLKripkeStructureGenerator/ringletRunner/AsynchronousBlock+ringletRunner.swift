@@ -57,8 +57,12 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add ringlet runner logic.
 extension AsynchronousBlock {
 
+    /// Create the architecture body for the ringlet runner.
+    /// - Parameter representation: The representation of the machine to create this code for.
+    @inlinable
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let componentLabel = VariableName(rawValue: "\(representation.machine.name.rawValue)_inst"),
@@ -74,20 +78,30 @@ extension AsynchronousBlock {
 
 }
 
+/// Create the process logic for the ringlet runner.
 extension ProcessBlock {
 
+    /// Create a process block for the ringlet runner.
+    /// - Parameters:
+    ///   - representation: The representation of the machine to create this process for.
+    ///   - record: The name of the record variable for the machine.
+    ///   - tracker: The name of the tracker signal.
+    @inlinable
     init?<T>(
         ringletRunnerFor representation: T,
-        clock clk: VariableName = .clk,
         recordName record: VariableName = .machine,
         tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
         guard
             let waitForStart = WhenCase(waitForStartFor: representation, record: record, tracker: tracker),
-            let executing = WhenCase(executingFor: representation, record: record, tracker: tracker)
+            machine.drivingClock >= 0,
+            machine.drivingClock < machine.clocks.count
         else {
             return nil
         }
+        let clk = machine.clocks[machine.drivingClock].name
+        let executing = WhenCase(executingFor: representation, record: record, tracker: tracker)
         let code = SynchronousBlock.ifStatement(block: .ifStatement(
             condition: .conditional(condition: .edge(value: .rising(
                 expression: .reference(variable: .variable(reference: .variable(name: clk)))
@@ -108,8 +122,18 @@ extension ProcessBlock {
 
 }
 
+/// Add cases for ringlet runner.
 extension WhenCase {
 
+    // swiftlint:disable force_unwrapping
+    // swiftlint:disable function_body_length
+
+    /// Create the WaitForStart case in the ringlet runner.
+    /// - Parameters:
+    ///   - representation: The representation of the machine to create this case for.
+    ///   - record: The name of the record variable for the machine.
+    ///   - tracker: The name of the tracker signal.
+    @inlinable
     init?<T>(
         waitForStartFor representation: T, record: VariableName = .machine, tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
@@ -120,9 +144,8 @@ extension WhenCase {
                 let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
                 return (name, name)
             }
-            + machine.stateVariables.flatMap { (state, variables) in
+            + machine.stateVariables.flatMap { state, variables in
                 let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
-                // swiftlint:disable:next force_unwrapping
                 return variables.map {
                     let name = VariableName(pre: preamble, name: $0.name)!
                     return (name, name)
@@ -150,16 +173,16 @@ extension WhenCase {
         }
         let allInternals: [(VariableName, VariableName)] = machine.externalSignals.filter {
             $0.mode != .input
-        }.map {
-            return (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")!, $0.name)
+        }
+        .map {
+            (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")!, $0.name)
         }
             + machine.machineSignals.map {
                 let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
                 return (VariableName(name: name, post: "In")!, name)
             }
-            + machine.stateVariables.flatMap { (state, variables) in
+            + machine.stateVariables.flatMap { state, variables in
                 let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
-                // swiftlint:disable:next force_unwrapping
                 return variables.map {
                     (
                         VariableName(pre: preamble, name: $0.name, post: "In")!,
@@ -168,7 +191,7 @@ extension WhenCase {
                 }
             }
         let internalsUpdate: [SynchronousBlock] = allInternals.map {
-            return SynchronousBlock.statement(statement: .assignment(
+            SynchronousBlock.statement(statement: .assignment(
                 name: .variable(reference: .member(access: MemberAccess(
                     record: record, member: .variable(name: $0.0)
                 ))),
@@ -274,7 +297,13 @@ extension WhenCase {
         )
     }
 
-    init?<T>(
+    /// Create the Executing case in the ringlet runner.
+    /// - Parameters:
+    ///   - representation: The representation of the machine to create this case for.
+    ///   - record: The name of the record variable for the machine.
+    ///   - tracker: The name of the tracker signal.
+    @inlinable
+    init<T>(
         executingFor representation: T, record: VariableName = .machine, tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
@@ -296,7 +325,7 @@ extension WhenCase {
                 ))))
             )
         }
-        let stateVariables = machine.stateVariables.flatMap { (state, variables) in
+        let stateVariables = machine.stateVariables.flatMap { state, variables in
             let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
             return variables.map {
                 let name = VariableName(pre: preamble, name: $0.name)!
@@ -386,6 +415,15 @@ extension WhenCase {
         )
     }
 
+    // swiftlint:enable function_body_length
+    // swiftlint:enable force_unwrapping
+
+    /// Create the WaitForFinish case in the ringlet runner.
+    /// - Parameters:
+    ///   - record: The name of the record variable for the machine.
+    ///   - tracker: The name of the tracker signal.
+    /// - Returns: The WaitForFinish case.
+    @inlinable
     static func waitForFinish(record: VariableName = .machine, tracker: VariableName = .tracker) -> WhenCase {
         WhenCase(
             condition: .expression(expression: .reference(
@@ -414,6 +452,12 @@ extension WhenCase {
         )
     }
 
+    /// Create the WaitForMachineStart case in the ringlet runner.
+    /// - Parameters:
+    ///   - record: The name of the record variable for the machine.
+    ///   - tracker: The name of the tracker signal.
+    /// - Returns: The WaitForMachineStart case.
+    @inlinable
     static func waitForMachineStart(
         record: VariableName = .machine, tracker: VariableName = .tracker
     ) -> WhenCase {
