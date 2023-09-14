@@ -57,17 +57,29 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add init for ringlet runner.
 extension VHDLFile {
 
+    /// Create a ringlet runner for the given machine representation.
+    /// - Parameter representation: The machine representation.
+    @inlinable
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
-        // guard
-        //     let head = ArchitectureHead(ringletRunnerFor: representation),
-        //     let body = AsynchronousBlock(ringletRunnerFor: representation),
-        //     let name = VariableName(rawValue: "\(representation.machine.name)RingletRunner")
-        // else {
-        //     return nil
-        // }
-        nil
+        guard
+            let head = ArchitectureHead(ringletRunnerFor: representation),
+            let body = AsynchronousBlock(ringletRunnerFor: representation),
+            let entity = Entity(ringletRunnerFor: representation),
+            let library = VariableName(rawValue: "IEEE"),
+            let stdLogic = UseStatement(rawValue: "use IEEE.std_logic_1164.all;"),
+            let types = UseStatement(rawValue: "use work.\(representation.machine.name.rawValue)Types.all;")
+        else {
+            return nil
+        }
+        let architecture = Architecture(body: body, entity: entity.name, head: head, name: .behavioral)
+        self.init(
+            architectures: [architecture],
+            entities: [entity],
+            includes: [.library(value: library), .include(statement: stdLogic), .include(statement: types)]
+        )
     }
 
 }
