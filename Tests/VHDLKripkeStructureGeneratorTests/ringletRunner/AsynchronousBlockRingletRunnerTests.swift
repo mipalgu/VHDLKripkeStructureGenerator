@@ -1,4 +1,4 @@
-// ComponentInstantiationRingletRunnerTests.swfit
+// AsynchronousBlockRingletRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -59,10 +59,10 @@ import VHDLMachines
 import VHDLParsing
 import XCTest
 
-/// Test class for ringlet runner extensions on `ComponentInstantiation`.
-final class ComponentInstantiationRingletRunnerTests: XCTestCase {
+/// Test class for `AsynchronousBlock` ringlet runner extensions.
+final class AsynchronousBlockRingletRunnerTests: XCTestCase {
 
-        // swiftlint:disable implicitly_unwrapped_optional
+    // swiftlint:disable implicitly_unwrapped_optional
 
     /// A machine to use for testing.
     var machine: Machine!
@@ -74,32 +74,75 @@ final class ComponentInstantiationRingletRunnerTests: XCTestCase {
 
     // swiftlint:enable implicitly_unwrapped_optional
 
-    /// The raw VHDL for the ringlet runner of `machine`.
-    let raw = """
-    M_inst: component MMachineRunner port map (
-        clk => clk,
-        internalStateIn => machine.internalStateIn,
-        internalStateOut => machine.internalStateOut,
-        currentStateIn => machine.currentStateIn,
-        currentStateOut => machine.currentStateOut,
-        previousRingletIn => machine.previousRingletIn,
-        previousRingletOut => machine.previousRingletOut,
-        targetStateIn => machine.targetStateIn,
-        targetStateOut => machine.targetStateOut,
-        x => machine.x,
-        y2 => machine.y2,
-        M_x => machine.M_x,
-        M_y2 => machine.M_y2,
-        M_y2In => machine.M_y2In,
-        M_y => machine.M_y,
-        M_yIn => machine.M_yIn,
-        M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX,
-        M_STATE_Initial_initialXIn => machine.M_STATE_Initial_initialXIn,
-        reset => machine.reset,
-        goalInternalState => machine.goalInternalState,
-        finished => machine.finished
-    );
+    /// The WaitForMachineStart case.
+    let waitForMachineStart = """
+    when WaitForMachineStart =>
+        machine.reset <= '1';
+        tracker <= Executing;
     """
+
+    /// The WaitForFinish case.
+    let waitForFinish = """
+    when WaitForFinish =>
+        if (reset = '0') then
+            machine.reset <= '0';
+            tracker <= WaitForStart;
+        end if;
+    """
+
+    /// The WaitForStart case.
+    let waitForStart = """
+    when WaitForStart =>
+        if (reset = '1') then
+            tracker <= WaitForMachineStart;
+            machine.reset <= '1';
+            readSnapshotState <= (x => x, state => state, M_y2 => y2, M_y => M_y, M_STATE_Initial_initialX => M_STATE_Initial_initialX, executeOnEntry => previousRinglet /= state);
+            finished <= false;
+        else
+            machine.x <= x;
+            machine.currentStateIn <= state;
+            machine.internalStateIn <= ReadSnapshot;
+            machine.targetStateIn <= state;
+            machine.reset <= '0';
+            machine.goalInternalState <= WriteSnapshot;
+            machine.previousRingletIn <= previousRinglet;
+            machine.M_y2In <= y2;
+            machine.M_yIn <= M_y;
+            machine.M_STATE_Initial_initialXIn <= M_STATE_Initial_initialX;
+        end if;
+        currentState <= state;
+    """
+
+    /// The executing case.
+    let executing = """
+    when Executing =>
+        machine.reset <= '1';
+        if (machine.finished) then
+            writeSnapshotState <= (x => machine.M_x, y2 => machine.M_y2, M_y => machine.M_y, M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX, state => currentState, nextState => machine.currentStateOut, executeOnEntry => machine.currentStateOut /= currentState);
+            nextState <= machine.currentStateOut;
+            finished <= true;
+            tracker <= WaitForFinish;
+        end if;
+    """
+
+    /// The raw VHDL for the ringlet runner process of `machine`.
+    var process: String {
+        """
+        process(clk)
+        begin
+            if (rising_edge(clk)) then
+                case tracker is
+        \(waitForStart.indent(amount: 3))
+        \(waitForMachineStart.indent(amount: 3))
+        \(executing.indent(amount: 3))
+        \(waitForFinish.indent(amount: 3))
+                    when others =>
+                        null;
+                end case;
+            end if;
+        end process;
+        """
+    }
 
     /// Initialise the machine before every test.
     override func setUp() {
@@ -112,18 +155,10 @@ final class ComponentInstantiationRingletRunnerTests: XCTestCase {
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
-    /// Test rawValue is the same.
-    func testRawValue() {
-        guard
-            let expected = ComponentInstantiation(rawValue: raw), let label = VariableName(rawValue: "M_inst")
-        else {
-            XCTFail("Expected is incorrect!")
-            return
-        }
-        let result = ComponentInstantiation(
-            machineRunnerInvocationFor: representation, record: .machine, label: label
-        )
-        XCTAssertEqual(result?.rawValue, expected.rawValue)
+    /// Test the process block is correct.
+    func testProcess() {
+        let result = ProcessBlock(ringletRunnerFor: representation)
+        XCTAssertEqual(result?.rawValue, process)
     }
 
 }

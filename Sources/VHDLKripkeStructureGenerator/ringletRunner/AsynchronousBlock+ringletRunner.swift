@@ -103,7 +103,7 @@ extension ProcessBlock {
                 ]
             ))
         ))
-        self.init(sensitivityList: [], code: code)
+        self.init(sensitivityList: [clk], code: code)
     }
 
 }
