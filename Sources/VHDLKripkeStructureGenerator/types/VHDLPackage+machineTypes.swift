@@ -57,8 +57,12 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add type package initialisation.
 extension VHDLPackage {
 
+    /// Create the type package for a machine representation.
+    /// - Parameter representation: The machine to create the package for.
+    @inlinable
     init?<T>(typesFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let name = VariableName(rawValue: "\(representation.machine.name.rawValue)Types"),
@@ -82,7 +86,8 @@ extension VHDLPackage {
 
 extension MachineVHDLRepresentable {
 
-    var allConstants: [HeadStatement] {
+    /// Find all constants in the architecture head.
+    @inlinable var allConstants: [HeadStatement] {
         self.architectureHead.statements.filter {
             guard case .definition(let def) = $0, case .constant = def else {
                 return false
