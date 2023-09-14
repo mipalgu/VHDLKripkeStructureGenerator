@@ -144,6 +144,41 @@ final class AsynchronousBlockRingletRunnerTests: XCTestCase {
         """
     }
 
+    /// The component instantiation.
+    let component = """
+    M_inst: component MMachineRunner port map (
+        clk => clk,
+        internalStateIn => machine.internalStateIn,
+        internalStateOut => machine.internalStateOut,
+        currentStateIn => machine.currentStateIn,
+        currentStateOut => machine.currentStateOut,
+        previousRingletIn => machine.previousRingletIn,
+        previousRingletOut => machine.previousRingletOut,
+        targetStateIn => machine.targetStateIn,
+        targetStateOut => machine.targetStateOut,
+        x => machine.x,
+        y2 => machine.y2,
+        M_x => machine.M_x,
+        M_y2 => machine.M_y2,
+        M_y2In => machine.M_y2In,
+        M_y => machine.M_y,
+        M_yIn => machine.M_yIn,
+        M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX,
+        M_STATE_Initial_initialXIn => machine.M_STATE_Initial_initialXIn,
+        reset => machine.reset,
+        goalInternalState => machine.goalInternalState,
+        finished => machine.finished
+    );
+    """
+
+    /// The raw ringlet runner implementation.
+    var raw: String {
+        """
+        \(component)
+        \(process)
+        """
+    }
+
     /// Initialise the machine before every test.
     override func setUp() {
         machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
@@ -159,6 +194,12 @@ final class AsynchronousBlockRingletRunnerTests: XCTestCase {
     func testProcess() {
         let result = ProcessBlock(ringletRunnerFor: representation)
         XCTAssertEqual(result?.rawValue, process)
+    }
+
+    /// Test that the ringlet runner creates the correct code.
+    func testRingletRunnerInit() {
+        let result = AsynchronousBlock(ringletRunnerFor: representation)
+        XCTAssertEqual(result?.rawValue, raw)
     }
 
 }
