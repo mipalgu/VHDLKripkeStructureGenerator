@@ -61,7 +61,7 @@ import VHDLParsing
 extension VHDLFile {
 
     /// The `PrimitiveTypes` package.
-    static let primitiveTypes = VHDLFile(
+    @usableFromInline static let primitiveTypes = VHDLFile(
         architectures: [],
         entities: [],
         includes: [
