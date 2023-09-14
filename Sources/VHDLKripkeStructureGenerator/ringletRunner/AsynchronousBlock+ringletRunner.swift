@@ -277,7 +277,113 @@ extension WhenCase {
     init?<T>(
         executingFor representation: T, record: VariableName = .machine, tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
-        nil
+        let machine = representation.machine
+        let externals = machine.externalSignals.map {
+            IndexedValue(
+                index: .index(value: .reference(variable: .variable(reference: .variable(name: $0.name)))),
+                value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                    record: record,
+                    member: .variable(name: VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!)
+                ))))
+            )
+        }
+        let machineVariables = machine.machineSignals.map {
+            let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
+            return IndexedValue(
+                index: .index(value: .reference(variable: .variable(reference: .variable(name: name)))),
+                value: Expression.reference(variable: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: name)
+                ))))
+            )
+        }
+        let stateVariables = machine.stateVariables.flatMap { (state, variables) in
+            let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
+            return variables.map {
+                let name = VariableName(pre: preamble, name: $0.name)!
+                return IndexedValue(
+                    index: .index(value: .reference(variable: .variable(reference: .variable(name: name)))),
+                    value: Expression.reference(variable: .variable(reference: .member(access: MemberAccess(
+                        record: record, member: .variable(name: name)
+                    ))))
+                )
+            }
+        }
+        let allAssignments = externals + machineVariables + stateVariables
+        let code = SynchronousBlock.ifStatement(block: .ifStatement(
+            condition: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                record: record, member: .variable(name: .finished)
+            )))),
+            ifBlock: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .writeSnapshotState)),
+                    value: .literal(value: .vector(value: .indexed(
+                        values: IndexedVector(values: allAssignments + [
+                            IndexedValue(
+                                index: .index(value: .reference(variable: .variable(
+                                    reference: .variable(name: .state)
+                                ))),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .currentState)
+                                ))
+                            ),
+                            IndexedValue(
+                                index: .index(value: .reference(variable: .variable(
+                                    reference: .variable(name: .nextState)
+                                ))),
+                                value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                                    record: record,
+                                    member: .variable(name: .currentStateOut)
+                                ))))
+                            ),
+                            IndexedValue(
+                                index: .index(value: .reference(variable: .variable(
+                                    reference: .variable(name: .executeOnEntry)
+                                ))),
+                                value: .conditional(condition: .comparison(value: .notEquals(
+                                    lhs: .reference(variable: .variable(reference: .member(
+                                        access: MemberAccess(
+                                            record: record,
+                                            member: .variable(name: .currentStateOut)
+                                        )
+                                    ))),
+                                    rhs: .reference(variable: .variable(
+                                        reference: .variable(name: .currentState)
+                                    ))
+                                )))
+                            )
+                        ])
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .nextState)),
+                    value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                        record: record, member: .variable(name: .currentStateOut)
+                    ))))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .finished)),
+                    value: .literal(value: .boolean(value: true))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: tracker)),
+                    value: .reference(variable: .variable(reference: .variable(name: .waitForFinish)))
+                ))
+            ])
+        ))
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .executing)
+            ))),
+            code: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .member(access: MemberAccess(
+                        record: record, member: .variable(name: .reset)
+                    ))),
+                    value: .literal(value: .bit(value: .high))
+                )),
+                code
+            ])
+        )
     }
 
     static func waitForFinish(record: VariableName = .machine, tracker: VariableName = .tracker) -> WhenCase {

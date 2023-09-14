@@ -113,6 +113,18 @@ final class WhenCaseRingletRunnerTests: XCTestCase {
         currentState <= state;
     """
 
+    /// The executing case.
+    let executing = """
+    when Executing =>
+        machine.reset <= '1';
+        if (machine.finished) then
+            writeSnapshotState <= (x => machine.M_x, y2 => machine.M_y2, M_y => machine.M_y, M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX, state => currentState, nextState => machine.currentStateOut, executeOnEntry => machine.currentStateOut /= currentState);
+            nextState <= machine.currentStateOut;
+            finished <= true;
+            tracker <= WaitForFinish;
+        end if;
+    """
+
     /// Initialise the machine before every test.
     override func setUp() {
         machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
@@ -138,6 +150,12 @@ final class WhenCaseRingletRunnerTests: XCTestCase {
     func testWaitForStart() {
         let result = WhenCase(waitForStartFor: representation)
         XCTAssertEqual(result?.rawValue, waitForStart)
+    }
+
+    /// Test executing is correct.
+    func testExecuting() {
+        let result = WhenCase(executingFor: representation)
+        XCTAssertEqual(result?.rawValue, executing)
     }
 
 }
