@@ -90,7 +90,24 @@ final class VHDLFileTests: XCTestCase {
         package PrimitiveTypes is
             type stdLogicTypes_t is array (0 to 8) of std_logic;
             constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
+            function boolToStdLogic(value: boolean) return std_logic;
+            function stdLogicToBool(value: std_logic) return boolean;
         end package PrimitiveTypes;
+
+        package body PrimitiveTypes is
+            function boolToStdLogic(value: boolean) return std_logic is
+            begin
+                if (value) then
+                    return '1';
+                else
+                    return '0';
+                end if;
+            end function;
+            function stdLogicToBool(value: std_logic) return boolean is
+            begin
+                return value = '1';
+            end function;
+        end package body PrimitiveTypes;
 
         """
         // swiftlint:enable line_length
