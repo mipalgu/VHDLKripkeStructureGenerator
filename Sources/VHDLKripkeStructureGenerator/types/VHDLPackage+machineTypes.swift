@@ -64,13 +64,30 @@ extension VHDLPackage {
     /// - Parameter representation: The machine to create the package for.
     @inlinable
     init?<T>(typesFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
         guard
-            let name = VariableName(rawValue: "\(representation.machine.name.rawValue)Types"),
+            let name = VariableName(rawValue: "\(machine.name.rawValue)Types"),
             let readSnapshot = Record(readSnapshotFor: representation),
             let writeSnapshot = Record(writeSnapshotFor: representation),
             let totalSnapshot = Record(totalSnapshotFor: representation)
         else {
             return nil
+        }
+        let stateRecords: [[Record]] = machine.states.compactMap {
+            guard let writeSnapshot = Record(writeSnapshotFor: $0, in: representation) else {
+                return nil
+            }
+            return [
+                Record(readSnapshotFor: $0, in: representation),
+                writeSnapshot,
+                Record(ringletFor: $0)
+            ]
+        }
+        guard stateRecords.count == machine.states.count else {
+            return nil
+        }
+        let unwrappedStateRecords = stateRecords.flatMap {
+            $0.map { HeadStatement.definition(value: .type(value: .record(value: $0))) }
         }
         self.init(
             name: name,
@@ -78,7 +95,7 @@ extension VHDLPackage {
                 .definition(value: .type(value: .record(value: readSnapshot))),
                 .definition(value: .type(value: .record(value: writeSnapshot))),
                 .definition(value: .type(value: .record(value: totalSnapshot)))
-            ] + representation.allConstants
+            ] + unwrappedStateRecords + representation.allConstants
         )
     }
 
