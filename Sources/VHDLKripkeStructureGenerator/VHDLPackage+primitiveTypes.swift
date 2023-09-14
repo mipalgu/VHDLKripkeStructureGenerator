@@ -115,7 +115,17 @@ extension VHDLPackage {
                         value: .logic(value: .dontCare)
                     )
                 ]))))
-            )!))
+            )!)),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .boolToStdLogic,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .boolean))],
+                returnType: .signal(type: .stdLogic)
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .stdLogicToBool,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
+                returnType: .signal(type: .boolean)
+            )))
         ]
     )
 

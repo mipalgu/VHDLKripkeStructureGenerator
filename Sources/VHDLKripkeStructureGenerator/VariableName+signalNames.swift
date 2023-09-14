@@ -65,6 +65,9 @@ extension VariableName {
     /// The `Behavioral` name.
     @usableFromInline static let behavioral = VariableName(rawValue: "Behavioral")!
 
+    /// The `boolToStdLogic` function.
+    @usableFromInline static let boolToStdLogic = VariableName(rawValue: "boolToStdLogic")!
+
     /// The `clk` signal.
     @usableFromInline static let clk = VariableName(rawValue: "clk")!
 
@@ -149,6 +152,9 @@ extension VariableName {
     /// The `stateTracker` signal.
     @usableFromInline static let stateTracker = VariableName(rawValue: "stateTracker")!
 
+    /// The `stdLogicToBool` function.
+    @usableFromInline static let stdLogicToBool = VariableName(rawValue: "stdLogicToBool")!
+
     /// The `stdLogicTypes` constant.
     @usableFromInline static let stdLogicTypes = VariableName(rawValue: "stdLogicTypes")!
 
@@ -169,6 +175,9 @@ extension VariableName {
 
     /// The `tracker` signal.
     @usableFromInline static let tracker = VariableName(rawValue: "tracker")!
+
+    /// the `value` variable.
+    @usableFromInline static let value = VariableName(rawValue: "value")!
 
     /// The `WaitForFinish` signal.
     @usableFromInline static let waitForFinish = VariableName(rawValue: "WaitForFinish")!
