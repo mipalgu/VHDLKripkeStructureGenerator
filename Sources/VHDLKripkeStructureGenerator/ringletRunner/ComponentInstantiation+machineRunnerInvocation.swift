@@ -57,8 +57,16 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add invocation for machine runner.
 extension ComponentInstantiation {
 
+    /// Create a component invocation for the machine runner. This invocation assumes that signals will be
+    /// mapped into a record type.
+    /// - Parameters:
+    ///   - representation: The machine to create the invocation for.
+    ///   - name: The name of the record type to map the signals into.
+    ///   - label: The label of the invocation.
+    @inlinable
     init?<T>(
         machineRunnerInvocationFor representation: T, record name: VariableName, label: VariableName
     ) where T: MachineVHDLRepresentable {
@@ -130,8 +138,13 @@ extension ComponentInstantiation {
 
 }
 
+/// Add control signals for machine runner.
 extension Array where Element == VariableMap {
 
+    /// Create the control signals for the machine runner. This assumes that the signals will be mapped into a
+    /// record type.
+    /// - Parameter name: The name of the record type to map the signals into.
+    @inlinable
     init(machineRunnerControlRecordMapped name: VariableName) {
         self.init([
             VariableMap(
