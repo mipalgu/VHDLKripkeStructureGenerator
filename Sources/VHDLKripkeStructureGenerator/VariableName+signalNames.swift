@@ -155,6 +155,9 @@ extension VariableName {
     /// The `ringlet` signal.
     @usableFromInline static let ringlet = VariableName(rawValue: "ringlet")!
 
+    /// The `ringlets` signal.
+    @usableFromInline static let ringlets = VariableName(rawValue: "ringlets")!
+
     /// The `Ringlet_t` type.
     @usableFromInline static let ringletType = VariableName(rawValue: "Ringlet_t")!
 

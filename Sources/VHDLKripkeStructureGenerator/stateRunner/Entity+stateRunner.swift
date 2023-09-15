@@ -70,17 +70,22 @@ extension Entity {
             return nil
         }
         let clock = machine.clocks[machine.drivingClock]
-        let signals = writeSnapshot.types.filter { $0.name != .nextState }.map {
+        let snapshotSignals = writeSnapshot.types.filter { $0.name != .nextState }
+        let signals = snapshotSignals.map {
             PortSignal(type: $0.type, name: $0.name, mode: .input)
         }
-        let validSignals = Set(state.externalVariables)
-        let workingSignals = machine.externalSignals.filter {
-            $0.mode != .input && validSignals.contains($0.name)
+        // swiftlint:disable force_unwrapping
+        let ringlets = PortSignal(
+            type: .alias(name: VariableName(pre: "\(state.name.rawValue)_", name: .stateExecutionType)!),
+            name: .ringlets,
+            mode: .output
+        )
+        let workingSignals = snapshotSignals.map {
+            PortSignal(type: $0.type, name: VariableName(pre: "working_", name: $0.name)!, mode: .output)
         }
-        // swiftlint:disable:next force_unwrapping
-        .map { PortSignal(type: $0.type, name: VariableName(pre: "working_", name: $0.name)!, mode: .output) }
+        // swiftlint:enable force_unwrapping
         guard let port = PortBlock(
-            signals: [PortSignal(clock: clock)] + signals + [.ready, .busy, .workingExecuteOnEntry]
+            signals: [PortSignal(clock: clock)] + signals + [.ready, ringlets, .busy]
                 + workingSignals
         ) else {
             return nil

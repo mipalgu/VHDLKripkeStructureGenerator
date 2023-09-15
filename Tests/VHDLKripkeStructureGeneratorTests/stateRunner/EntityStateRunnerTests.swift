@@ -1,4 +1,4 @@
-// PortSignal+constants.swift
+// EntityStateRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,21 +54,64 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
+import VHDLMachines
 import VHDLParsing
+import XCTest
 
-// swiftlint:disable force_unwrapping
+/// Test class for `Entity` state runner extensions.
+final class EntityStateRunnerTests: XCTestCase {
 
-/// Add standard signals for state runner.
-extension PortSignal {
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// The `busy` signal.
-    @usableFromInline static let busy = PortSignal(
-        type: .stdLogic, name: .busy, mode: .output, defaultValue: .literal(value: .bit(value: .low))
-    )
+    /// A machine to use for testing.
+    var machine: Machine!
 
-    /// The `ready` signal.
-    @usableFromInline static let ready = PortSignal(type: .stdLogic, name: .ready, mode: .input)
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// The raw VHDL for the initial kripke generator of `machine`.
+    var raw: String {
+        """
+        entity InitialStateRunner is
+            port(
+                clk: in std_logic;
+                y2: in std_logic;
+                M_y: in std_logic;
+                M_STATE_Initial_initialX: in std_logic;
+                executeOnEntry: in boolean;
+                ready: in std_logic;
+                ringlets: out Initial_State_Execution_t;
+                busy: out std_logic := '0';
+                working_y2: out std_logic;
+                working_M_y: out std_logic;
+                working_M_STATE_Initial_initialX: out std_logic;
+                working_executeOnEntry: out boolean
+            );
+        end InitialStateRunner;
+        """
+    }
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+        machine.states[0].externalVariables = [.x, .y2]
+    }
+
+    /// Test state runner entity is created correctly.
+    func testStateRunner() {
+        let entity = Entity(stateRunnerFor: machine.states[0], in: representation)
+        XCTAssertEqual(entity?.rawValue, raw)
+    }
 
 }
-
-// swiftlint:enable force_unwrapping
