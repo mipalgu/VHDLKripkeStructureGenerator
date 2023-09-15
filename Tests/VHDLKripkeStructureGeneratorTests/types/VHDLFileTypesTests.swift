@@ -144,11 +144,13 @@ final class VHDLFileTypesTests: XCTestCase {
         type Suspended_ReadSnapshot_t is record
             M_y2: std_logic;
             M_y: std_logic;
+            M_STATE_Initial_initialX: std_logic;
             executeOnEntry: boolean;
         end record Suspended_ReadSnapshot_t;
         type Suspended_WriteSnapshot_t is record
             M_y2: std_logic;
             M_y: std_logic;
+            M_STATE_Initial_initialX: std_logic;
             nextState: std_logic_vector(0 downto 0);
             executeOnEntry: boolean;
         end record Suspended_WriteSnapshot_t;
