@@ -62,12 +62,10 @@ extension SignalType {
 
     var bits: Int {
         switch self {
-        case .bit, .boolean:
+        case .bit, .boolean, .stdLogic, .stdULogic:
             return 1
         case .integer, .natural, .positive, .real:
             return 32
-        case .stdLogic, .stdULogic:
-            return 2
         case .ranged(let type):
             return type.bits
         }

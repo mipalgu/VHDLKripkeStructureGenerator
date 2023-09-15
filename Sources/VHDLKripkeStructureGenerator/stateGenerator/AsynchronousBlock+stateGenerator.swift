@@ -121,7 +121,7 @@ extension AsynchronousBlock {
             Expression.binary(operation: .concatenate(
                 lhs: $0,
                 rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: .writeSnapshot, member: .variable(name: $1.name)
+                    record: .writeSnapshotSignal, member: .variable(name: $1.name)
                 ))))
             ))
         }
@@ -132,7 +132,7 @@ extension AsynchronousBlock {
                     name: .boolToStdLogic,
                     arguments: [
                         .reference(variable: .variable(reference: .member(access: MemberAccess(
-                            record: .writeSnapshot, member: .variable(name: .executeOnEntry)
+                            record: .writeSnapshotSignal, member: .variable(name: .executeOnEntry)
                         ))))
                     ]
                 )))

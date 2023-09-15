@@ -106,7 +106,7 @@ final class VHDLFileStateGeneratorTests: XCTestCase {
         end InitialKripkeGenerator;
 
         architecture Behavioral of InitialKripkeGenerator is
-
+        \(String.tab)
         begin
             process(clk)
             begin
@@ -136,7 +136,6 @@ final class VHDLFileStateGeneratorTests: XCTestCase {
     func testStateGenerator() {
         let result = VHDLFile(stateGeneratorFor: machine.states[0], in: representation)
         XCTAssertEqual(result?.rawValue, raw)
-        print(result!.rawValue)
     }
 
 }
