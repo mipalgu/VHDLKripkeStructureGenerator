@@ -59,7 +59,7 @@ import VHDLParsing
 
 extension AsynchronousBlock {
 
-    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
             machine.drivingClock >= 0,

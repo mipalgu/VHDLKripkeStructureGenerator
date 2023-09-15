@@ -59,12 +59,12 @@ import VHDLParsing
 
 extension VHDLFile {
 
-    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
             let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;"),
-            let entity = Entity(stateGeneratorFor: state, in: representation),
-            let body = AsynchronousBlock(stateGeneratorFor: state, in: representation)
+            let entity = Entity(stateKripkeGeneratorFor: state, in: representation),
+            let body = AsynchronousBlock(stateKripkeGeneratorFor: state, in: representation)
         else{
             return nil
         }

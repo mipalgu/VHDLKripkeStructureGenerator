@@ -59,7 +59,7 @@ import VHDLParsing
 
 extension Entity {
 
-    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         guard
             let name = VariableName(rawValue: "\(state.name.rawValue)KripkeGenerator"),
             let readSnapshot = VariableName(rawValue: "readSnapshot"),
