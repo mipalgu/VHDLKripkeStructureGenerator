@@ -66,7 +66,7 @@ extension PackageBody {
             .fnImplementation(value: FunctionImplementation(
                 name: .boolToStdLogic,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .boolean))],
-                returnTube: .signal(type: .stdLogic),
+                returnType: .signal(type: .stdLogic),
                 body: .ifStatement(block: .ifElse(
                     condition: .reference(variable: .variable(reference: .variable(name: .value))),
                     ifBlock: .statement(statement: .returns(value: .literal(value: .bit(value: .high)))),
@@ -76,7 +76,7 @@ extension PackageBody {
             .fnImplementation(value: FunctionImplementation(
                 name: .stdLogicToBool,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
-                returnTube: .signal(type: .boolean),
+                returnType: .signal(type: .boolean),
                 body: .statement(statement: .returns(value: .conditional(condition: .comparison(
                     value: .equality(
                         lhs: .reference(variable: .variable(reference: .variable(name: .value))),

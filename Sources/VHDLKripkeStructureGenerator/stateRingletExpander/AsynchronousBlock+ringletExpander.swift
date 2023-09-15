@@ -76,10 +76,10 @@ extension AsynchronousBlock {
         )
         let observed = Expression.functionCall(call: .custom(function: CustomFunctionCall(
             name: .boolToStdLogic,
-            arguments: [
-                .reference(variable: .variable(reference: .member(access: MemberAccess(
+            parameters: [
+                Argument(argument: .reference(variable: .variable(reference: .member(access: MemberAccess(
                     record: .ringlet, member: .variable(name: .observed)
-                ))))
+                )))))
             ]
         )))
         let expression = Expression.binary(operation: .concatenate(
@@ -132,13 +132,13 @@ extension Expression {
     init(boolToStdLogicForSnapshot snapshot: VariableName) {
         self = .functionCall(call: .custom(function: CustomFunctionCall(
             name: .boolToStdLogic,
-            arguments: [
-                .reference(variable: .variable(reference: .member(access: MemberAccess(
+            parameters: [
+                Argument(argument: .reference(variable: .variable(reference: .member(access: MemberAccess(
                     record: .ringlet,
                     member: .member(access: MemberAccess(
                         record: snapshot, member: .variable(name: .executeOnEntry)
                     ))
-                ))))
+                )))))
             ]
         )))
     }
@@ -153,28 +153,35 @@ extension Expression {
         case .boolean:
             self = .functionCall(call: .custom(function: CustomFunctionCall(
                 name: .boolToStdLogic,
-                arguments: [name]
+                parameters: [Argument(argument: name)]
             )))
         case .natural, .positive:
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
                     name: .toUnsigned,
-                    arguments: [name, .literal(value: .integer(value: type.encodedBits))]
+                    parameters: [
+                        Argument(argument: name),
+                        Argument(argument: .literal(value: .integer(value: type.encodedBits)))
+                    ]
                 )
             ))))
         case .integer:
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
-                    name: .toSigned, arguments: [name, .literal(value: .integer(value: type.encodedBits))]
+                    name: .toSigned,
+                    parameters: [
+                        Argument(argument: name),
+                        Argument(argument: .literal(value: .integer(value: type.encodedBits)))
+                    ]
                 )
             ))))
         case .stdLogic:
             self = .functionCall(call: .custom(function: CustomFunctionCall(
-                name: .stdLogicEncoded, arguments: [name]
+                name: .stdLogicEncoded, parameters: [Argument(argument: name)]
             )))
         case .stdULogic:
             self = .functionCall(call: .custom(function: CustomFunctionCall(
-                name: .stdULogicEncoded, arguments: [name]
+                name: .stdULogicEncoded, parameters: [Argument(argument: name)]
             )))
         case .ranged(let ranged):
             self.init(encodedType: ranged, name: name)
@@ -191,7 +198,10 @@ extension Expression {
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
                     name: .toSigned,
-                    arguments: [name, .literal(value: .integer(value: ranged.encodedBits))]
+                    parameters: [
+                        Argument(argument: name),
+                        Argument(argument: .literal(value: .integer(value: ranged.encodedBits)))
+                    ]
                 )
             ))))
         case .signed, .unsigned:
@@ -208,10 +218,10 @@ extension Expression {
             self = bitRange.map {
                 Expression.functionCall(call: .custom(function: CustomFunctionCall(
                     name: .stdLogicEncoded,
-                    arguments: [
-                        .reference(variable: .indexed(name: name, index: .index(
+                    parameters: [
+                        Argument(argument: .reference(variable: .indexed(name: name, index: .index(
                             value: .literal(value: .integer(value: $0))
-                        )))
+                        ))))
                     ]
                 )))
             }
@@ -228,10 +238,10 @@ extension Expression {
             self = bitRange.map {
                 Expression.functionCall(call: .custom(function: CustomFunctionCall(
                     name: .stdULogicEncoded,
-                    arguments: [
-                        .reference(variable: .indexed(name: name, index: .index(
+                    parameters: [
+                        Argument(argument: .reference(variable: .indexed(name: name, index: .index(
                             value: .literal(value: .integer(value: $0))
-                        )))
+                        ))))
                     ]
                 )))
             }
