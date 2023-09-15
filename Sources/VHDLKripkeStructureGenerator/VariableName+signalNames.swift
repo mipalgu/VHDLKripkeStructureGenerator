@@ -68,6 +68,9 @@ extension VariableName {
     /// The `boolToStdLogic` function.
     @usableFromInline static let boolToStdLogic = VariableName(rawValue: "boolToStdLogic")!
 
+    /// The `busy` signal.
+    @usableFromInline static let busy = VariableName(rawValue: "busy")!
+
     /// The `clk` signal.
     @usableFromInline static let clk = VariableName(rawValue: "clk")!
 
@@ -142,6 +145,9 @@ extension VariableName {
 
     /// The `ReadSnapshot_t` type.
     @usableFromInline static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
+
+    /// The `ready` signal.
+    @usableFromInline static let ready = VariableName(rawValue: "ready")!
 
     /// The `reset` signal.
     @usableFromInline static let reset = VariableName(rawValue: "reset")!
