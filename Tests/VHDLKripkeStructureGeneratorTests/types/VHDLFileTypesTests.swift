@@ -62,7 +62,7 @@ import XCTest
 /// Test class for `VHDLFile` type extensions.
 final class VHDLFileTypesTests: XCTestCase {
 
-        // swiftlint:disable implicitly_unwrapped_optional
+    // swiftlint:disable implicitly_unwrapped_optional
 
     /// A machine to use for testing.
     var machine: Machine!
@@ -130,7 +130,7 @@ final class VHDLFileTypesTests: XCTestCase {
             executeOnEntry: boolean;
         end record Initial_ReadSnapshot_t;
         type Initial_WriteSnapshot_t is record
-            M_y2: std_logic;
+            y2: std_logic;
             M_y: std_logic;
             M_STATE_Initial_initialX: std_logic;
             nextState: std_logic_vector(0 downto 0);
@@ -142,10 +142,12 @@ final class VHDLFileTypesTests: XCTestCase {
             observed: boolean;
         end record Initial_Ringlet_t;
         type Suspended_ReadSnapshot_t is record
+            M_y2: std_logic;
             M_y: std_logic;
             executeOnEntry: boolean;
         end record Suspended_ReadSnapshot_t;
         type Suspended_WriteSnapshot_t is record
+            M_y2: std_logic;
             M_y: std_logic;
             nextState: std_logic_vector(0 downto 0);
             executeOnEntry: boolean;

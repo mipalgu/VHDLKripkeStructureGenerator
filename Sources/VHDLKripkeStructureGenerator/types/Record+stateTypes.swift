@@ -70,7 +70,9 @@ extension Record {
     init<T>(readSnapshotFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let stateExternals = Set(state.externalVariables)
-        let validExternals = machine.externalSignals.filter { stateExternals.contains($0.name) }
+        let validExternals = machine.externalSignals.filter {
+            $0.mode != .input || stateExternals.contains($0.name)
+        }
         let preamble = "\(machine.name.rawValue)_"
         let externals = validExternals.map {
             let name = $0.mode == .input ? $0.name : VariableName(pre: preamble, name: $0.name)!
@@ -103,12 +105,12 @@ extension Record {
         }
         let machine = representation.machine
         let stateExternals = Set(state.externalVariables)
-        let validExternals = machine.externalSignals.filter {
-            $0.mode != .input && stateExternals.contains($0.name)
-        }
+        let validExternals = machine.externalSignals.filter { $0.mode != .input }
         let preamble = "\(machine.name.rawValue)_"
         let externals = validExternals.map {
-            RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
+            let name = stateExternals.contains($0.name) ? $0.name :
+                VariableName(pre: preamble, name: $0.name)!
+            return RecordTypeDeclaration(name: name, type: $0.type)
         }
         let machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
