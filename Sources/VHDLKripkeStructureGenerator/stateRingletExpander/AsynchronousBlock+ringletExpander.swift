@@ -143,39 +143,38 @@ extension Expression {
         )))
     }
 
-    init(encodeType type: Type, name: VariableName) {
+    init(encodeType type: Type, name: Expression) {
         guard case .signal(let type) = type else {
             fatalError("Failed to convert type \(type)!")
         }
-        let nameExp = Expression.reference(variable: .variable(reference: .variable(name: name)))
         switch type {
         case .bit:
-            self = .cast(operation: .stdLogic(expression: nameExp))
+            self = .cast(operation: .stdLogic(expression: name))
         case .boolean:
             self = .functionCall(call: .custom(function: CustomFunctionCall(
                 name: .boolToStdLogic,
-                arguments: [nameExp]
+                arguments: [name]
             )))
         case .natural, .positive:
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
                     name: .toUnsigned,
-                    arguments: [nameExp, .literal(value: .integer(value: type.encodedBits))]
+                    arguments: [name, .literal(value: .integer(value: type.encodedBits))]
                 )
             ))))
         case .integer:
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
-                    name: .toSigned, arguments: [nameExp, .literal(value: .integer(value: type.encodedBits))]
+                    name: .toSigned, arguments: [name, .literal(value: .integer(value: type.encodedBits))]
                 )
             ))))
         case .stdLogic:
             self = .functionCall(call: .custom(function: CustomFunctionCall(
-                name: .stdLogicEncoded, arguments: [nameExp]
+                name: .stdLogicEncoded, arguments: [name]
             )))
         case .stdULogic:
             self = .functionCall(call: .custom(function: CustomFunctionCall(
-                name: .stdULogicEncoded, arguments: [nameExp]
+                name: .stdULogicEncoded, arguments: [name]
             )))
         case .ranged(let ranged):
             self.init(encodedType: ranged, name: name)
@@ -184,20 +183,19 @@ extension Expression {
         }
     }
 
-    init(encodedType ranged: RangedType, name: VariableName) {
-        let nameExp = Expression.reference(variable: .variable(reference: .variable(name: name)))
+    init(encodedType ranged: RangedType, name: Expression) {
         switch ranged {
         case .bitVector:
-            self = .cast(operation: .stdLogicVector(expression: nameExp))
+            self = .cast(operation: .stdLogicVector(expression: name))
         case .integer:
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
                     name: .toSigned,
-                    arguments: [nameExp, .literal(value: .integer(value: ranged.encodedBits))]
+                    arguments: [name, .literal(value: .integer(value: ranged.encodedBits))]
                 )
             ))))
         case .signed, .unsigned:
-            self = .cast(operation: .stdLogicVector(expression: nameExp))
+            self = .cast(operation: .stdLogicVector(expression: name))
         case .stdLogicVector(let size):
             let bits = ranged.bits
             let bitRange: ClosedRange<Int>
