@@ -167,6 +167,9 @@ extension VariableName {
     /// The `stateTracker` signal.
     @usableFromInline static let stateTracker = VariableName(rawValue: "stateTracker")!
 
+    /// The `stdLogicEncoded` function.
+    @usableFromInline static let stdLogicEncoded = VariableName(rawValue: "stdLogicEncoded")!
+
     /// The `stdLogicToBool` function.
     @usableFromInline static let stdLogicToBool = VariableName(rawValue: "stdLogicToBool")!
 
@@ -175,6 +178,9 @@ extension VariableName {
 
     /// The `stdLogicTypes_t` type.
     @usableFromInline static let stdLogicTypesT = VariableName(rawValue: "stdLogicTypes_t")!
+
+    /// The `stdULogicEncoded` function.
+    @usableFromInline static let stdULogicEncoded = VariableName(rawValue: "stdULogicEncoded")!
 
     /// The `targetState` signal.
     @usableFromInline static let targetState = VariableName(rawValue: "targetState")!
@@ -185,14 +191,23 @@ extension VariableName {
     /// The `targetStateOut` signal.
     @usableFromInline static let targetStateOut = VariableName(rawValue: "targetStateOut")!
 
+    /// The `to_signed` function.
+    @usableFromInline static let toSigned = VariableName(rawValue: "to_signed")!
+
     /// The `TotalSnapshot_t` record.
     @usableFromInline static let totalSnapshot = VariableName(rawValue: "TotalSnapshot_t")!
+
+    /// The `to_unsigned` function.
+    @usableFromInline static let toUnsigned = VariableName(rawValue: "to_unsigned")!
 
     /// The `tracker` signal.
     @usableFromInline static let tracker = VariableName(rawValue: "tracker")!
 
     /// the `value` variable.
     @usableFromInline static let value = VariableName(rawValue: "value")!
+
+    /// The `vector` signal.
+    @usableFromInline static let vector = VariableName(rawValue: "vector")!
 
     /// The `WaitForFinish` signal.
     @usableFromInline static let waitForFinish = VariableName(rawValue: "WaitForFinish")!
