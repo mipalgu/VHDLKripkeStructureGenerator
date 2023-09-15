@@ -57,8 +57,14 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add ringlet expander.
 extension AsynchronousBlock {
 
+    /// Create the ringlet expander logic for a state.
+    /// - Parameters:
+    ///   - state: The state to create the ringlet expander logic for.
+    ///   - representation: The representation of the machine to use.
+    @inlinable
     init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         guard let write = Record(writeSnapshotFor: state, in: representation) else {
             return nil
@@ -100,8 +106,15 @@ extension AsynchronousBlock {
 
 }
 
+/// Add helper functions.
 extension Expression {
 
+    /// Helper function to concatenate types in the ringlet expander.
+    /// - Parameters:
+    ///   - types: The types to concatenate.
+    ///   - expression: Any expression to append to the end of the concatenated types.
+    ///   - record: The record name to prepend to the types.
+    @inlinable
     init(concatenate types: [RecordTypeDeclaration], appending expression: Expression, record: VariableName) {
         let result: Expression
         if types.isEmpty {
@@ -136,6 +149,9 @@ extension Expression {
         self = result
     }
 
+    /// Create a boolToStdLogic invocation with parameter `snapshot`.
+    /// - Parameter snapshot: The snapshot to use as the parameter.
+    @inlinable
     init(boolToStdLogicForSnapshot snapshot: VariableName) {
         self = .functionCall(call: .custom(function: CustomFunctionCall(
             name: .boolToStdLogic,
@@ -150,6 +166,11 @@ extension Expression {
         )))
     }
 
+    /// Create an encoded invocation.
+    /// - Parameters:
+    ///   - type: The type to encode.
+    ///   - name: The name of the variable to encode.
+    @inlinable
     init(encodeType type: Type, name: Expression) {
         guard case .signal(let type) = type else {
             fatalError("Failed to convert type \(type)!")
@@ -197,6 +218,13 @@ extension Expression {
         }
     }
 
+    // swiftlint:disable function_body_length
+
+    /// Create an encoded function invocation for a ranged type.
+    /// - Parameters:
+    ///   - ranged: The type to encode.
+    ///   - name: The name of the variable to encode.
+    @inlinable
     init(encodedType ranged: RangedType, name: Expression) {
         switch ranged {
         case .bitVector:
@@ -256,18 +284,27 @@ extension Expression {
         }
     }
 
+    // swiftlint:enable function_body_length
+
 }
 
+/// Add concatenated helper property.
 extension Array where Element == Expression {
 
-    var concatenated: Expression {
+    /// Concatenate expressions together.
+    @inlinable var concatenated: Expression {
         self.joined { .binary(operation: .concatenate(lhs: $0, rhs: $1)) }
     }
 
 }
 
+/// Create joined method.
 extension Array {
 
+    /// Join elements of an array together using a reducing function.
+    /// - Parameter fn: The function that reduces two elements into 1.
+    /// - Returns: The joined element.
+    @inlinable
     func joined(fn: (Element, Element) -> Element) -> Element {
         guard let first = self.first else {
             fatalError("Failed to join empty array!")

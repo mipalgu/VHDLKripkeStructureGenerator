@@ -57,8 +57,13 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add encoding helper methods.
 extension State {
 
+    /// Calculate the number of bits required to encode a ringlet for this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The number of bits required to encode a ringlet for this state.
+    @inlinable
     func encodedSize<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
         guard let write = Record(writeSnapshotFor: self, in: representation) else {
             fatalError("Failed to get state encoding for \(self.name)!")
@@ -67,6 +72,10 @@ extension State {
         return read.encodedBits + write.encodedBits + 1
     }
 
+    /// The type to encode a ringlet of this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The type of the encoded ringlet for this state.
+    @inlinable
     func encodedType<T>(in representation: T) -> SignalType where T: MachineVHDLRepresentable {
         SignalType.ranged(type: .stdLogicVector(size: .to(
             lower: .literal(value: .integer(value: 0)),

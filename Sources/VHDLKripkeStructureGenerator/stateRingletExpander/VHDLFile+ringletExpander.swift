@@ -57,8 +57,14 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add ringlet expander.
 extension VHDLFile {
 
+    /// Create a ringlet expander for a state.
+    /// - Parameters:
+    ///   - state: The state to create the ringlet expander for.
+    ///   - representation: The machine representation to use.
+    @inlinable
     init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard

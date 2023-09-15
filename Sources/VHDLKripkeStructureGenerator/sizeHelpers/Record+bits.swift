@@ -56,9 +56,11 @@
 
 import VHDLParsing
 
+/// Add bit claculation helpers.
 extension Record {
 
-    var bits: Int {
+    /// The minimum number of bits required to represent the entire record.
+    @inlinable var bits: Int {
         self.types.reduce(0) {
             guard case .signal(let type) = $1.type else {
                 fatalError("Failed to find size of type \($1.type)!")
@@ -67,7 +69,8 @@ extension Record {
         }
     }
 
-    var encodedBits: Int {
+    /// The minimum number of bits required to represent the entire encoded version of the record.
+    @inlinable var encodedBits: Int {
         self.types.reduce(0) {
             guard case .signal(let type) = $1.type else {
                 fatalError("Failed to find size of type \($1.type)!")
