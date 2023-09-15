@@ -69,10 +69,17 @@ extension AsynchronousBlock {
         let readExpression = Expression(
             concatenate: readTypes, appending: readOnEntry, record: .readSnapshotSignal
         )
-        let writeTypes = write.types.filter { $0.name != .executeOnEntry }
+        let writeTypes = write.types.filter { $0.name != .executeOnEntry && $0.name != .nextState }
+        let writeNextState = Expression.reference(variable: .variable(reference: .member(
+            access: MemberAccess(record: .ringlet, member: .member(access: MemberAccess(
+                record: .writeSnapshotSignal, member: .variable(name: .nextState)
+            )))
+        )))
         let writeOnEntry = Expression(boolToStdLogicForSnapshot: .writeSnapshotSignal)
         let writeExpression = Expression(
-            concatenate: writeTypes, appending: writeOnEntry, record: .writeSnapshotSignal
+            concatenate: writeTypes,
+            appending: [writeNextState, writeOnEntry].concatenated,
+            record: .writeSnapshotSignal
         )
         let observed = Expression.functionCall(call: .custom(function: CustomFunctionCall(
             name: .boolToStdLogic,

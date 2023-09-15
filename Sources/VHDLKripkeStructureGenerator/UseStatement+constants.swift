@@ -61,6 +61,9 @@ import VHDLParsing
 /// Add common includes.
 extension UseStatement {
 
+    /// Include `numeric_std.all`.
+    @usableFromInline static let numericStd = UseStatement(rawValue: "use IEEE.numeric_std.all;")!
+
     /// Include `PrimitiveTypes`.
     @usableFromInline  static let primitiveTypes = UseStatement(rawValue: "use work.PrimitiveTypes.all;")!
 
