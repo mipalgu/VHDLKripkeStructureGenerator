@@ -109,6 +109,26 @@ final class VHDLFileTests: XCTestCase {
             begin
                 return value = '1';
             end function;
+            function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0) is
+            begin
+                if (value = '1') then
+                    return "01";
+                elsif (value = '0') then
+                    return "00";
+                elsif (value = 'Z') then
+                    return "11";
+                end if;
+            end function;
+            function stdULogicEncoded(value: std_ulogic) return std_logic_vector(1 downto 0) is
+            begin
+                if (value = '1') then
+                    return "01";
+                elsif (value = '0') then
+                    return "00";
+                elsif (value = 'Z') then
+                    return "11";
+                end if;
+            end function;
         end package body PrimitiveTypes;
 
         """

@@ -83,6 +83,74 @@ extension PackageBody {
                         rhs: .literal(value: .bit(value: .high))
                     )
                 ))))
+            )),
+            .fnImplementation(value: FunctionImplementation(
+                name: .stdLogicEncoded,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
+                returnType: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+                )))),
+                body: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .statement(statement: .returns(value: .literal(value: .vector(value: .bits(
+                        value: BitVector(values: [.low, .high])
+                    ))))),
+                    elseBlock: .ifStatement(block: .ifElse(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                            rhs: .literal(value: .bit(value: .low))
+                        ))),
+                        ifBlock: .statement(statement: .returns(value: .literal(value: .vector(value: .bits(
+                            value: BitVector(values: [.low, .low])
+                        ))))),
+                        elseBlock: .ifStatement(block: .ifStatement(
+                            condition: .conditional(condition: .comparison(value: .equality(
+                                lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                                rhs: .literal(value: .logic(value: .highImpedance))
+                            ))),
+                            ifBlock: .statement(statement: .returns(value: .literal(value: .vector(
+                                value: .bits(value: BitVector(values: [.high, .high]))
+                            ))))
+                        ))
+                    ))
+                ))
+            )),
+            .fnImplementation(value: FunctionImplementation(
+                name: .stdULogicEncoded,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdULogic))],
+                returnType: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+                )))),
+                body: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .statement(statement: .returns(value: .literal(value: .vector(value: .bits(
+                        value: BitVector(values: [.low, .high])
+                    ))))),
+                    elseBlock: .ifStatement(block: .ifElse(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                            rhs: .literal(value: .bit(value: .low))
+                        ))),
+                        ifBlock: .statement(statement: .returns(value: .literal(value: .vector(value: .bits(
+                            value: BitVector(values: [.low, .low])
+                        ))))),
+                        elseBlock: .ifStatement(block: .ifStatement(
+                            condition: .conditional(condition: .comparison(value: .equality(
+                                lhs: .reference(variable: .variable(reference: .variable(name: .value))),
+                                rhs: .literal(value: .logic(value: .highImpedance))
+                            ))),
+                            ifBlock: .statement(statement: .returns(value: .literal(value: .vector(
+                                value: .bits(value: BitVector(values: [.high, .high]))
+                            ))))
+                        ))
+                    ))
+                ))
             ))
         ])
     )
