@@ -1,4 +1,4 @@
-// VHDLPackage+machineTypes.swift
+// State+numberOfStates.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,65 +57,70 @@
 import VHDLMachines
 import VHDLParsing
 
-/// Add type package initialisation.
-extension VHDLPackage {
+/// Add helpers for calculating state explosion.
+extension State {
 
-    /// Create the type package for a machine representation.
-    /// - Parameter representation: The machine to create the package for.
+    /// Calculate the maxmimum state-space of this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The maximum number of Kripke states this state can produce.
     @inlinable
-    init?<T>(typesFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        guard
-            let name = VariableName(rawValue: "\(machine.name.rawValue)Types"),
-            let readSnapshot = Record(readSnapshotFor: representation),
-            let writeSnapshot = Record(writeSnapshotFor: representation),
-            let totalSnapshot = Record(totalSnapshotFor: representation)
-        else {
+    func numberOfStates<T>(in representation: T) -> Int? where T: MachineVHDLRepresentable {
+        guard let write = Record(writeSnapshotFor: self, in: representation) else {
             return nil
         }
-        let stateRecords: [[Record]] = machine.states.compactMap {
-            guard let writeSnapshot = Record(writeSnapshotFor: $0, in: representation) else {
-                return nil
+        let writeSize = write.types.map {
+            guard case .signal(let type) = $0.type else {
+                fatalError("Failed to discern size of \($0.type)!")
             }
-            return [
-                Record(readSnapshotFor: $0, in: representation),
-                writeSnapshot,
-                Record(ringletFor: $0)
-            ]
+            return type.numberOfValues
         }
-        guard stateRecords.count == machine.states.count else {
-            return nil
+        .reduce(1, *)
+        let readSize = Record(readSnapshotFor: self, in: representation).types.map {
+            guard case .signal(let type) = $0.type else {
+                fatalError("Failed to discern size of \($0.type)!")
+            }
+            return type.numberOfValues
         }
-        let unwrappedStateRecords = stateRecords.flatMap {
-            $0.map { HeadStatement.definition(value: .type(value: .record(value: $0))) }
-        }
-        let stateExecutionTypes = machine.states.map {
-            HeadStatement.definition(
-                value: .type(value: .array(value: $0.executionTypes(in: representation)))
-            )
-        }
-        self.init(
-            name: name,
-            statements: [
-                .definition(value: .type(value: .record(value: readSnapshot))),
-                .definition(value: .type(value: .record(value: writeSnapshot))),
-                .definition(value: .type(value: .record(value: totalSnapshot)))
-            ] + unwrappedStateRecords + stateExecutionTypes + representation.allConstants
-        )
+        .reduce(1, *)
+        return writeSize * readSize
     }
 
-}
-
-extension MachineVHDLRepresentable {
-
-    /// Find all constants in the architecture head.
-    @inlinable var allConstants: [HeadStatement] {
-        self.architectureHead.statements.filter {
-            guard case .definition(let def) = $0, case .constant = def else {
-                return false
-            }
-            return true
+    /// Calculate the maxmimum possible state explosion from a single ringlet.
+    /// - Parameter representation: The representation of the machine to use.
+    /// - Returns: The maxmimum number of states a ringlet can produce in this state.
+    @inlinable
+    func numberOfStatesForRinglet<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
+        let validSignals = Set(self.externalVariables)
+        let externals = representation.machine.externalSignals.filter {
+            $0.mode != .output && validSignals.contains($0.name)
         }
+        return externals.reduce(1) {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Failed to discern type size in \($1.type)!")
+            }
+            return $0 * type.numberOfUnresolvedValues
+        }
+    }
+
+    /// Create the execution array for this state.
+    /// - Parameter representation: The representation of the machine to use.
+    /// - Returns: The array definition of the execution type.
+    @inlinable
+    func executionTypes<T>(in representation: T) -> ArrayDefinition where T: MachineVHDLRepresentable {
+        let size = self.numberOfStatesForRinglet(in: representation)
+        // swiftlint:disable:next force_unwrapping
+        let name = VariableName(pre: "\(self.name.rawValue)_", name: .stateExecutionType)!
+        let type = self.encodedType(in: representation)
+        return ArrayDefinition(
+            name: name,
+            size: [
+                .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: max(0, size - 1)))
+                )
+            ],
+            elementType: .signal(type: type)
+        )
     }
 
 }

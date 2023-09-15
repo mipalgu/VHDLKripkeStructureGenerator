@@ -159,6 +159,8 @@ final class VHDLFileTypesTests: XCTestCase {
             writeSnapshot: Suspended_WriteSnapshot_t;
             observed: boolean;
         end record Suspended_Ringlet_t;
+        type Initial_State_Execution_t is array (0 to 8) of std_logic_vector(0 to 17);
+        type Suspended_State_Execution_t is array (0 to 0) of std_logic_vector(0 to 15);
         constant CheckTransition: std_logic_vector(3 downto 0) := "0000";
         constant Internal: std_logic_vector(3 downto 0) := "0001";
         constant NoOnEntry: std_logic_vector(3 downto 0) := "0010";

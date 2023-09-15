@@ -170,6 +170,9 @@ extension VariableName {
     /// The `state` signal.
     @usableFromInline static let state = VariableName(rawValue: "state")!
 
+    /// The `State_Execution_t` type.
+    @usableFromInline static let stateExecutionType = VariableName(rawValue: "State_Execution_t")!
+
     /// The `stateTracker` signal.
     @usableFromInline static let stateTracker = VariableName(rawValue: "stateTracker")!
 
