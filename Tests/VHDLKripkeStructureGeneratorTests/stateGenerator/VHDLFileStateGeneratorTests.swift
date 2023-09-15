@@ -77,13 +77,13 @@ final class VHDLFileStateGeneratorTests: XCTestCase {
     /// The ringlet assignment.
     let ringletAssignment = "ringlet <= (readSnapshot => (x => readSnapshot.x, M_y2 => readSnapshot.M_y2," +
         " M_y => readSnapshot.M_y, M_STATE_Initial_initialX => readSnapshot.M_STATE_Initial_initialX," +
-            " executeOnEntry => readSnapshot.executeOnEntry), writeSnapshot => (M_y2 =>" +
-            " writeSnapshot.M_y2, M_y => writeSnapshot.M_y, M_STATE_Initial_initialX =>" +
+            " executeOnEntry => readSnapshot.executeOnEntry), writeSnapshot => (y2 =>" +
+            " writeSnapshot.y2, M_y => writeSnapshot.M_y, M_STATE_Initial_initialX =>" +
             " writeSnapshot.M_STATE_Initial_initialX, nextState => writeSnapshot.nextState, executeOnEntry" +
             " => writeSnapshot.executeOnEntry), observed => true);"
 
     /// The pendingState assignment.
-    let pendingState = "pendingState <= writeSnapshot.nextState & writeSnapshot.M_y2 & writeSnapshot.M_y" +
+    let pendingState = "pendingState <= writeSnapshot.nextState & writeSnapshot.y2 & writeSnapshot.M_y" +
         " & writeSnapshot.M_STATE_Initial_initialX & boolToStdLogic(writeSnapshot.executeOnEntry)" +
         " & '1';"
 
