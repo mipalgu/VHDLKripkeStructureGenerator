@@ -57,8 +57,17 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add state kripke generator.
 extension AsynchronousBlock {
 
+    // swiftlint:disable function_body_length
+
+    /// Creates the logic for a states kripke generator. This logic expands a states read and write snapshots
+    /// into the next state to compute.
+    /// - Parameters:
+    ///   - state: The state to generate this logic for.
+    ///   - representation: The machine representation the `state` belongs to.
+    @inlinable
     init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
@@ -155,5 +164,7 @@ extension AsynchronousBlock {
         )
         self = .process(block: process)
     }
+
+    // swiftlint:enable function_body_length
 
 }

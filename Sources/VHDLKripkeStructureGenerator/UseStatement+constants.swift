@@ -56,6 +56,8 @@
 
 import VHDLParsing
 
+// swiftlint:disable force_unwrapping
+
 /// Add common includes.
 extension UseStatement {
 
@@ -66,3 +68,5 @@ extension UseStatement {
     @usableFromInline static let stdLogic1164 = UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!
 
 }
+
+// swiftlint:enable force_unwrapping

@@ -58,9 +58,11 @@ import Foundation
 import VHDLMachines
 import VHDLParsing
 
+/// Add bits.
 extension SignalType {
 
-    var bits: Int {
+    /// Calculate the number of bits required to represent this type.
+    @inlinable var bits: Int {
         switch self {
         case .bit, .boolean, .stdLogic, .stdULogic:
             return 1
@@ -73,9 +75,13 @@ extension SignalType {
 
 }
 
+/// Add bits.
 extension RangedType {
 
-    var bits: Int {
+    // swiftlint:disable force_unwrapping
+
+    /// Calculate the number of bits required to represent this type.
+    @inlinable var bits: Int {
         switch self {
         case .bitVector(let size), .signed(let size), .unsigned(let size):
             return size.size!
@@ -98,11 +104,16 @@ extension RangedType {
         }
     }
 
+    // swiftlint:enable force_unwrapping
+
 }
 
+/// Add bits.
 extension Int {
 
-    var bits: Int {
+    /// Calculate the number of bits required to represent self. This is the minimum reqired bits to contain
+    /// the value using an extra sign bit for negative numbers.
+    @inlinable var bits: Int {
         let calculation = log2(abs(Double(self)))
         if ceil(calculation) == calculation {
             if self < 0 {
@@ -116,6 +127,10 @@ extension Int {
         return Int(ceil(calculation))
     }
 
+    /// Return the maximum of self and other.
+    /// - Parameter other: The other value to compare to.
+    /// - Returns: The maximum of self and other.
+    @inlinable
     func max(other: Int) -> Int {
         self > other ? self : other
     }

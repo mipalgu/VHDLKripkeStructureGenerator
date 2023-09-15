@@ -87,7 +87,7 @@ final class VHDLFileStateGeneratorTests: XCTestCase {
         " & writeSnapshot.M_STATE_Initial_initialX & boolToStdLogic(writeSnapshot.executeOnEntry)" +
         " & '1';"
 
-    /// The raw VHDL for the ringlet runner of `machine`.
+    /// The raw VHDL for the initial kripke generator of `machine`.
     var raw: String {
         """
         library IEEE;

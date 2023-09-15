@@ -57,8 +57,14 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add a states kripke generator.
 extension Entity {
 
+    /// Create the entity declaration for a states kripke generator.
+    /// - Parameters:
+    ///   - state: The state to generate this entity for.
+    ///   - representation: The representation of the machine.
+    @inlinable
     init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         guard
             let name = VariableName(rawValue: "\(state.name.rawValue)KripkeGenerator"),
@@ -85,6 +91,7 @@ extension Entity {
             upper: .literal(value: .integer(value: pendingStateSize - 1)),
             lower: .literal(value: .integer(value: 0))
         ))))
+        // swiftlint:disable force_unwrapping
         self.init(name: name, port: PortBlock(signals: [
             PortSignal(clock: clock),
             PortSignal(type: .alias(name: .readSnapshotType), name: readSnapshot, mode: .input),
@@ -96,6 +103,7 @@ extension Entity {
             ),
             PortSignal(type: pendingStateType, name: .pendingState, mode: .output)
         ])!)
+        // swiftlint:enable force_unwrapping
     }
 
 }

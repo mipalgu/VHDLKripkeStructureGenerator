@@ -57,15 +57,22 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add state kripke generator.
 extension VHDLFile {
 
+    /// Create a state kripke generator. This file computes the next state to search from observing a states
+    /// read snapshot and write snapshot.
+    /// - Parameters:
+    ///   - state: The state to generate this file for.
+    ///   - representation: The representation of the machine.
+    @inlinable
     init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
             let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;"),
             let entity = Entity(stateKripkeGeneratorFor: state, in: representation),
             let body = AsynchronousBlock(stateKripkeGeneratorFor: state, in: representation)
-        else{
+        else {
             return nil
         }
         let architecture = Architecture(
