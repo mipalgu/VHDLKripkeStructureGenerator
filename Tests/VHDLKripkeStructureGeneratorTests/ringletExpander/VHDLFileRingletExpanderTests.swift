@@ -1,4 +1,4 @@
-// UseStatement+constants.swift
+// VHDLFileRingletExpanderTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,22 +54,76 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
+import VHDLMachines
 import VHDLParsing
+import XCTest
 
-// swiftlint:disable force_unwrapping
+/// Test class for `VHDLFile` ringlet expander extensions.
+final class VHDLFileRingletExpanderTests: XCTestCase {
 
-/// Add common includes.
-extension UseStatement {
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// Include `numeric_std.all`.
-    @usableFromInline static let numericStd = UseStatement(rawValue: "use IEEE.numeric_std.all;")!
+    /// A machine to use for testing.
+    var machine: Machine!
 
-    /// Include `PrimitiveTypes`.
-    @usableFromInline  static let primitiveTypes = UseStatement(rawValue: "use work.PrimitiveTypes.all;")!
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
+    }
 
-    /// The `std_logic_1164.all` include.
-    @usableFromInline static let stdLogic1164 = UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Vector assignment.
+    let vector = "vector <= stdLogicEncoded(ringlet.readSnapshot.x) & " +
+        "stdLogicEncoded(ringlet.readSnapshot.M_y2) & stdLogicEncoded(ringlet.readSnapshot.M_y) & " +
+        "stdLogicEncoded(ringlet.readSnapshot.M_STATE_Initial_initialX) & " +
+        "boolToStdLogic(ringlet.readSnapshot.executeOnEntry) & stdLogicEncoded(ringlet.writeSnapshot.y2) & " +
+        "stdLogicEncoded(ringlet.writeSnapshot.M_y) & " +
+        "stdLogicEncoded(ringlet.writeSnapshot.M_STATE_Initial_initialX) & ringlet.writeSnapshot.nextState " +
+        "& boolToStdLogic(ringlet.writeSnapshot.executeOnEntry) & boolToStdLogic(ringlet.observed);"
+
+    /// The raw VHDL for the initial ringlet expander of `machine`.
+    var raw: String {
+        """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+        use work.MTypes.all;
+        use work.PrimitiveTypes.all;
+
+        entity InitialRingletExpander is
+            port(
+                ringlet: in Initial_Ringlet_t;
+                vector: out std_logic_vector(0 to 17)
+            );
+        end InitialRingletExpander;
+
+        architecture Behavioral of InitialRingletExpander is
+        \(String.tab)
+        begin
+            \(vector)
+        end Behavioral;
+
+        """
+    }
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+        machine.states[0].externalVariables = [.x, .y2]
+    }
+
+    /// Test ringlet expander is generated correctly.
+    func testRingletExpander() {
+        let result = VHDLFile(ringletExpanderFor: machine.states[0], in: representation)
+        XCTAssertEqual(result?.rawValue, raw)
+    }
 
 }
-
-// swiftlint:enable force_unwrapping

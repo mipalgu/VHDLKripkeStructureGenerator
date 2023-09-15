@@ -139,10 +139,12 @@ extension AsynchronousBlock {
                 lhs: joinedSignals,
                 rhs: .functionCall(call: FunctionCall.custom(function: CustomFunctionCall(
                     name: .boolToStdLogic,
-                    arguments: [
-                        .reference(variable: .variable(reference: .member(access: MemberAccess(
-                            record: .writeSnapshotSignal, member: .variable(name: .executeOnEntry)
-                        ))))
+                    parameters: [
+                        Argument(argument: .reference(variable: .variable(
+                            reference: .member(access: MemberAccess(
+                                record: .writeSnapshotSignal, member: .variable(name: .executeOnEntry)
+                            ))
+                        )))
                     ]
                 )))
             )),

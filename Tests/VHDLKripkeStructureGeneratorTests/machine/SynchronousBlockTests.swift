@@ -71,6 +71,9 @@ final class SynchronousBlockTests: XCTestCase {
 
     // swiftlint:enable implicitly_unwrapped_optional
 
+    /// The varaible `x`.
+    let x = Expression.reference(variable: .variable(reference: .variable(name: .x)))
+
     /// Initialise the machine before every test.
     override func setUp() {
         machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
@@ -114,14 +117,14 @@ final class SynchronousBlockTests: XCTestCase {
                             condition: .reference(variable: .variable(reference: .variable(name: .x))),
                             ifBlock: .statement(statement: .assignment(
                                 name: .indexed(
-                                    name: .x, index: .index(value: .reference(
+                                    name: x, index: .index(value: .reference(
                                         variable: .variable(reference: .variable(name: .x))
                                     ))
                                 ),
                                 value: .reference(variable: .variable(reference: .variable(name: .x)))
                             )),
                             elseBlock: .statement(statement: .assignment(
-                                name: .indexed(name: .x, index: .range(value: .to(
+                                name: .indexed(name: x, index: .range(value: .to(
                                     lower: .reference(variable: .variable(reference: .variable(name: .x))),
                                     upper: .reference(variable: .variable(reference: .variable(name: .x)))
                                 ))),
@@ -188,14 +191,14 @@ final class SynchronousBlockTests: XCTestCase {
                             condition: .reference(variable: .variable(reference: .variable(name: .x))),
                             ifBlock: .statement(statement: .assignment(
                                 name: .indexed(
-                                    name: .x, index: .index(value: .reference(
+                                    name: x, index: .index(value: .reference(
                                         variable: .variable(reference: .variable(name: .x))
                                     ))
                                 ),
                                 value: .reference(variable: .variable(reference: .variable(name: .x)))
                             )),
                             elseBlock: .statement(statement: .assignment(
-                                name: .indexed(name: .x, index: .range(value: .to(
+                                name: .indexed(name: x, index: .range(value: .to(
                                     lower: .reference(variable: .variable(reference: .variable(name: .x))),
                                     upper: .reference(variable: .variable(reference: .variable(name: .x)))
                                 ))),

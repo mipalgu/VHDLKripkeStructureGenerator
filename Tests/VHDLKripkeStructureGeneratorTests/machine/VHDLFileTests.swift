@@ -92,6 +92,8 @@ final class VHDLFileTests: XCTestCase {
             constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
             function boolToStdLogic(value: boolean) return std_logic;
             function stdLogicToBool(value: std_logic) return boolean;
+            function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0);
+            function stdULogicEncoded(value: std_ulogic) return std_logic_vector(1 downto 0);
         end package PrimitiveTypes;
 
         package body PrimitiveTypes is
@@ -106,6 +108,26 @@ final class VHDLFileTests: XCTestCase {
             function stdLogicToBool(value: std_logic) return boolean is
             begin
                 return value = '1';
+            end function;
+            function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0) is
+            begin
+                if (value = '1') then
+                    return "01";
+                elsif (value = '0') then
+                    return "00";
+                elsif (value = 'Z') then
+                    return "11";
+                end if;
+            end function;
+            function stdULogicEncoded(value: std_ulogic) return std_logic_vector(1 downto 0) is
+            begin
+                if (value = '1') then
+                    return "01";
+                elsif (value = '0') then
+                    return "00";
+                elsif (value = 'Z') then
+                    return "11";
+                end if;
             end function;
         end package body PrimitiveTypes;
 

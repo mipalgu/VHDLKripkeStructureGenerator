@@ -1,4 +1,4 @@
-// UseStatement+constants.swift
+// VHDLFile+ringletExpander.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,22 +54,35 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
+extension VHDLFile {
 
-/// Add common includes.
-extension UseStatement {
-
-    /// Include `numeric_std.all`.
-    @usableFromInline static let numericStd = UseStatement(rawValue: "use IEEE.numeric_std.all;")!
-
-    /// Include `PrimitiveTypes`.
-    @usableFromInline  static let primitiveTypes = UseStatement(rawValue: "use work.PrimitiveTypes.all;")!
-
-    /// The `std_logic_1164.all` include.
-    @usableFromInline static let stdLogic1164 = UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!
+    init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        guard
+            let typesInclude = UseStatement(rawValue: "use work.\(machine.name)Types.all;"),
+            let entity = Entity(ringletExpanderFor: state, in: representation),
+            let body = AsynchronousBlock(ringletExpanderFor: state, in: representation)
+        else {
+            return nil
+        }
+        self.init(
+            architectures: [
+                Architecture(
+                    body: body, entity: entity.name, head: ArchitectureHead(statements: []), name: .behavioral
+                )
+            ],
+            entities: [entity],
+            includes: [
+                .library(value: .ieee),
+                .include(statement: .stdLogic1164),
+                .include(statement: .numericStd),
+                .include(statement: typesInclude),
+                .include(statement: .primitiveTypes)
+            ]
+        )
+    }
 
 }
-
-// swiftlint:enable force_unwrapping

@@ -1,4 +1,4 @@
-// UseStatement+constants.swift
+// Entity+ringletExpander.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,22 +54,23 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
+extension Entity {
 
-/// Add common includes.
-extension UseStatement {
-
-    /// Include `numeric_std.all`.
-    @usableFromInline static let numericStd = UseStatement(rawValue: "use IEEE.numeric_std.all;")!
-
-    /// Include `PrimitiveTypes`.
-    @usableFromInline  static let primitiveTypes = UseStatement(rawValue: "use work.PrimitiveTypes.all;")!
-
-    /// The `std_logic_1164.all` include.
-    @usableFromInline static let stdLogic1164 = UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!
+    init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let ringlet = VariableName(pre: "\(state.name.rawValue)_", name: .ringletType),
+            let name = VariableName(rawValue: "\(state.name.rawValue)RingletExpander"),
+            let port = PortBlock(signals: [
+                PortSignal(type: .alias(name: ringlet), name: .ringlet, mode: .input),
+                PortSignal(type: state.encodedType(in: representation), name: .vector, mode: .output)
+            ])
+        else {
+            return nil
+        }
+        self.init(name: name, port: port)
+    }
 
 }
-
-// swiftlint:enable force_unwrapping

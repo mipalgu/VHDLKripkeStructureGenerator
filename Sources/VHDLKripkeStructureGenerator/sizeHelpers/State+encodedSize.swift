@@ -1,4 +1,4 @@
-// UseStatement+constants.swift
+// State+encodedSize.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,22 +54,24 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
+extension State {
 
-/// Add common includes.
-extension UseStatement {
+    func encodedSize<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
+        guard let write = Record(writeSnapshotFor: self, in: representation) else {
+            fatalError("Failed to get state encoding for \(self.name)!")
+        }
+        let read = Record(readSnapshotFor: self, in: representation)
+        return read.encodedBits + write.encodedBits + 1
+    }
 
-    /// Include `numeric_std.all`.
-    @usableFromInline static let numericStd = UseStatement(rawValue: "use IEEE.numeric_std.all;")!
-
-    /// Include `PrimitiveTypes`.
-    @usableFromInline  static let primitiveTypes = UseStatement(rawValue: "use work.PrimitiveTypes.all;")!
-
-    /// The `std_logic_1164.all` include.
-    @usableFromInline static let stdLogic1164 = UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!
+    func encodedType<T>(in representation: T) -> SignalType where T: MachineVHDLRepresentable {
+        SignalType.ranged(type: .stdLogicVector(size: .to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: self.encodedSize(in: representation) - 1))
+        )))
+    }
 
 }
-
-// swiftlint:enable force_unwrapping

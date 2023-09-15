@@ -125,6 +125,22 @@ extension VHDLPackage {
                 name: .stdLogicToBool,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
                 returnType: .signal(type: .boolean)
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .stdLogicEncoded,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
+                returnType: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))))
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .stdULogicEncoded,
+                arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdULogic))],
+                returnType: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))))
             )))
         ]
     )

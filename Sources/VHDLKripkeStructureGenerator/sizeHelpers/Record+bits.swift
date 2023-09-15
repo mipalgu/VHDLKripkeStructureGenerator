@@ -1,4 +1,4 @@
-// UseStatement+constants.swift
+// Record+bits.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,20 +56,24 @@
 
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
+extension Record {
 
-/// Add common includes.
-extension UseStatement {
+    var bits: Int {
+        self.types.reduce(0) {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Failed to find size of type \($1.type)!")
+            }
+            return $0 + type.bits
+        }
+    }
 
-    /// Include `numeric_std.all`.
-    @usableFromInline static let numericStd = UseStatement(rawValue: "use IEEE.numeric_std.all;")!
-
-    /// Include `PrimitiveTypes`.
-    @usableFromInline  static let primitiveTypes = UseStatement(rawValue: "use work.PrimitiveTypes.all;")!
-
-    /// The `std_logic_1164.all` include.
-    @usableFromInline static let stdLogic1164 = UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!
+    var encodedBits: Int {
+        self.types.reduce(0) {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Failed to find size of type \($1.type)!")
+            }
+            return $0 + type.encodedBits
+        }
+    }
 
 }
-
-// swiftlint:enable force_unwrapping

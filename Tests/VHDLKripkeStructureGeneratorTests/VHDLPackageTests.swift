@@ -70,6 +70,8 @@ final class VHDLPackageTests: XCTestCase {
             constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
             function boolToStdLogic(value: boolean) return std_logic;
             function stdLogicToBool(value: std_logic) return boolean;
+            function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0);
+            function stdULogicEncoded(value: std_ulogic) return std_logic_vector(1 downto 0);
         end package PrimitiveTypes;
         """
         // swiftlint:enable line_length
