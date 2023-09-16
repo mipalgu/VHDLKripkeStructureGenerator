@@ -152,8 +152,14 @@ extension VariableName {
     /// The `ReadSnapshot` constant.
     @usableFromInline static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
 
+    /// The `readSnapshots` signal.
+    @usableFromInline static let readSnapshots = VariableName(rawValue: "readSnapshots")!
+
     /// The `readSnapshotState` signal.
     @usableFromInline static let readSnapshotState = VariableName(rawValue: "readSnapshotState")!
+
+    /// The `ReadSnapshots_t` type.
+    @usableFromInline static let readSnapshotsType = VariableName(rawValue: "ReadSnapshots_t")!
 
     /// The `ReadSnapshot_t` type.
     @usableFromInline static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!

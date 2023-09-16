@@ -86,7 +86,8 @@ extension ArchitectureHead {
             let ringletRunnerEntity = Entity(ringletRunnerFor: representation),
             let stateGenerator = Entity(stateKripkeGeneratorFor: state, in: representation),
             let expander = Entity(ringletExpanderFor: state, in: representation),
-            let writeSnapshot = Record(writeSnapshotFor: state, in: representation)
+            let writeSnapshot = Record(writeSnapshotFor: state, in: representation),
+            let internalSignals = HeadStatement.stateRunnerInternals(for: state, in: representation)
         else {
             return nil
         }
@@ -95,7 +96,6 @@ extension ArchitectureHead {
                 type: $0.type, name: VariableName(rawValue: "current\($0.name.rawValue.capitalized)")!
             )))
         }
-        let internalSignals = [HeadStatement.hasStarted, .reset]
         let components = [ringletRunnerEntity, stateGenerator, expander].map {
             HeadStatement.definition(value: .component(
                 value: ComponentDefinition(name: $0.name, port: $0.port)
@@ -126,6 +126,33 @@ extension HeadStatement {
     @inlinable
     init(array: ArrayDefinition) {
         self = .definition(value: .type(value: .array(value: array)))
+    }
+
+    /// Create the internal signals for the state runner.
+    /// - Parameters:
+    ///   - state: The state to create the runner for.
+    ///   - representation: The machine representation to use.
+    /// - Returns: The internals signal definitions for the state runner.
+    @inlinable
+    static func stateRunnerInternals<T>(
+        for state: State, in representation: T
+    ) -> [HeadStatement]? where T: MachineVHDLRepresentable {
+        guard let representationStateType = representation.stateType else {
+            return nil
+        }
+        let preamble = "\(state.name.rawValue)_"
+        let previousRinglet = HeadStatement.definition(value: .signal(
+            value: LocalSignal(type: representationStateType, name: .previousRinglet)
+        ))
+        return [.hasStarted, .reset, previousRinglet] + [
+            (VariableName.readSnapshots, VariableName.readSnapshotsType)
+
+        ].map {
+            HeadStatement.definition(value: .signal(value: LocalSignal(
+                type: .alias(name: VariableName(pre: preamble, name: $0.1)!),
+                name: VariableName(pre: preamble, name: $0.0)!
+            )))
+        }
     }
 
 }
