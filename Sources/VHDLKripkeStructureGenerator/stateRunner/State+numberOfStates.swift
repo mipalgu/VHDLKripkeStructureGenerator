@@ -104,10 +104,14 @@ extension State {
 
     /// Create the execution array for this state.
     /// - Parameter representation: The representation of the machine to use.
+    /// - Parameter maxExecutionSize: The maximum number of machines executing in parallel.
     /// - Returns: The array definition of the execution type.
     @inlinable
-    func executionTypes<T>(in representation: T) -> ArrayDefinition where T: MachineVHDLRepresentable {
-        let size = self.numberOfStatesForRinglet(in: representation)
+    func executionTypes<T>(
+        in representation: T, maxExecutionSize: Int? = nil
+    ) -> ArrayDefinition where T: MachineVHDLRepresentable {
+        let numberOfStates = self.numberOfStatesForRinglet(in: representation)
+        let size = maxExecutionSize.map { min($0, numberOfStates) } ?? numberOfStates
         // swiftlint:disable:next force_unwrapping
         let name = VariableName(pre: "\(self.name.rawValue)_", name: .stateExecutionType)!
         let type = self.encodedType(in: representation)
