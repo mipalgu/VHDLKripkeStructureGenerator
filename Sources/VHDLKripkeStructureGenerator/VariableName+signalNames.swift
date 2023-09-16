@@ -74,6 +74,9 @@ extension VariableName {
     /// The `clk` signal.
     @usableFromInline static let clk = VariableName(rawValue: "clk")!
 
+    /// The `currentExecuteOnEntry` signal.
+    @usableFromInline static let currentExecuteOnEntry = VariableName(rawValue: "currentExecuteOnEntry")!
+
     /// The `currentState` signal.
     @usableFromInline static let currentState = VariableName(rawValue: "currentState")!
 
@@ -92,11 +95,17 @@ extension VariableName {
     /// The `finished` signal.
     @usableFromInline static let finished = VariableName(rawValue: "finished")!
 
+    /// The `Finished_t` type.
+    @usableFromInline static let finishedType = VariableName(rawValue: "Finished_t")!
+
     /// The `goalInternal` signal.
     @usableFromInline static let goalInternal = VariableName(rawValue: "goalInternal")!
 
     /// The `goalInternalState` signal.
     @usableFromInline static let goalInternalState = VariableName(rawValue: "goalInternalState")!
+
+    /// The `hasStarted` signal.
+    @usableFromInline static let hasStarted = VariableName(rawValue: "hasStarted")!
 
     /// The `IEEE` library.
     @usableFromInline static let ieee = VariableName(rawValue: "IEEE")!
@@ -121,6 +130,9 @@ extension VariableName {
 
     /// The `pendingState` signal.
     @usableFromInline static let pendingState = VariableName(rawValue: "pendingState")!
+
+    /// The `Pending_States_t` type.
+    @usableFromInline static let pendingStatesType = VariableName(rawValue: "Pending_States_t")!
 
     /// The `previousRinglet` signal.
     @usableFromInline static let previousRinglet = VariableName(rawValue: "previousRinglet")!
@@ -158,6 +170,9 @@ extension VariableName {
     /// The `ringlets` signal.
     @usableFromInline static let ringlets = VariableName(rawValue: "ringlets")!
 
+    /// The `Ringlets_Working_t` type.
+    @usableFromInline static let ringletsWorkingType = VariableName(rawValue: "Ringlets_Working_t")!
+
     /// The `Ringlet_t` type.
     @usableFromInline static let ringletType = VariableName(rawValue: "Ringlet_t")!
 
@@ -193,6 +208,9 @@ extension VariableName {
 
     /// The `stdULogicEncoded` function.
     @usableFromInline static let stdULogicEncoded = VariableName(rawValue: "stdULogicEncoded")!
+
+    /// The `Targets_t` type.
+    @usableFromInline static let targetsType = VariableName(rawValue: "Targets_t")!
 
     /// The `targetState` signal.
     @usableFromInline static let targetState = VariableName(rawValue: "targetState")!
