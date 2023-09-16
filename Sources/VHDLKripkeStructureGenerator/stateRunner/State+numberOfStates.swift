@@ -102,6 +102,24 @@ extension State {
         }
     }
 
+    /// Calculate the execution size for this state. This is the number of elements that can execute in
+    /// parallel.
+    /// - Parameters:
+    ///   - representation: The machine representation to use.
+    ///   - maxExecutionSize: The maximum execution size. This function will return the minimum of this.
+    /// - Returns: The execution size for the state.
+    @inlinable
+    func executionSize<T>(
+        in representation: T, maxExecutionSize: Int? = nil
+    ) -> VectorSize where T: MachineVHDLRepresentable {
+        let numberOfStates = self.numberOfStatesForRinglet(in: representation)
+        let size = maxExecutionSize.map { min($0, numberOfStates) } ?? numberOfStates
+        return .to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: max(0, size - 1)))
+        )
+    }
+
     /// Create the execution array for this state.
     /// - Parameter representation: The representation of the machine to use.
     /// - Parameter maxExecutionSize: The maximum number of machines executing in parallel.
@@ -110,21 +128,11 @@ extension State {
     func executionTypes<T>(
         in representation: T, maxExecutionSize: Int? = nil
     ) -> ArrayDefinition where T: MachineVHDLRepresentable {
-        let numberOfStates = self.numberOfStatesForRinglet(in: representation)
-        let size = maxExecutionSize.map { min($0, numberOfStates) } ?? numberOfStates
+        let size = self.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
         // swiftlint:disable:next force_unwrapping
         let name = VariableName(pre: "\(self.name.rawValue)_", name: .stateExecutionType)!
         let type = self.encodedType(in: representation)
-        return ArrayDefinition(
-            name: name,
-            size: [
-                .to(
-                    lower: .literal(value: .integer(value: 0)),
-                    upper: .literal(value: .integer(value: max(0, size - 1)))
-                )
-            ],
-            elementType: .signal(type: type)
-        )
+        return ArrayDefinition(name: name, size: [size], elementType: .signal(type: type))
     }
 
 }
