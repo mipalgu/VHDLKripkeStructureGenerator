@@ -62,7 +62,7 @@ extension Machine {
 
     /// The number of bits required to represent every state in this machine.
     @inlinable var numberOfStateBits: Int {
-        let numberOfStates = min(self.states.count, 1)
+        let numberOfStates = max(self.states.count, 2)
         guard let numberOfBits = BitLiteral.bitsRequired(for: numberOfStates - 1) else {
             fatalError("Incorrect number of states \(self.states.count)")
         }

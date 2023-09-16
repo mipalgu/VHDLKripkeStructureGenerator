@@ -63,9 +63,21 @@ extension ArchitectureHead {
 
     // swiftlint:disable force_unwrapping
 
+    /// Create the architecture head for the state runner.
+    /// - Parameters:
+    ///   - state: The state to create the runner for.
+    ///   - representation: The machine representation to use.
     @inlinable
     init?<T>(stateRunnerFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        guard let writeSnapshot = Record(writeSnapshotFor: state, in: representation) else {
+            return nil
+        }
         let machine = representation.machine
+        // pending state is the write snapshot bits + an observed bit.
+        let pendingStateType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: writeSnapshot.bits)),
+            lower: .literal(value: .integer(value: 0))
+        )))
         let executionSize = state.executionSize(in: representation)
         let preamble = "\(state.name.rawValue)_"
         let allArrays = [
@@ -77,7 +89,7 @@ extension ArchitectureHead {
                 VariableName(pre: preamble, name: .ringletsWorkingType)!,
                 .alias(name: VariableName(pre: preamble, name: .ringletType)!)
             ),
-            (VariableName(pre: preamble, name: .pendingStatesType)!, .signal(type: machine.statesEncoding))
+            (VariableName(pre: preamble, name: .pendingStatesType)!, .signal(type: pendingStateType))
         ]
         let typeDefinitions = allArrays.map {
             HeadStatement(array: ArrayDefinition(name: $0.0, size: [executionSize], elementType: $0.1))
@@ -86,14 +98,13 @@ extension ArchitectureHead {
             let ringletRunnerEntity = Entity(ringletRunnerFor: representation),
             let stateGenerator = Entity(stateKripkeGeneratorFor: state, in: representation),
             let expander = Entity(ringletExpanderFor: state, in: representation),
-            let writeSnapshot = Record(writeSnapshotFor: state, in: representation),
             let internalSignals = HeadStatement.stateRunnerInternals(for: state, in: representation)
         else {
             return nil
         }
         let snapshotTrackers = writeSnapshot.types.filter { $0.name != .nextState }.map {
             HeadStatement.definition(value: .signal(value: LocalSignal(
-                type: $0.type, name: VariableName(rawValue: "current\($0.name.rawValue.capitalized)")!
+                type: $0.type, name: VariableName(rawValue: "current_\($0.name.rawValue)")!
             )))
         }
         let components = [ringletRunnerEntity, stateGenerator, expander].map {
@@ -146,17 +157,46 @@ extension HeadStatement {
         let previousRinglet = HeadStatement.definition(value: .signal(
             value: LocalSignal(type: representationStateType, name: .previousRinglet)
         ))
+        let internalStateType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: 3)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let internalState = HeadStatement.definition(value: .signal(value: LocalSignal(
+            type: internalStateType,
+            name: .internalState,
+            defaultValue: .literal(value: .vector(value: .bits(
+                value: BitVector(values: [.low, .low, .low, .low])
+            )))
+        )))
+        let internalStateRepresentations = [
+            VariableName(rawValue: "Initial"), .waitToStart, VariableName(rawValue: "StartRunners"),
+            VariableName(rawValue: "WaitForRunners"), VariableName(rawValue: "WaitForFinish")
+        ]
+        .enumerated()
+        .map {
+            HeadStatement.definition(value: .constant(
+                value: ConstantSignal(name: $0.1!, type: internalStateType, value: .literal(value: .vector(
+                    value: .bits(value: BitVector(values: BitLiteral.bitVersion(of: $0.0, bitsRequired: 4)))
+                )))!
+            ))
+        }
         return [.hasStarted, .reset, previousRinglet] + [
             (VariableName.readSnapshots, VariableName.readSnapshotsType),
             (.writeSnapshots, .writeSnapshotsType),
             (.targets, .targetsType),
-            (.finished, .finishedType)
-        ].map {
+            (.finished, .finishedType),
+            (
+                VariableName(rawValue: "working\(VariableName.ringlets.rawValue.capitalized)")!,
+                .ringletsWorkingType
+            ),
+            (.pendingStates, .pendingStatesType)
+        ]
+        .map {
             HeadStatement.definition(value: .signal(value: LocalSignal(
                 type: .alias(name: VariableName(pre: preamble, name: $0.1)!),
-                name: VariableName(pre: preamble, name: $0.0)!
+                name: $0.0
             )))
-        }
+        } + [internalState] + internalStateRepresentations
     }
 
     // swiftlint:enable force_unwrapping

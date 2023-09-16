@@ -131,6 +131,9 @@ extension VariableName {
     /// The `pendingState` signal.
     @usableFromInline static let pendingState = VariableName(rawValue: "pendingState")!
 
+    /// The `pendingStates` signal.
+    @usableFromInline static let pendingStates = VariableName(rawValue: "pendingStates")!
+
     /// The `Pending_States_t` type.
     @usableFromInline static let pendingStatesType = VariableName(rawValue: "Pending_States_t")!
 
