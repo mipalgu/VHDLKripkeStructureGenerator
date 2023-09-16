@@ -74,12 +74,17 @@ extension State {
 
     /// The type to encode a ringlet of this state.
     /// - Parameter representation: The machine representation to use.
+    /// - Parameter maxExecutionSize: The maximum number of machines executing in parallel.
     /// - Returns: The type of the encoded ringlet for this state.
     @inlinable
-    func encodedType<T>(in representation: T) -> SignalType where T: MachineVHDLRepresentable {
-        SignalType.ranged(type: .stdLogicVector(size: .to(
+    func encodedType<T>(
+        in representation: T, maxExecutionSize: Int? = nil
+    ) -> SignalType where T: MachineVHDLRepresentable {
+        let encodedSize = self.encodedSize(in: representation)
+        let size: Int = maxExecutionSize.map { min($0, encodedSize) } ?? encodedSize
+        return SignalType.ranged(type: .stdLogicVector(size: .to(
             lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: self.encodedSize(in: representation) - 1))
+            upper: .literal(value: .integer(value: size - 1))
         )))
     }
 
