@@ -62,15 +62,15 @@ import VHDLParsing
 extension ArchitectureHead {
 
     // swiftlint:disable force_unwrapping
+
     @inlinable
     init?<T>(stateRunnerFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let executionSize = state.executionSize(in: representation)
         let preamble = "\(state.name.rawValue)_"
-        let snapshots = [VariableName.readSnapshotType, VariableName.writeSnapshotType].map {
-            (VariableName(pre: preamble, name: $0)!, Type.alias(name: $0))
-        }
-        let allArrays = snapshots + [
+        let allArrays = [
+            (VariableName(pre: preamble, name: .readSnapshotsType)!, Type.alias(name: .readSnapshotType)),
+            (VariableName(pre: preamble, name: .writeSnapshotsType)!, Type.alias(name: .writeSnapshotType)),
             (VariableName(pre: preamble, name: .targetsType)!, Type.signal(type: machine.statesEncoding)),
             (VariableName(pre: preamble, name: .finishedType)!, .signal(type: .boolean)),
             (
@@ -128,6 +128,8 @@ extension HeadStatement {
         self = .definition(value: .type(value: .array(value: array)))
     }
 
+    // swiftlint:disable force_unwrapping
+
     /// Create the internal signals for the state runner.
     /// - Parameters:
     ///   - state: The state to create the runner for.
@@ -145,8 +147,10 @@ extension HeadStatement {
             value: LocalSignal(type: representationStateType, name: .previousRinglet)
         ))
         return [.hasStarted, .reset, previousRinglet] + [
-            (VariableName.readSnapshots, VariableName.readSnapshotsType)
-
+            (VariableName.readSnapshots, VariableName.readSnapshotsType),
+            (.writeSnapshots, .writeSnapshotsType),
+            (.targets, .targetsType),
+            (.finished, .finishedType)
         ].map {
             HeadStatement.definition(value: .signal(value: LocalSignal(
                 type: .alias(name: VariableName(pre: preamble, name: $0.1)!),
@@ -154,5 +158,7 @@ extension HeadStatement {
             )))
         }
     }
+
+    // swiftlint:enable force_unwrapping
 
 }

@@ -215,6 +215,9 @@ extension VariableName {
     /// The `stdULogicEncoded` function.
     @usableFromInline static let stdULogicEncoded = VariableName(rawValue: "stdULogicEncoded")!
 
+    /// The `targets` signal.
+    @usableFromInline static let targets = VariableName(rawValue: "targets")!
+
     /// The `Targets_t` type.
     @usableFromInline static let targetsType = VariableName(rawValue: "Targets_t")!
 
@@ -263,8 +266,14 @@ extension VariableName {
     /// The `WriteSnapshot` constant.
     @usableFromInline static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!
 
+    /// The `writeSnapshots` signal.
+    @usableFromInline static let writeSnapshots = VariableName(rawValue: "writeSnapshots")!
+
     /// The `writeSnapshotState` signal.
     @usableFromInline static let writeSnapshotState = VariableName(rawValue: "writeSnapshotState")!
+
+    /// The `WriteSnapshots_t` type.
+    @usableFromInline static let writeSnapshotsType = VariableName(rawValue: "WriteSnapshots_t")!
 
     /// The `WriteSnapshot_t` type.
     @usableFromInline static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
