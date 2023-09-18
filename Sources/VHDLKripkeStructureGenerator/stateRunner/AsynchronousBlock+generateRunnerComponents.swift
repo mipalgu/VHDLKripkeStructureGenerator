@@ -93,14 +93,21 @@ extension AsynchronousBlock {
         }
         let indexes = zip(lowerIndexes, upperIndexes)
         var startIndex = 0
-        let componentInstantiation = machine.externalSignals.map {
+        let componentInstantiation: [Expression] = machine.externalSignals.map {
             if $0.mode != .output && validExternals.contains($0.name) {
-                let indexes = zip($0.type.lowerTypeIndex, $0.type.upperTypeIndex)
-                let iterators = indexes.flatMap { _ in
+                let indexes = $0.type.lowerTypeIndex
+                let iterators = indexes.map { _ in
                     let newName = VariableName(rawValue: "i\(startIndex)")!
                     startIndex += 1
                     return newName
                 }
+                return $0.type.stateAccess(iterators: iterators)
+            } else if $0.mode == .input {
+                return .literal(value: $0.type.signalType.defaultValue)
+            } else {
+                return .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "current_\($0.name.rawValue)")!
+                )))
             }
         }
         return nil
@@ -122,18 +129,23 @@ extension VectorSize {
 
 extension Type {
 
-    var lowerTypeIndex: [Int] {
+    var signalType: SignalType {
         guard case .signal(let type) = self else {
-            fatalError("Cannot discern lower type index of \(self)!")
+            fatalError("Cannot discern signal type of \(self)!")
         }
-        return type.lowerTypeIndex
+        return type
+    }
+
+    var lowerTypeIndex: [Int] {
+        signalType.lowerTypeIndex
     }
 
     var upperTypeIndex: [Int] {
-        guard case .signal(let type) = self else {
-            fatalError("Cannot discern upper type index of \(self)!")
-        }
-        return type.upperTypeIndex
+        signalType.upperTypeIndex
+    }
+
+    func stateAccess(iterators: [VariableName]) -> Expression {
+        signalType.stateAccess(iterators: iterators)
     }
 
 }
