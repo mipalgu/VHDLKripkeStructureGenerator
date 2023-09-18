@@ -116,6 +116,29 @@ extension VHDLPackage {
                     )
                 ]))))
             )!)),
+            .definition(value: .type(value: .array(value: ArrayDefinition(
+                name: .bitTypesT,
+                size: [
+                    .to(
+                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 1))
+                    )
+                ],
+                elementType: .signal(type: .bit)
+            )))),
+            .definition(value: .constant(value: ConstantSignal(
+                name: .bitTypes,
+                type: .alias(name: .bitTypesT),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(
+                        index: .index(value: .literal(value: .integer(value: 0))),
+                        value: .literal(value: .bit(value: .low))
+                    ),
+                    IndexedValue(
+                        index: .index(value: .literal(value: .integer(value: 1))),
+                        value: .literal(value: .bit(value: .high))
+                    )
+                ]))))
+            )!)),
             .definition(value: .function(value: FunctionDefinition(
                 name: .boolToStdLogic,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .boolean))],

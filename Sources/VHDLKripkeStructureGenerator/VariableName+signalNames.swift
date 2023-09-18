@@ -65,6 +65,12 @@ extension VariableName {
     /// The `Behavioral` name.
     @usableFromInline static let behavioral = VariableName(rawValue: "Behavioral")!
 
+    /// The `bitTypes` constant.
+    @usableFromInline static let bitTypes = VariableName(rawValue: "bitTypes")!
+
+    /// The `BitTypes_t` type.
+    @usableFromInline static let bitTypesT = VariableName(rawValue: "BitTypes_t")!
+
     /// The `boolToStdLogic` function.
     @usableFromInline static let boolToStdLogic = VariableName(rawValue: "boolToStdLogic")!
 
