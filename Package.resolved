@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mipalgu/VHDLMachines.git",
       "state" : {
-        "revision" : "55813a9d4fe087059be8c528a6be783b5fc209f0",
-        "version" : "1.2.3"
+        "revision" : "d5661e0f33a07ec99fa413032ab997fb8e09695c",
+        "version" : "1.2.4"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mipalgu/VHDLParsing.git",
       "state" : {
-        "revision" : "66f7af59b59f86c4143dad3b150bedbb88a220e8",
-        "version" : "2.3.0"
+        "revision" : "4223b7cc288014c332d0ca5cd9178c76839c852c",
+        "version" : "2.4.0"
       }
     }
   ],
