@@ -59,6 +59,21 @@ import VHDLMachines
 import VHDLParsing
 
 /// Add bits.
+extension Type {
+
+    /// The number of bits required to represent this type.
+    @inlinable var bits: Int {
+        switch self {
+        case .signal(let type):
+            return type.bits
+        default:
+            fatalError("Cannot discern bits for \(self) type.")
+        }
+    }
+
+}
+
+/// Add bits.
 extension SignalType {
 
     /// Calculate the number of bits required to represent this type.
