@@ -108,6 +108,7 @@ final class AsynchronousBlockStateRunnerTests: XCTestCase {
     func testComponentInstantiation() {
         let result = AsynchronousBlock(stateRunnerComponentsFor: machine.states[0], in: representation)
         print(result!.rawValue)
+        print(AsynchronousBlock(stateRunnerComponentsFor: machine.states[1], in: representation)!.rawValue)
     }
 
 }

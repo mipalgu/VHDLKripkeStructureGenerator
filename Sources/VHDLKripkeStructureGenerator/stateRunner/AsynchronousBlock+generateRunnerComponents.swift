@@ -215,8 +215,14 @@ extension AsynchronousBlock {
             return nil
         }
         let clk = machine.clocks[machine.drivingClock]
-        guard let index = Expression(arrayIndexFor: variables) else {
-            return nil
+        let index: Expression
+        if variables.isEmpty {
+            index = .literal(value: .integer(value: 0))
+        } else {
+            guard let arrayIndex = Expression(arrayIndexFor: variables) else {
+                return nil
+            }
+            index = arrayIndex
         }
         let port = PortMap(variables: [
             VariableMap(
@@ -264,8 +270,14 @@ extension AsynchronousBlock {
     init?<T>(
         expanderInstantiationFor state: State, in representation: T, variables: [Type]
     ) where T: MachineVHDLRepresentable {
-        guard let index = Expression(arrayIndexFor: variables) else {
-            return nil
+        let index: Expression
+        if variables.isEmpty {
+            index = .literal(value: .integer(value: 0))
+        } else {
+            guard let arrayIndex = Expression(arrayIndexFor: variables) else {
+                return nil
+            }
+            index = arrayIndex
         }
         let port = PortMap(variables: [
             VariableMap(
