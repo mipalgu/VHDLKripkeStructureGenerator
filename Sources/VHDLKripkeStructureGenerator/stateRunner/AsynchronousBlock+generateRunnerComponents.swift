@@ -92,6 +92,19 @@ extension AsynchronousBlock {
             return nil
         }
         let indexes = zip(lowerIndexes, upperIndexes)
+        
+        return nil
+    }
+
+    init?<T>(
+        ringletRunnerInstantiationFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        guard machine.drivingClock >= 0, machine.drivingClock < machine.clocks.count else {
+            return nil
+        }
+        let clk = machine.clocks[machine.drivingClock]
+        let validExternals = Set(state.externalVariables)
         var startIndex = 0
         let preamble = "\(machine.name.rawValue)_"
         let componentInstantiation: [Expression] = machine.externalSignals.map {
@@ -129,7 +142,6 @@ extension AsynchronousBlock {
         componentInstantiation.forEach {
             print($0.rawValue)
         }
-        return nil
     }
 
 }
