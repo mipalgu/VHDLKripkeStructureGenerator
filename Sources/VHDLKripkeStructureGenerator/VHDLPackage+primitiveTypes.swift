@@ -139,6 +139,29 @@ extension VHDLPackage {
                     )
                 ]))))
             )!)),
+            .definition(value: .type(value: .array(value: ArrayDefinition(
+                name: .booleanTypesT,
+                size: [
+                    .to(
+                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 1))
+                    )
+                ],
+                elementType: .signal(type: .boolean)
+            )))),
+            .definition(value: .constant(value: ConstantSignal(
+                name: .booleanTypes,
+                type: .alias(name: .booleanTypesT),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(
+                        index: .index(value: .literal(value: .integer(value: 0))),
+                        value: .boolean(value: false)
+                    ),
+                    IndexedValue(
+                        index: .index(value: .literal(value: .integer(value: 1))),
+                        value: .boolean(value: true)
+                    )
+                ]))))
+            )!)),
             .definition(value: .function(value: FunctionDefinition(
                 name: .boolToStdLogic,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .boolean))],

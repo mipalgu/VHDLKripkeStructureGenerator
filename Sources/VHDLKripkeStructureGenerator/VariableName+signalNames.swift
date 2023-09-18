@@ -71,6 +71,12 @@ extension VariableName {
     /// The `BitTypes_t` type.
     @usableFromInline static let bitTypesT = VariableName(rawValue: "BitTypes_t")!
 
+    /// The `booleanTypes` constant.
+    @usableFromInline static let booleanTypes = VariableName(rawValue: "booleanTypes")!
+
+    /// The `BooleanTypes_t` type.
+    @usableFromInline static let booleanTypesT = VariableName(rawValue: "BooleanTypes_t")!
+
     /// The `boolToStdLogic` function.
     @usableFromInline static let boolToStdLogic = VariableName(rawValue: "boolToStdLogic")!
 

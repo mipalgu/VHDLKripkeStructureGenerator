@@ -70,6 +70,8 @@ final class VHDLPackageTests: XCTestCase {
             constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
             type BitTypes_t is array (0 to 1) of bit;
             constant bitTypes: BitTypes_t := (0 => '0', 1 => '1');
+            type BooleanTypes_t is array (0 to 1) of boolean;
+            constant booleanTypes: BooleanTypes_t := (0 => false, 1 => true);
             function boolToStdLogic(value: boolean) return std_logic;
             function stdLogicToBool(value: std_logic) return boolean;
             function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0);
