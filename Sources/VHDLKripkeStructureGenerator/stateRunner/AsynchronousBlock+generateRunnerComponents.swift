@@ -69,9 +69,6 @@ extension AsynchronousBlock {
         stateRunnerComponentsFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let ringletRunner = VariableName(rawValue: "\(machine.name.rawValue)RingletRunner")!
-        let stateGenerator = VariableName(rawValue: "\(state.name.rawValue)KripkeGenerator")!
-        let ringletExpander = VariableName(rawValue: "\(state.name.rawValue)RingletExpander")!
         let validExternals = Set(state.externalVariables)
         let readableExternalVariables = machine.externalSignals.filter {
             $0.mode != .output && validExternals.contains($0.name)
@@ -86,14 +83,36 @@ extension AsynchronousBlock {
         if size == maxExecutionSize {
             fatalError("stateSpace of \(stateSpace) exceed maximum execution size of \(size)!")
         }
-        let lowerIndexes = readableExternalVariables.map { $0.type.lowerTypeIndex }
-        let upperIndexes = readableExternalVariables.map { $0.type.upperTypeIndex }
+        let types = readableExternalVariables.map(\.type)
+        guard
+            let ringletRunner = AsynchronousBlock(ringletRunnerInstantiationFor: state, in: representation),
+            let kripkeGenerator = AsynchronousBlock(
+                kripkeGeneratorInstantiationFor: state, in: representation, variables: types
+            ),
+            let expander = AsynchronousBlock(
+                expanderInstantiationFor: state, in: representation, variables: types
+            )
+        else {
+            return nil
+        }
+        let components = AsynchronousBlock.blocks(blocks: [ringletRunner, kripkeGenerator, expander])
+        let lowerIndexes = readableExternalVariables.flatMap { $0.type.lowerTypeIndex }
+        let upperIndexes = readableExternalVariables.flatMap { $0.type.upperTypeIndex }
         guard lowerIndexes.count == upperIndexes.count else {
             return nil
         }
         let indexes = zip(lowerIndexes, upperIndexes)
-        
-        return nil
+        self = indexes.enumerated().reduce(components) {
+            AsynchronousBlock.generate(block: .forLoop(block: ForGenerate(
+                label: VariableName(rawValue: "runner_gen\($1.0)")!,
+                iterator: VariableName(rawValue: "i\($1.0)")!,
+                range: .to(
+                    lower: .literal(value: .integer(value: $1.1.0)),
+                    upper: .literal(value: .integer(value: $1.1.1))
+                ),
+                body: $0
+            )))
+        }
     }
 
     init?<T>(
@@ -107,41 +126,170 @@ extension AsynchronousBlock {
         let validExternals = Set(state.externalVariables)
         var startIndex = 0
         let preamble = "\(machine.name.rawValue)_"
-        let componentInstantiation: [Expression] = machine.externalSignals.map {
-            if $0.mode != .output && validExternals.contains($0.name) {
-                let indexes = $0.type.lowerTypeIndex
+        // swiftlint:disable:next line_length
+        let variableMapping: [VariableMap] = machine.externalSignals.map { (signal: PortSignal) -> VariableMap in
+            let name = VariableReference.variable(reference: .variable(name: signal.name))
+            if signal.mode != .output && validExternals.contains(signal.name) {
+                let indexes = signal.type.lowerTypeIndex
                 let iterators = indexes.map { _ in
                     let newName = VariableName(rawValue: "i\(startIndex)")!
                     startIndex += 1
                     return newName
                 }
-                return $0.type.stateAccess(iterators: iterators)
-            } else if $0.mode == .input {
-                return .literal(value: $0.type.signalType.defaultValue)
-            } else if !validExternals.contains($0.name) {
-                return .reference(variable: .variable(reference: .variable(
-                    name: VariableName(rawValue: "current_\(preamble)\($0.name.rawValue)")!
-                )))
+                return VariableMap(
+                    lhs: name,
+                    rhs: .expression(value: signal.type.stateAccess(iterators: iterators))
+                )
+            } else if signal.mode == .input {
+                return VariableMap(
+                    lhs: name, rhs: .expression(value: .literal(value: signal.type.signalType.defaultValue))
+                )
+            } else if !validExternals.contains(signal.name) {
+                return VariableMap(
+                    lhs: name,
+                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(rawValue: "current_\(preamble)\(signal.name.rawValue)")!
+                    ))))
+                )
             } else {
-                return .reference(variable: .variable(reference: .variable(
-                    name: VariableName(rawValue: "current_\($0.name.rawValue)")!
-                )))
+                return VariableMap(
+                    lhs: name,
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "current_\(signal.name.rawValue)")!
+                        )))
+                    )
+                )
             }
         } + machine.machineSignals.map {
-            .reference(variable: .variable(reference: .variable(
-                name: VariableName(rawValue: "current_\(preamble)\($0.name.rawValue)")!
-            )))
+            VariableMap(
+                lhs: .variable(reference: .variable(name: $0.name)),
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(rawValue: "current_\(preamble)\($0.name.rawValue)")!
+                    )))
+                )
+            )
         } + machine.stateVariables.flatMap { state, variables in
             let statePreamble = "\(preamble)STATE_\(state)_"
-            return variables.map { (variable: LocalSignal) -> Expression in
-                .reference(variable: .variable(reference: .variable(
-                    name: VariableName(rawValue: "current_\(statePreamble)\(variable.name.rawValue)")!
-                )))
+            return variables.map { (variable: LocalSignal) -> VariableMap in
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: variable.name)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "current_\(statePreamble)\(variable.name.rawValue)")!
+                        )))
+                    )
+                )
             }
         }
-        componentInstantiation.forEach {
-            print($0.rawValue)
+        self = .component(block: ComponentInstantiation(
+            label: VariableName(rawValue: "runner_inst")!,
+            name: VariableName(rawValue: "\(machine.name)RingletRunner")!,
+            port: PortMap(
+                variables: [
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: clk.name)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: clk.name)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .reset)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: .reset)
+                        )))
+                    )
+                ] + variableMapping + [
+
+                ]
+            )
+        ))
+    }
+
+    init?<T>(
+        kripkeGeneratorInstantiationFor state: State, in representation: T, variables: [Type]
+    ) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        guard machine.drivingClock >= 0, machine.drivingClock < machine.clocks.count else {
+            return nil
         }
+        let clk = machine.clocks[machine.drivingClock]
+        guard let index = Expression(arrayIndexFor: variables) else {
+            return nil
+        }
+        let port = PortMap(variables: [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: clk.name)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: clk.name))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .readSnapshotSignal)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .readSnapshots))),
+                    index: .index(value: index)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .writeSnapshotSignal)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .writeSnapshots))),
+                    index: .index(value: index)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .ringlet)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(rawValue: "workingRinglets")!
+                    ))),
+                    index: .index(value: index)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .pendingState)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
+                    index: .index(value: index)
+                )))
+            )
+        ])
+        self = .component(block: ComponentInstantiation(
+            label: VariableName(rawValue: "generator_inst")!,
+            name: VariableName(rawValue: "\(state.name.rawValue)KripkeGenerator")!,
+            port: port
+        ))
+    }
+
+    init?<T>(
+        expanderInstantiationFor state: State, in representation: T, variables: [Type]
+    ) where T: MachineVHDLRepresentable {
+        guard let index = Expression(arrayIndexFor: variables) else {
+            return nil
+        }
+        let port = PortMap(variables: [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .ringlet)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(rawValue: "workingRinglets")!
+                    ))),
+                    index: .index(value: index)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .vector)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .ringlets))),
+                    index: .index(value: index)
+                )))
+            )
+        ])
+        self = .component(block: ComponentInstantiation(
+            label: VariableName(rawValue: "expander_inst")!,
+            name: VariableName(rawValue: "\(state.name.rawValue)RingletExpander")!,
+            port: port
+        ))
     }
 
 }
@@ -323,6 +471,40 @@ extension RangedType {
             fatalError("Incorrect Number of iterators \(iterators.count) to mutate type \(self).")
         }
         return (0..<numberOfIndexes).map(fn).concatenated
+    }
+
+}
+
+extension Expression {
+
+    init?(arrayIndexFor types: [Type]) {
+        guard !types.isEmpty else {
+            return nil
+        }
+        let lowerIndexes = types.flatMap { $0.lowerTypeIndex }
+        let upperIndexes = types.flatMap { $0.upperTypeIndex }
+        guard lowerIndexes.count == upperIndexes.count else {
+            return nil
+        }
+        guard upperIndexes.count > 1 else {
+            self = .reference(variable: .variable(reference: .variable(name: VariableName(rawValue: "i0")!)))
+            return
+        }
+        let indexes = zip(lowerIndexes, upperIndexes)
+        var currentMultiplier = 1
+        self = indexes.enumerated()
+        .map {
+            let newExpression = Expression.binary(operation: .multiplication(
+                lhs: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "i\($0)")!
+                ))),
+                rhs: .literal(value: .integer(value: currentMultiplier))
+            ))
+            let difference = $1.1 - $1.0 + 1
+            currentMultiplier *= difference
+            return newExpression
+        }
+        .joined { Expression.binary(operation: .addition(lhs: $0, rhs: $1)) }
     }
 
 }

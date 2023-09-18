@@ -106,7 +106,8 @@ final class AsynchronousBlockStateRunnerTests: XCTestCase {
 
     /// Test component instantiation is correct.
     func testComponentInstantiation() {
-        XCTAssertNil(AsynchronousBlock(stateRunnerComponentsFor: machine.states[0], in: representation))
+        let result = AsynchronousBlock(stateRunnerComponentsFor: machine.states[0], in: representation)
+        print(result!.rawValue)
     }
 
 }
