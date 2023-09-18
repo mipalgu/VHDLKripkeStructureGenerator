@@ -93,6 +93,7 @@ extension AsynchronousBlock {
         }
         let indexes = zip(lowerIndexes, upperIndexes)
         var startIndex = 0
+        let preamble = "\(machine.name.rawValue)_"
         let componentInstantiation: [Expression] = machine.externalSignals.map {
             if $0.mode != .output && validExternals.contains($0.name) {
                 let indexes = $0.type.lowerTypeIndex
@@ -104,11 +105,29 @@ extension AsynchronousBlock {
                 return $0.type.stateAccess(iterators: iterators)
             } else if $0.mode == .input {
                 return .literal(value: $0.type.signalType.defaultValue)
+            } else if !validExternals.contains($0.name) {
+                return .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "current_\(preamble)\($0.name.rawValue)")!
+                )))
             } else {
                 return .reference(variable: .variable(reference: .variable(
                     name: VariableName(rawValue: "current_\($0.name.rawValue)")!
                 )))
             }
+        } + machine.machineSignals.map {
+            .reference(variable: .variable(reference: .variable(
+                name: VariableName(rawValue: "current_\(preamble)\($0.name.rawValue)")!
+            )))
+        } + machine.stateVariables.flatMap { state, variables in
+            let statePreamble = "\(preamble)STATE_\(state)_"
+            return variables.map { (variable: LocalSignal) -> Expression in
+                .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "current_\(statePreamble)\(variable.name.rawValue)")!
+                )))
+            }
+        }
+        componentInstantiation.forEach {
+            print($0.rawValue)
         }
         return nil
     }
