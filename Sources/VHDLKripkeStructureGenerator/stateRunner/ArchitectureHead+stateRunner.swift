@@ -68,7 +68,9 @@ extension ArchitectureHead {
     ///   - state: The state to create the runner for.
     ///   - representation: The machine representation to use.
     @inlinable
-    init?<T>(stateRunnerFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(
+        stateRunnerFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
         guard let writeSnapshot = Record(writeSnapshotFor: state, in: representation) else {
             return nil
         }
@@ -78,7 +80,22 @@ extension ArchitectureHead {
             upper: .literal(value: .integer(value: writeSnapshot.bits)),
             lower: .literal(value: .integer(value: 0))
         )))
-        let executionSize = state.executionSize(in: representation)
+        let actualExecutionSize = state.executionSize(in: representation)
+        let executionSize: VectorSize
+        if let maxExecutionSize = maxExecutionSize,
+            maxExecutionSize > 0,
+            let size = actualExecutionSize.size {
+            if maxExecutionSize < size {
+                executionSize = .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: maxExecutionSize - 1))
+                )
+            } else {
+                executionSize = actualExecutionSize
+            }
+        } else {
+            executionSize = actualExecutionSize
+        }
         let preamble = "\(state.name.rawValue)_"
         let allArrays = [
             (VariableName(pre: preamble, name: .readSnapshotsType)!, Type.alias(name: .readSnapshotType)),
