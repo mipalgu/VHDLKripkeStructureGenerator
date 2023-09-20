@@ -243,14 +243,7 @@ extension Expression {
             self = .cast(operation: .stdLogicVector(expression: name))
         case .stdLogicVector(let size):
             let bits = ranged.bits
-            let bitRange: ClosedRange<Int>
-            switch size {
-            case .downto:
-                bitRange = (bits - 1)...0
-            case .to:
-                bitRange = 0...(bits - 1)
-            }
-            self = bitRange.map {
+            let fn: (Int) -> Expression = {
                 Expression.functionCall(call: .custom(function: CustomFunctionCall(
                     name: .stdLogicEncoded,
                     parameters: [
@@ -260,7 +253,12 @@ extension Expression {
                     ]
                 )))
             }
-            .concatenated
+            switch size {
+            case .downto:
+                self = (0...(bits - 1)).reversed().map(fn).concatenated
+            case .to:
+                self = (0...(bits - 1)).map(fn).concatenated
+            }
         case .stdULogicVector(let size):
             let bits = ranged.bits
             let bitRange: ClosedRange<Int>
