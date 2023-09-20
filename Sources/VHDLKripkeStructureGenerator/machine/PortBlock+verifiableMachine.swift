@@ -109,20 +109,6 @@ extension PortBlock {
             }
             return PortSignal(type: type, name: name, mode: .input)
         }
-        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
-            machinePorts += [
-                PortSignal(type: .natural, name: .ringletCounter, mode: .output)
-            ]
-            machineInputs += [
-                PortSignal(
-                    type: .natural,
-                    name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
-                    )!,
-                    mode: .input
-                )
-            ]
-        }
         let stateSignals = machine.states.map {
             ($0.name, $0.signals)
         }
@@ -160,6 +146,20 @@ extension PortBlock {
             stateSignalsOut.count == stateCount
         else {
             return nil
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machinePorts += [
+                PortSignal(type: .natural, name: .ringletCounter, mode: .output)
+            ]
+            machineInputs += [
+                PortSignal(
+                    type: .natural,
+                    name: VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
+                    )!,
+                    mode: .input
+                )
+            ]
         }
         let originalSignals = representation.entity.port.signals
         self.init(

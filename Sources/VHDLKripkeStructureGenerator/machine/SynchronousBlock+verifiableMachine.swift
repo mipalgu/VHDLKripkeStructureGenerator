@@ -217,26 +217,6 @@ extension SynchronousBlock {
                 value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
-        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
-            machineWrites += [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .ringletCounter)),
-                    value: .reference(variable: .variable(reference: .variable(
-                        name: VariableName(
-                            rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
-                        )!
-                    )))
-                ))
-            ]
-            machineReads += [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
-                    )!)),
-                    value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))
-                ))
-            ]
-        }
         let stateSignals = machine.states.map { ($0.name, $0.signals) }
         let stateWrites: [SynchronousBlock] = stateSignals
         .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
@@ -281,6 +261,26 @@ extension SynchronousBlock {
             stateReads.count == machine.stateVariablesAmount
         else {
             return nil
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineWrites += [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .ringletCounter)),
+                    value: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(
+                            rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
+                        )!
+                    )))
+                ))
+            ]
+            machineReads += [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                    )!)),
+                    value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))
+                ))
+            ]
         }
         let ifBody: [SynchronousBlock] = [SynchronousBlock].verifiableMachineInternalMutation(for: machine) +
             snapshotWrites + machineWrites + stateWrites
