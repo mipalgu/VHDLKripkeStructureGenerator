@@ -81,11 +81,14 @@ extension Record {
         let machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
         }
-        let stateSignals = machine.states.flatMap {
+        var stateSignals = machine.states.flatMap {
             let statePreamble = "\(preamble)STATE_\($0.name.rawValue)_"
             return $0.signals.map {
                 RecordTypeDeclaration(name: VariableName(pre: statePreamble, name: $0.name)!, type: $0.type)
             }
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            stateSignals.append(RecordTypeDeclaration(name: .ringletCounter, type: .signal(type: .natural)))
         }
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .readSnapshotType)!
         self.init(
@@ -117,11 +120,14 @@ extension Record {
         let machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
         }
-        let stateSignals = machine.states.flatMap {
+        var stateSignals = machine.states.flatMap {
             let statePreamble = "\(preamble)STATE_\($0.name.rawValue)_"
             return $0.signals.map {
                 RecordTypeDeclaration(name: VariableName(pre: statePreamble, name: $0.name)!, type: $0.type)
             }
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            stateSignals.append(RecordTypeDeclaration(name: .ringletCounter, type: .signal(type: .natural)))
         }
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .writeSnapshotType)!
         self.init(

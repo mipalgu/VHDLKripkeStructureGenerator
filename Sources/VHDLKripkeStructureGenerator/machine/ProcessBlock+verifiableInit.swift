@@ -148,12 +148,30 @@ extension ProcessBlock {
         else {
             return nil
         }
+        let ringletCounter: [SynchronousBlock]
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            ringletCounter = [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(
+                            rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                        )!
+                    )),
+                    value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))
+                ))
+            ]
+        } else {
+            ringletCounter = []
+        }
         let resetStatement = SynchronousBlock.ifStatement(block: .ifElse(
             condition: .conditional(condition: .comparison(value: .equality(
                 lhs: .reference(variable: .variable(reference: .variable(name: .reset))),
                 rhs: .literal(value: .logic(value: .high))
             ))),
-            ifBlock: .blocks(blocks: actuatorSnapshots + machineAssignments + stateAssignments + [newBlock]),
+            ifBlock: .blocks(
+                blocks: actuatorSnapshots + machineAssignments + stateAssignments + ringletCounter +
+                    [newBlock]
+            ),
             elseBlock: elseBlock
         ))
         self.init(

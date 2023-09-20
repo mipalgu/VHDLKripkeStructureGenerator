@@ -188,6 +188,9 @@ extension VariableName {
     /// The `ringlet` signal.
     @usableFromInline static let ringlet = VariableName(rawValue: "ringlet")!
 
+    /// The `ringlet_counter` signal.
+    @usableFromInline static let ringletCounter = VariableName(rawValue: "ringlet_counter")!
+
     /// The `ringlets` signal.
     @usableFromInline static let ringlets = VariableName(rawValue: "ringlets")!
 

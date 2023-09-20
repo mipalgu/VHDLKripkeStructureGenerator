@@ -97,10 +97,10 @@ extension PortBlock {
             return [PortSignal(type: signal.type, name: newName, mode: .output)] + ports
         }
         let machineSignals = machine.machineSignals
-        let machinePorts = machineSignals.compactMap {
+        var machinePorts = machineSignals.compactMap {
             PortSignal(signal: $0, in: machine, mode: .output)
         }
-        let machineInputs: [PortSignal] = machineSignals.compactMap { (signal: LocalSignal) -> PortSignal? in
+        var machineInputs: [PortSignal] = machineSignals.compactMap { (signal: LocalSignal) -> PortSignal? in
             guard
                 let name = VariableName(rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"),
                 case .signal(let type) = signal.type
@@ -108,6 +108,20 @@ extension PortBlock {
                 return nil
             }
             return PortSignal(type: type, name: name, mode: .input)
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machinePorts += [
+                PortSignal(type: .natural, name: .ringletCounter, mode: .output)
+            ]
+            machineInputs += [
+                PortSignal(
+                    type: .natural,
+                    name: VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
+                    )!,
+                    mode: .input
+                )
+            ]
         }
         let stateSignals = machine.states.map {
             ($0.name, $0.signals)
