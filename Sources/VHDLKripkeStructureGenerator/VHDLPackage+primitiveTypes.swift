@@ -69,7 +69,7 @@ extension VHDLPackage {
                 name: .stdLogicTypesT,
                 size: [
                     .to(
-                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 8))
+                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 2))
                     )
                 ],
                 elementType: .signal(type: .stdLogic)
@@ -78,42 +78,42 @@ extension VHDLPackage {
                 name: .stdLogicTypes,
                 type: .alias(name: .stdLogicTypesT),
                 value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 0))),
+                    //     value: .logic(value: .uninitialized)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 1))),
+                    //     value: .logic(value: .unknown)
+                    // ),
                     IndexedValue(
                         index: .index(value: .literal(value: .integer(value: 0))),
-                        value: .logic(value: .uninitialized)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 1))),
-                        value: .logic(value: .unknown)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 2))),
                         value: .logic(value: .low)
                     ),
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 3))),
+                        index: .index(value: .literal(value: .integer(value: 1))),
                         value: .logic(value: .high)
                     ),
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 4))),
+                        index: .index(value: .literal(value: .integer(value: 2))),
                         value: .logic(value: .highImpedance)
                     ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 5))),
-                        value: .logic(value: .weakSignal)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 6))),
-                        value: .logic(value: .weakSignalLow)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 7))),
-                        value: .logic(value: .weakSignalHigh)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 8))),
-                        value: .logic(value: .dontCare)
-                    )
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 5))),
+                    //     value: .logic(value: .weakSignal)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 6))),
+                    //     value: .logic(value: .weakSignalLow)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 7))),
+                    //     value: .logic(value: .weakSignalHigh)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 8))),
+                    //     value: .logic(value: .dontCare)
+                    // )
                 ]))))
             )!)),
             .definition(value: .type(value: .array(value: ArrayDefinition(

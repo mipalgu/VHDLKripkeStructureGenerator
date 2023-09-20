@@ -423,7 +423,7 @@ extension SignalType {
         case .bit, .boolean:
             return [1]
         case .stdLogic, .stdULogic:
-            return [8]
+            return [2]
         case .integer, .natural, .positive:
             return [Int(Int32.max)]
         case .real:
@@ -503,7 +503,7 @@ extension RangedType {
             guard let numberOfBits = size.size else {
                 fatalError("Cannot discern size of vector \(self).")
             }
-            return [Int](repeating: 8, count: numberOfBits)
+            return [Int](repeating: 2, count: numberOfBits)
         case .integer(let size):
             guard case .literal(let lit) = size.max, case .integer(let integer) = lit else {
                 fatalError("Cannot discern size of integer \(self).")

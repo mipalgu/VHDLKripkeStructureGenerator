@@ -74,16 +74,16 @@ extension SignalType {
         }
     }
 
-    @inlinable var numberOfUnresolvedValues: Int {
-        switch self {
-        case .bit, .boolean, .integer, .natural, .positive, .real:
-            return self.numberOfValues
-        case .stdLogic, .stdULogic:
-            return 9
-        case .ranged(let type):
-            return type.numberOfUnresolvedValues
-        }
-    }
+    // @inlinable var numberOfUnresolvedValues: Int {
+    //     switch self {
+    //     case .bit, .boolean, .integer, .natural, .positive, .real:
+    //         return self.numberOfValues
+    //     case .stdLogic, .stdULogic:
+    //         return 9
+    //     case .ranged(let type):
+    //         return type.numberOfUnresolvedValues
+    //     }
+    // }
 
 }
 
@@ -106,16 +106,16 @@ extension RangedType {
     }
 
     /// The number of possible values represented by this type.
-    @inlinable var numberOfUnresolvedValues: Int {
-        switch self {
-        case .bitVector, .signed, .unsigned, .integer:
-            return self.numberOfValues
-        case .stdLogicVector, .stdULogicVector:
-            return Int(
-                ceil(pow(Double(SignalType.stdLogic.numberOfUnresolvedValues), Double(self.size.size!)))
-            )
-        }
-    }
+    // @inlinable var numberOfUnresolvedValues: Int {
+    //     switch self {
+    //     case .bitVector, .signed, .unsigned, .integer:
+    //         return self.numberOfValues
+    //     case .stdLogicVector, .stdULogicVector:
+    //         return Int(
+    //             ceil(pow(Double(SignalType.stdLogic.numberOfUnresolvedValues), Double(self.size.size!)))
+    //         )
+    //     }
+    // }
 
     // swiftlint:enable force_unwrapping
 

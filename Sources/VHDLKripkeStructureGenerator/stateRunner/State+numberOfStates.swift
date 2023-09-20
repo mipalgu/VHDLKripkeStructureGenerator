@@ -98,7 +98,7 @@ extension State {
             guard case .signal(let type) = $1.type else {
                 fatalError("Failed to discern type size in \($1.type)!")
             }
-            return $0 * type.numberOfUnresolvedValues
+            return $0 * type.numberOfValues
         }
     }
 
