@@ -85,7 +85,9 @@ extension AsynchronousBlock {
         }
         let types = readableExternalVariables.map(\.type)
         guard
-            let ringletRunner = AsynchronousBlock(ringletRunnerInstantiationFor: state, in: representation),
+            let ringletRunner = AsynchronousBlock(
+                ringletRunnerInstantiationFor: state, in: representation, variables: types
+            ),
             let kripkeGenerator = AsynchronousBlock(
                 kripkeGeneratorInstantiationFor: state, in: representation, variables: types
             ),
@@ -116,7 +118,7 @@ extension AsynchronousBlock {
     }
 
     init?<T>(
-        ringletRunnerInstantiationFor state: State, in representation: T
+        ringletRunnerInstantiationFor state: State, in representation: T, variables: [Type]
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard machine.drivingClock >= 0, machine.drivingClock < machine.clocks.count else {
@@ -183,6 +185,15 @@ extension AsynchronousBlock {
                 )
             }
         }
+        let index: Expression
+        if variables.isEmpty {
+            index = .literal(value: .integer(value: 0))
+        } else {
+            guard let arrayIndex = Expression(arrayIndexFor: variables) else {
+                return nil
+            }
+            index = arrayIndex
+        }
         self = .component(block: ComponentInstantiation(
             label: VariableName(rawValue: "runner_inst")!,
             name: VariableName(rawValue: "\(machine.name)RingletRunner")!,
@@ -199,9 +210,58 @@ extension AsynchronousBlock {
                         rhs: .expression(value: .reference(variable: .variable(
                             reference: .variable(name: .reset)
                         )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .state)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "STATE_\(state.name.rawValue)")!
+                            )
+                        )))
                     )
                 ] + variableMapping + [
-
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .previousRinglet)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: .previousRinglet)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .readSnapshotState)),
+                        rhs: .expression(value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .readSnapshotSignal)
+                            )),
+                            index: .index(value: index)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .writeSnapshotState)),
+                        rhs: .expression(value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .writeSnapshotSignal)
+                            )),
+                            index: .index(value: index)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .nextState)),
+                        rhs: .expression(value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .targets)
+                            )),
+                            index: .index(value: index)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .finished)),
+                        rhs: .expression(value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .finished)
+                            )),
+                            index: .index(value: index)
+                        )))
+                    )
                 ]
             )
         ))
