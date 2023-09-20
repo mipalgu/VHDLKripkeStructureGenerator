@@ -67,10 +67,12 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             let representation = MachineRepresentation(machine: machine),
             let verifiedMachine = VHDLFile(verifiable: representation),
             let runner = VHDLFile(runnerFor: representation),
-            let ringletRunner = VHDLFile(ringletRunnerFor: representation)
+            let ringletRunner = VHDLFile(ringletRunnerFor: representation),
+            let types = VHDLFile(typesFor: representation)
         else {
             return []
         }
+        let primitiveTypes = VHDLFile.primitiveTypes
         let states = machine.states
         let stateFiles: [[VHDLFile]] = states.compactMap {
             guard
@@ -85,7 +87,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         guard stateFiles.count == states.count else {
             return []
         }
-        return [verifiedMachine, runner, ringletRunner] + stateFiles.flatMap { $0 }
+        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes] + stateFiles.flatMap { $0 }
     }
 
 }
