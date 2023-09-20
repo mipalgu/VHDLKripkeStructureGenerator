@@ -149,7 +149,13 @@ extension PortBlock {
         }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
             machinePorts += [
-                PortSignal(type: .natural, name: .ringletCounter, mode: .output)
+                PortSignal(
+                    type: .natural,
+                    name: VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                    )!,
+                    mode: .output
+                )
             ]
             machineInputs += [
                 PortSignal(
