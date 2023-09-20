@@ -177,7 +177,7 @@ extension WhenCase {
                     value: .literal(value: .bit(value: .low))
                 )),
                 .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .busy)),
+                    name: .variable(reference: .variable(name: .previousRinglet)),
                     value: .literal(value: .vector(value: .logics(
                         value: LogicVector(
                             values: [LogicLiteral](repeating: .highImpedance, count: stateSize)
@@ -197,8 +197,19 @@ extension WhenCase {
         let workingVariables: [VariableName] = machine.externalSignals.filter {
             $0.mode != .input && validExternals.contains($0.name)
         }
-        .map(\.name) + machine.machineSignals.map(\.name) + machine.stateVariables.values.flatMap {
-            $0.map(\.name)
+        .map(\.name) + machine.externalSignals.filter {
+            $0.mode != .input && !validExternals.contains($0.name)
+        }
+        .map {
+            VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")!
+        } + machine.machineSignals.map {
+            VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")!
+        } + machine.stateVariables.values.flatMap {
+            $0.map {
+                VariableName(
+                    rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
+                )!
+            }
         }
         let assignments: [(VariableName, VariableName)] = [
             (VariableName(rawValue: "current_ExecuteOnEntry")!, VariableName.executeOnEntry),

@@ -107,8 +107,14 @@ final class AsynchronousBlockStateRunnerTests: XCTestCase {
     /// Test component instantiation is correct.
     func testComponentInstantiation() {
         let result = AsynchronousBlock(stateRunnerComponentsFor: machine.states[0], in: representation)
+        // print(result!.rawValue)
+        // print(AsynchronousBlock(stateRunnerComponentsFor: machine.states[1], in: representation)!.rawValue)
+    }
+
+    /// Test logic is correct.
+    func testLogic() {
+        let result = AsynchronousBlock(stateRunnerFor: machine.states[0], in: representation)
         print(result!.rawValue)
-        print(AsynchronousBlock(stateRunnerComponentsFor: machine.states[1], in: representation)!.rawValue)
     }
 
 }
