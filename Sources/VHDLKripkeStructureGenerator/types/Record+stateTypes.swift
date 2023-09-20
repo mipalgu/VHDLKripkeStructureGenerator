@@ -88,7 +88,9 @@ extension Record {
             }
         }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
-            stateSignals.append(RecordTypeDeclaration(name: .ringletCounter, type: .signal(type: .natural)))
+            stateSignals.append(RecordTypeDeclaration(
+                name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+            ))
         }
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .readSnapshotType)!
         self.init(
@@ -127,7 +129,9 @@ extension Record {
             }
         }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
-            stateSignals.append(RecordTypeDeclaration(name: .ringletCounter, type: .signal(type: .natural)))
+            stateSignals.append(RecordTypeDeclaration(
+                name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+            ))
         }
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .writeSnapshotType)!
         self.init(
