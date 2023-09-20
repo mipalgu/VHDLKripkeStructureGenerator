@@ -128,6 +128,10 @@ extension AsynchronousBlock {
         let validExternals = Set(state.externalVariables)
         var startIndex = 0
         let preamble = "\(machine.name.rawValue)_"
+        var machineSignals = machine.machineSignals
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
+        }
         // swiftlint:disable:next line_length
         let variableMapping: [VariableMap] = machine.externalSignals.map { (signal: PortSignal) -> VariableMap in
             let name = VariableReference.variable(reference: .variable(name: signal.name))
@@ -163,7 +167,7 @@ extension AsynchronousBlock {
                     )
                 )
             }
-        } + machine.machineSignals.map {
+        } + machineSignals.map {
             VariableMap(
                 lhs: .variable(reference: .variable(name: $0.name)),
                 rhs: .expression(

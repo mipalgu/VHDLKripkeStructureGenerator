@@ -80,8 +80,15 @@ extension Record {
                 type: $0.type
             )
         }
-        let machineSignals = machine.machineSignals.map {
+        var machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [
+                RecordTypeDeclaration(
+                    name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+                )
+            ]
         }
         let states = machine.stateVariables.flatMap {
             let statePreamble = preamble + "STATE_\($0)_"
@@ -107,8 +114,15 @@ extension Record {
         let externals = machine.externalSignals.map {
             RecordTypeDeclaration(name: $0.name, type: $0.type)
         }
-        let machineSignals = machine.machineSignals.map {
+        var machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [
+                RecordTypeDeclaration(
+                    name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+                )
+            ]
         }
         let stateSignals = machine.stateVariables.flatMap {
             let statePreamble = preamble + "STATE_\($0)_"
@@ -147,13 +161,24 @@ extension Record {
             )
             return [internalSignal, inputSignal]
         }
-        let machineSignals = machine.machineSignals.flatMap {
+        var machineSignals = machine.machineSignals.flatMap {
             [
                 RecordTypeDeclaration(
                     name: VariableName(pre: preamble, name: $0.name)!, type: $0.type
                 ),
                 RecordTypeDeclaration(
                     name: VariableName(pre: preamble, name: $0.name, post: "In")!, type: $0.type
+                )
+            ]
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [
+                RecordTypeDeclaration(
+                    name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+                ),
+                RecordTypeDeclaration(
+                    name: VariableName(pre: preamble, name: .ringletCounter, post: "In")!,
+                    type: .signal(type: .natural)
                 )
             ]
         }

@@ -95,7 +95,7 @@ extension ComponentInstantiation {
             return nil
         }
         let unwrappedSnapshots = snapshots.flatMap { $0 }
-        let machineVariables: [[VariableName]] = machine.machineSignals.compactMap {
+        var machineVariables: [[VariableName]] = machine.machineSignals.compactMap {
             guard
                 let output = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name),
                 let input = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")
@@ -106,6 +106,14 @@ extension ComponentInstantiation {
         }
         guard machineVariables.count == machine.machineSignals.count else {
             return nil
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineVariables += [
+                [
+                    VariableName(pre: "\(machine.name.rawValue)_", name: .ringletCounter)!,
+                    VariableName(pre: "\(machine.name.rawValue)_", name: .ringletCounter, post: "In")!
+                ]
+            ]
         }
         let machineVariablesUnwrapped = machineVariables.flatMap { $0 }
         let stateVariables: [VariableName] = machine.stateVariables.flatMap { stateName, variables in

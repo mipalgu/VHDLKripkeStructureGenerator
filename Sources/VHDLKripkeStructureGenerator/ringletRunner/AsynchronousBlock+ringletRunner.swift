@@ -138,6 +138,10 @@ extension WhenCase {
         waitForStartFor representation: T, record: VariableName = .machine, tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
+        var machineSignals = machine.machineSignals
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
+        }
         let allOutputs: [(VariableName, VariableName)] = machine.externalSignals.filter { $0.mode == .output }
             .map { (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!, $0.name) }
             + machine.machineSignals.map {
@@ -177,7 +181,7 @@ extension WhenCase {
         .map {
             (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")!, $0.name)
         }
-            + machine.machineSignals.map {
+            + machineSignals.map {
                 let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
                 return (VariableName(name: name, post: "In")!, name)
             }
@@ -316,7 +320,11 @@ extension WhenCase {
                 ))))
             )
         }
-        let machineVariables = machine.machineSignals.map {
+        var machineSignals = machine.machineSignals
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
+        }
+        let machineVariables = machineSignals.map {
             let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
             return IndexedValue(
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: name)))),
@@ -325,6 +333,7 @@ extension WhenCase {
                 ))))
             )
         }
+
         let stateVariables = machine.stateVariables.flatMap { state, variables in
             let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
             return variables.map {

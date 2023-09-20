@@ -66,8 +66,11 @@ extension PortBlock {
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let stateSize = VectorSize(supporting: machine.states)
-        let machineSignals = machine.machineSignals.map {
+        var machineSignals = machine.machineSignals.map {
             PortSignal(type: $0.type, name: $0.name, mode: .input)
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [PortSignal(type: .natural, name: .ringletCounter, mode: .input)]
         }
         let stateSignals = machine.states.flatMap { (state: State) -> [PortSignal]  in
             state.signals.compactMap { signal in
