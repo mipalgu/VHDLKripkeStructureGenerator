@@ -259,6 +259,12 @@ extension WhenCase {
                                 value: .literal(value: .boolean(value: true))
                             ))
                         ] + statements + [
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .internalState)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: VariableName(rawValue: "StartRunners")!)
+                                ))
+                            )),
                             .ifStatement(block: .ifElse(
                                 condition: .reference(variable: .variable(
                                     reference: .variable(name: .executeOnEntry)
