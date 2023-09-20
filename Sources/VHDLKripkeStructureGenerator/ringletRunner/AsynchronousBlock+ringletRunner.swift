@@ -144,7 +144,7 @@ extension WhenCase {
         }
         let allOutputs: [(VariableName, VariableName)] = machine.externalSignals.filter { $0.mode == .output }
             .map { (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!, $0.name) }
-            + machine.machineSignals.map {
+            + machineSignals.map {
                 let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
                 return (name, name)
             }
