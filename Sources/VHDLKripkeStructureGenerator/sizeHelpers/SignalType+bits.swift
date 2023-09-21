@@ -164,7 +164,10 @@ extension Int {
         //     return Int(ceil(calculation)) + 1
         // }
         // return Int(ceil(calculation))
-        BitLiteral.bitsRequired(for: self)!
+        guard let bits = BitLiteral.bitsRequired(for: self) else {
+            fatalError("Cannot calculate bits required for \(self)!")
+        }
+        return bits
     }
 
     /// Return the maximum of self and other.
