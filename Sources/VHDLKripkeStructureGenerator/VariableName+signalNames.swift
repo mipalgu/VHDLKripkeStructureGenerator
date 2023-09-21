@@ -161,6 +161,9 @@ extension VariableName {
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
 
+    /// The `Raw_t` type.
+    @usableFromInline static let rawType = VariableName(rawValue: "Raw_t")!
+
     /// The `readSnapshot` signal.
     @usableFromInline static let readSnapshotSignal = VariableName(rawValue: "readSnapshot")!
 

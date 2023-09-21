@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import VHDLMachines
 import VHDLParsing
 
@@ -89,10 +90,20 @@ extension VHDLPackage {
         let unwrappedStateRecords = stateRecords.flatMap {
             $0.map { HeadStatement.definition(value: .type(value: .record(value: $0))) }
         }
-        let stateExecutionTypes = machine.states.map {
-            HeadStatement.definition(
-                value: .type(value: .array(value: $0.executionTypes(in: representation)))
-            )
+        let stateExecutionTypes = machine.states.flatMap {
+            [
+                HeadStatement.definition(
+                    value: .type(value: .array(value: $0.executionTypes(in: representation)))
+                ),
+                HeadStatement.definition(value: .type(value: .array(value: ArrayDefinition(
+                    name: VariableName(
+                        rawValue: "STATE_\($0.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
+                    )!,
+                    size: [$0.memoryStorage(for: representation)],
+                    elementType: .signal(type: $0.encodedType(in: representation))
+                ))))
+            ]
+
         }
         self.init(
             name: name,

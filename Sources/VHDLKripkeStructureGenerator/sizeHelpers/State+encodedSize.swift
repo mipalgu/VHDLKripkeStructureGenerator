@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import VHDLMachines
 import VHDLParsing
 
@@ -81,6 +82,37 @@ extension State {
             lower: .literal(value: .integer(value: 0)),
             upper: .literal(value: .integer(value: self.encodedSize(in: representation) - 1))
         )))
+    }
+
+    /// The size of the BRAM structure that stores this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The BRAM size.
+    @inlinable
+    func memoryStorage<T>(for representation: T) -> VectorSize where T: MachineVHDLRepresentable {
+        .to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: self.numberOfMemoryAddresses(in: representation) - 1))
+        )
+    }
+
+    /// Calculate the number of memory addresses required to store the entire state-space of this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The number of memory addresses.
+    @inlinable
+    func numberOfMemoryAddresses<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
+        guard let numberOfValues: Int = self.numberOfStates(in: representation) else {
+            fatalError("State size is too big for STATE_\(self.name.rawValue)")
+        }
+        let size = Double(self.encodedSize(in: representation))
+        let stateSize = Double(representation.machine.numberOfStateBits)
+        let availableBits = 32.0 - stateSize
+        let footprint = size / availableBits
+        guard footprint <= 1.0 else {
+            let addresses = Int(ceil((size + stateSize) / 32.0))
+            return max(1, numberOfValues * addresses)
+        }
+        let ringletsPerAddress = Int(floor(availableBits / size))
+        return max(1, numberOfValues * ringletsPerAddress)
     }
 
 }
