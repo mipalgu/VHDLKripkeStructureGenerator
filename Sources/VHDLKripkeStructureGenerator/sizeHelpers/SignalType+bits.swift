@@ -153,17 +153,18 @@ extension Int {
     /// Calculate the number of bits required to represent self. This is the minimum reqired bits to contain
     /// the value using an extra sign bit for negative numbers.
     @inlinable var bits: Int {
-        let calculation = log2(abs(Double(self)))
-        if ceil(calculation) == calculation {
-            if self < 0 {
-                return Int(calculation) + 2
-            }
-            return Int(calculation) + 1
-        }
-        if self < 0 {
-            return Int(ceil(calculation)) + 1
-        }
-        return Int(ceil(calculation))
+        // let calculation = log2(abs(Double(self)))
+        // if ceil(calculation) == calculation {
+        //     if self < 0 {
+        //         return Int(calculation) + 2
+        //     }
+        //     return Int(calculation) + 1
+        // }
+        // if self < 0 {
+        //     return Int(ceil(calculation)) + 1
+        // }
+        // return Int(ceil(calculation))
+        BitLiteral.bitsRequired(for: self)!
     }
 
     /// Return the maximum of self and other.
