@@ -101,8 +101,8 @@ extension PortMap {
             [VariableMap](machineName: machineName, snapshot: $0)
         }
         .flatMap { $0 }
-        let inputExternals = representation.machine.externalSignals.filter { $0.mode != .output }
-        guard snapshots.count == (externals.count + inputExternals.count) else {
+        let outputExternals = representation.machine.externalSignals.filter { $0.mode != .input }
+        guard snapshots.count == (externals.count + outputExternals.count) else {
             return nil
         }
         let clkMap = VariableMap(
