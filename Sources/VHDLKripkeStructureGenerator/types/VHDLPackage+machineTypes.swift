@@ -100,7 +100,10 @@ extension VHDLPackage {
                         rawValue: "STATE_\($0.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
                     )!,
                     size: [$0.memoryStorage(for: $0, in: representation)],
-                    elementType: .signal(type: $0.encodedType(in: representation))
+                    elementType: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 31)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))))
                 ))))
             ]
 
