@@ -1,4 +1,4 @@
-// VHDLKripkeStructureGenerator.swift
+// AsynchronousBlock+bram.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,53 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
 import VHDLParsing
 
-public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
+extension AsynchronousBlock {
 
-    public init() {}
-
-    public func generate(machine: Machine) -> [VHDLFile] {
-        guard
-            let representation = MachineRepresentation(machine: machine),
-            let verifiedMachine = VHDLFile(verifiable: representation),
-            let runner = VHDLFile(runnerFor: representation),
-            let ringletRunner = VHDLFile(ringletRunnerFor: representation),
-            let types = VHDLFile(typesFor: representation)
-        else {
-            return []
-        }
-        let primitiveTypes = VHDLFile.primitiveTypes
-        let states = machine.states
-        let stateFiles: [[VHDLFile]] = states.compactMap {
-            guard
-                let expander = VHDLFile(ringletExpanderFor: $0, in: representation),
-                let kripkeGenerator = VHDLFile(stateKripkeGeneratorFor: $0, in: representation),
-                let runner = VHDLFile(stateRunnerFor: $0, in: representation)
-            else {
-                return nil
-            }
-            return [expander, kripkeGenerator, runner, VHDLFile(bramFor: $0, in: representation)]
-        }
-        guard stateFiles.count == states.count else {
-            return []
-        }
-        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes] + stateFiles.flatMap { $0 }
+    init<T>(bramFor representation: T) where T: MachineVHDLRepresentable {
+        let clock = representation.machine.clocks[representation.machine.drivingClock].name
+        self = .process(block: ProcessBlock(
+            sensitivityList: [clock],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clock))
+                )))),
+                ifBlock: .blocks(blocks: [
+                    .ifStatement(block: .ifStatement(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .we))),
+                            rhs: .literal(value: .bit(value: .high))
+                        ))),
+                        ifBlock: .statement(statement: .assignment(
+                            name: .indexed(
+                                name: .reference(variable: .variable(reference: .variable(name: .ram))),
+                                index: .index(value: .cast(operation: .integer(
+                                    expression: .cast(operation: .unsigned(
+                                        expression: .reference(variable: .variable(
+                                            reference: .variable(name: .addr)
+                                        ))
+                                    ))
+                                )))
+                            ),
+                            value: .reference(variable: .variable(reference: .variable(name: .di)))
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .do)),
+                        value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .ram))),
+                            index: .index(value: .cast(operation: .integer(expression: .cast(
+                                operation: .unsigned(expression: .reference(variable: .variable(
+                                    reference: .variable(name: .addr)
+                                )))
+                            ))))
+                        ))
+                    ))
+                ])
+            ))
+        ))
     }
 
 }

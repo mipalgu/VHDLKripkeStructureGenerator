@@ -62,6 +62,9 @@ extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
+    /// The `addr` signal.
+    @usableFromInline static let addr = VariableName(rawValue: "addr")!
+
     /// The `Behavioral` name.
     @usableFromInline static let behavioral = VariableName(rawValue: "Behavioral")!
 
@@ -97,6 +100,12 @@ extension VariableName {
 
     /// The `currentStateOut` signal.
     @usableFromInline static let currentStateOut = VariableName(rawValue: "currentStateOut")!
+
+    /// The `di` signal.
+    @usableFromInline static let di = VariableName(rawValue: "di")!
+
+    /// The `do` signal.
+    @usableFromInline static let `do` = VariableName(rawValue: "do")!
 
     /// The `executeOnEntry` signal.
     @usableFromInline static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
@@ -160,6 +169,9 @@ extension VariableName {
 
     /// The `PrimitiveTypes` package name.
     @usableFromInline static let primitiveTypes = VariableName(rawValue: "PrimitiveTypes")!
+
+    /// The `ram` signal.
+    @usableFromInline static let ram = VariableName(rawValue: "ram")!
 
     /// The `Raw_t` type.
     @usableFromInline static let rawType = VariableName(rawValue: "Raw_t")!
@@ -280,6 +292,9 @@ extension VariableName {
 
     /// The `WaitToStart` constant.
     @usableFromInline static let waitToStart = VariableName(rawValue: "WaitToStart")!
+
+    /// The `we` signal.
+    @usableFromInline static let we = VariableName(rawValue: "we")!
 
     /// The `writeSnapshot` signal.
     @usableFromInline static let writeSnapshotSignal = VariableName(rawValue: "writeSnapshot")!

@@ -1,4 +1,4 @@
-// VHDLKripkeStructureGenerator.swift
+// ArchitectureHead+bram.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,20 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
 import VHDLParsing
 
-public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
+extension ArchitectureHead {
 
-    public init() {}
-
-    public func generate(machine: Machine) -> [VHDLFile] {
-        guard
-            let representation = MachineRepresentation(machine: machine),
-            let verifiedMachine = VHDLFile(verifiable: representation),
-            let runner = VHDLFile(runnerFor: representation),
-            let ringletRunner = VHDLFile(ringletRunnerFor: representation),
-            let types = VHDLFile(typesFor: representation)
-        else {
-            return []
-        }
-        let primitiveTypes = VHDLFile.primitiveTypes
-        let states = machine.states
-        let stateFiles: [[VHDLFile]] = states.compactMap {
-            guard
-                let expander = VHDLFile(ringletExpanderFor: $0, in: representation),
-                let kripkeGenerator = VHDLFile(stateKripkeGeneratorFor: $0, in: representation),
-                let runner = VHDLFile(stateRunnerFor: $0, in: representation)
-            else {
-                return nil
-            }
-            return [expander, kripkeGenerator, runner, VHDLFile(bramFor: $0, in: representation)]
-        }
-        guard stateFiles.count == states.count else {
-            return []
-        }
-        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes] + stateFiles.flatMap { $0 }
+    init(bramFor state: State) {
+        self.init(statements: [
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: VariableName(
+                    rawValue: "\(state.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
+                )!),
+                name: .ram
+            )))
+        ])
     }
 
 }
