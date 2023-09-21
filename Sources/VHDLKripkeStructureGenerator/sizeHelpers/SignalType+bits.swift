@@ -164,6 +164,9 @@ extension Int {
         //     return Int(ceil(calculation)) + 1
         // }
         // return Int(ceil(calculation))
+        if self == 0 {
+            return 1
+        }
         guard let bits = BitLiteral.bitsRequired(for: self) else {
             fatalError("Cannot calculate bits required for \(self)!")
         }
