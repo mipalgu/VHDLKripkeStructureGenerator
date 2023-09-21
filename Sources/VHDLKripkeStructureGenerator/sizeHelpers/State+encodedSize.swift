@@ -88,10 +88,14 @@ extension State {
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The BRAM size.
     @inlinable
-    func memoryStorage<T>(for representation: T) -> VectorSize where T: MachineVHDLRepresentable {
+    func memoryStorage<T>(
+        for state: State, in representation: T
+    ) -> VectorSize where T: MachineVHDLRepresentable {
         .to(
             lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: self.numberOfMemoryAddresses(in: representation) - 1))
+            upper: .literal(value: .integer(
+                value: self.numberOfMemoryAddresses(for: state, in: representation) - 1
+            ))
         )
     }
 
@@ -99,9 +103,14 @@ extension State {
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The number of memory addresses.
     @inlinable
-    func numberOfMemoryAddresses<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
-        guard let numberOfValues: Int = self.numberOfStates(in: representation) else {
-            fatalError("State size is too big for STATE_\(self.name.rawValue)")
+    func numberOfMemoryAddresses<T>(
+        for state: State, in representation: T
+    ) -> Int where T: MachineVHDLRepresentable {
+        let numberOfValues: Int = Record(readSnapshotFor: state, in: representation).types.reduce(1) {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Cannot discern state size for \($1.rawValue)!")
+            }
+            return $0 * type.numberOfValues
         }
         let size = Double(self.encodedSize(in: representation))
         let stateSize = Double(representation.machine.numberOfStateBits)

@@ -99,7 +99,7 @@ extension VHDLPackage {
                     name: VariableName(
                         rawValue: "STATE_\($0.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
                     )!,
-                    size: [$0.memoryStorage(for: representation)],
+                    size: [$0.memoryStorage(for: $0, in: representation)],
                     elementType: .signal(type: $0.encodedType(in: representation))
                 ))))
             ]
