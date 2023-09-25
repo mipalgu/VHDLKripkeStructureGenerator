@@ -140,11 +140,17 @@ extension VariableName {
     /// The `internalStateOut` signal.
     @usableFromInline static let internalStateOut = VariableName(rawValue: "internalStateOut")!
 
+    /// The `lastAddress` signal.
+    @usableFromInline static let lastAddress = VariableName(rawValue: "lastAddress")!
+
     /// The `machine` signal.
     @usableFromInline static let machine = VariableName(rawValue: "machine")!
 
     /// The `nextState` signal.
     @usableFromInline static let nextState = VariableName(rawValue: "nextState")!
+
+    /// The `newRinglets` signal.
+    @usableFromInline static let newRinglets = VariableName(rawValue: "newRinglets")!
 
     /// The `observed` signal.
     @usableFromInline static let observed = VariableName(rawValue: "observed")!
@@ -176,6 +182,9 @@ extension VariableName {
     /// The `Raw_t` type.
     @usableFromInline static let rawType = VariableName(rawValue: "Raw_t")!
 
+    /// The `readAddress` signal.
+    @usableFromInline static let readAddress = VariableName(rawValue: "readAddress")!
+
     /// The `readSnapshot` signal.
     @usableFromInline static let readSnapshotSignal = VariableName(rawValue: "readSnapshot")!
 
@@ -193,6 +202,9 @@ extension VariableName {
 
     /// The `ReadSnapshot_t` type.
     @usableFromInline static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
+
+    /// The `read` signal.
+    @usableFromInline static let read = VariableName(rawValue: "read")!
 
     /// The `ready` signal.
     @usableFromInline static let ready = VariableName(rawValue: "ready")!
