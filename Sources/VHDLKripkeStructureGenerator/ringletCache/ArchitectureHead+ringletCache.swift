@@ -93,7 +93,7 @@ extension ArchitectureHead {
         let recordTypes = readSnapshot.types.filter { !invalidVariables.contains($0.name) }
         let lastVariables = recordTypes.map {
             HeadStatement.definition(value: .signal(value: LocalSignal(
-                type: $0.type,
+                type: Type(encodedType: $0.type)!,
                 name: VariableName(pre: "last_", name: $0.name)!
             )))
         }

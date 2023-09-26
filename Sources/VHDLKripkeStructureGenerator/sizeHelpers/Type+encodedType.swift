@@ -1,4 +1,4 @@
-// State+ringletsPerAddress.swift
+// Type+encodedType.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,20 +54,61 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
-import VHDLMachines
+import VHDLParsing
 
-extension State {
+extension Type {
 
-    func ringletsPerAddress<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
-        let encodedSize = Double(self.encodedSize(in: representation))
-        let stateSize = representation.machine.numberOfStateBits
-        let availableBits = Double(max(0 ,32 - stateSize))
-        let ringletsPerAddress = availableBits / encodedSize
-        guard ringletsPerAddress < 1.0 else {
-            return 1
+    init?(encodedType: Type) {
+        guard case .signal(let type) = encodedType else {
+            return nil
         }
-        return Int(ringletsPerAddress)
+        self = .signal(type: SignalType(encodedType: type))
+    }
+
+}
+
+extension SignalType {
+
+    @usableFromInline static let logicVector2 = SignalType.ranged(type: .stdLogicVector(
+        size: .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
+    ))
+
+    init(encodedType: SignalType) {
+        switch encodedType {
+        case .bit, .boolean:
+            self = .stdLogic
+        case .integer, .natural, .positive, .real:
+            self = SignalType.logicVector32
+        case .stdLogic, .stdULogic:
+            self = .logicVector2
+        case .ranged(let type):
+            self = .ranged(type: RangedType(encodedType: type))
+        }
+    }
+
+}
+
+extension RangedType {
+
+    init(encodedType: RangedType) {
+        switch encodedType {
+        case .bitVector(let size), .signed(let size), .unsigned(let size):
+            self = .stdLogicVector(size: size)
+        case .integer:
+            self = .stdLogicVector(
+                size: .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: max(0, encodedType.bits - 1)))
+                )
+            )
+        case .stdLogicVector(let size), .stdULogicVector(let size):
+            self = .stdLogicVector(
+                size: .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: max(0, size.size! * 2 - 1)))
+                )
+            )
+        }
     }
 
 }
