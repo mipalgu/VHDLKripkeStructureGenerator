@@ -59,20 +59,33 @@ import VHDLParsing
 
 extension AsynchronousBlock {
 
-    init?<T>(ringletCacheFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(
+        ringletCacheFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
         let ringletsPerAddress = state.ringletsPerAddress(in: representation)
         guard ringletsPerAddress >= 2 else {
             fatalError("Not yet supported!")
         }
-        self.init(ringletCacheSmallFor: state, in: representation, ringletsPerAddress: ringletsPerAddress)
+        self.init(
+            ringletCacheSmallFor: state,
+            in: representation,
+            ringletsPerAddress: ringletsPerAddress,
+            maxExecutionSize: maxExecutionSize
+        )
     }
 
     init?<T>(
-        ringletCacheSmallFor state: State, in representation: T, ringletsPerAddress: Int
+        ringletCacheSmallFor state: State,
+        in representation: T,
+        ringletsPerAddress: Int,
+        maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         guard
             let block = ProcessBlock(
-                ringletCacheSmallFor: state, in: representation, ringletsPerAddress: ringletsPerAddress
+                ringletCacheSmallFor: state,
+                in: representation,
+                ringletsPerAddress: ringletsPerAddress,
+                maxExecutionSize: maxExecutionSize
             )
         else {
             return nil
@@ -197,7 +210,10 @@ extension AsynchronousBlock {
 extension ProcessBlock {
 
     init?<T>(
-        ringletCacheSmallFor state: State, in representation: T, ringletsPerAddress: Int
+        ringletCacheSmallFor state: State,
+        in representation: T,
+        ringletsPerAddress: Int,
+        maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         let clk = representation.machine.clocks[representation.machine.drivingClock].name
         self.init(
@@ -211,6 +227,12 @@ extension ProcessBlock {
                     cases: [
                         .ringletCacheSmallInitial,
                         WhenCase(ringletCacheSmallWaitForNewRingletsFor: state, in: representation),
+                        WhenCase(
+                            ringletCacheSmallCheckPreviousRingletsFor: state,
+                            in: representation,
+                            maxExecutionSize: maxExecutionSize
+                        ),
+                        WhenCase(ringletCacheSmallSetRingletValueFor: state, in: representation),
                         .ringletCacheSmallSetRingletRAMValue,
                         .othersNull
                     ]
@@ -325,6 +347,132 @@ extension WhenCase {
             ))
         ])
     )
+
+    init<T>(
+        ringletCacheSmallCheckPreviousRingletsFor state: State,
+        in representation: T,
+        maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
+        let maxIndex = executionSize.max
+        let encodedTypeMaxIndex = max(0, state.encodedSize(in: representation) - 1)
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .checkPreviousRinglets)
+            ))),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ringletIndex))),
+                        rhs: maxIndex
+                    ))),
+                    ifBlock: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(
+                            reference: .variable(name: .waitForNewRinglets)
+                        ))
+                    )),
+                    elseBlock: .ifStatement(block: .ifElse(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .indexed(
+                                name: .reference(variable: .indexed(
+                                    name: .reference(variable: .variable(
+                                        reference: .variable(name: .workingRinglets)
+                                    )),
+                                    index: .index(value: .reference(variable: .variable(
+                                        reference: .variable(name: .ringletIndex)
+                                    )))
+                                )),
+                                index: .index(value: .literal(value: .integer(value: encodedTypeMaxIndex)))
+                            )),
+                            rhs: .literal(value: .bit(value: .high))
+                        ))),
+                        ifBlock: .blocks(blocks: [
+                            .forLoop(loop: ForLoop(
+                                iterator: .i,
+                                range: executionSize,
+                                body: .ifStatement(block: .ifStatement(
+                                    condition: .conditional(condition: .comparison(value: .lessThan(
+                                        lhs: .reference(variable: .variable(reference: .variable(name: .i))),
+                                        rhs: .reference(variable: .variable(
+                                            reference: .variable(name: .ringletIndex)
+                                        ))
+                                    ))),
+                                    ifBlock: .ifStatement(block: .ifStatement(
+                                        condition: .conditional(condition: .comparison(value: .equality(
+                                            lhs: .reference(variable: .indexed(
+                                                name: .reference(variable: .variable(
+                                                    reference: .variable(name: .workingRinglets)
+                                                )),
+                                                index: .index(value: .reference(variable: .variable(
+                                                    reference: .variable(name: .i)
+                                                )))
+                                            )),
+                                            rhs: .reference(variable: .indexed(
+                                                name: .reference(variable: .variable(reference: .variable(
+                                                    name: .workingRinglets
+                                                ))),
+                                                index: .index(value: .reference(variable: .variable(
+                                                    reference: .variable(name: .ringletIndex)
+                                                )))
+                                            ))
+                                        ))),
+                                        ifBlock: .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .isDuplicate)),
+                                            value: .literal(value: .boolean(value: true))
+                                        ))
+                                    ))
+                                ))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .internalState)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .writeElement)
+                                ))
+                            ))
+                        ]),
+                        elseBlock: .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .ringletIndex)),
+                            value: .binary(operation: .addition(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .ringletIndex)
+                                )),
+                                rhs: .literal(value: .integer(value: 1))
+                            ))
+                        ))
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .we)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .busy)),
+                    value: .literal(value: .bit(value: .high))
+                ))
+            ])
+        )
+    }
+
+    init<T>(
+        ringletCacheSmallSetRingletValueFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .setRingletValue)
+            ))),
+            code: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .genValue)),
+                    value: state.entireCache(in: representation)
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .checkPreviousRinglets)))
+                ))
+            ])
+        )
+    }
 
     init<T>(
         ringletCacheSmallWaitForNewRingletsFor state: State, in representation: T

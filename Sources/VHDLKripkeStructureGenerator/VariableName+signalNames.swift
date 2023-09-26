@@ -128,6 +128,9 @@ extension VariableName {
     /// The `hasStarted` signal.
     @usableFromInline static let hasStarted = VariableName(rawValue: "hasStarted")!
 
+    /// The `i` signal.
+    @usableFromInline static let i = VariableName(rawValue: "i")!
+
     /// The `IEEE` library.
     @usableFromInline static let ieee = VariableName(rawValue: "IEEE")!
 
