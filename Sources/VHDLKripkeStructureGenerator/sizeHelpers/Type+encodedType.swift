@@ -96,16 +96,16 @@ extension RangedType {
             self = .stdLogicVector(size: size)
         case .integer:
             self = .stdLogicVector(
-                size: .to(
-                    lower: .literal(value: .integer(value: 0)),
-                    upper: .literal(value: .integer(value: max(0, encodedType.bits - 1)))
+                size: .downto(
+                    upper: .literal(value: .integer(value: max(0, encodedType.bits - 1))),
+                    lower: .literal(value: .integer(value: 0))
                 )
             )
         case .stdLogicVector(let size), .stdULogicVector(let size):
             self = .stdLogicVector(
-                size: .to(
-                    lower: .literal(value: .integer(value: 0)),
-                    upper: .literal(value: .integer(value: max(0, size.size! * 2 - 1)))
+                size: .downto(
+                    upper: .literal(value: .integer(value: max(0, size.size! * 2 - 1))),
+                    lower: .literal(value: .integer(value: 0))
                 )
             )
         }
