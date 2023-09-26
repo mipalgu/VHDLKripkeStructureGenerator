@@ -110,24 +110,7 @@ extension AsynchronousBlock {
                 )
             ])
         )
-        let ringletAccess = (0..<(ringletsPerAddress - 1)).map {
-            Expression.reference(variable: .indexed(
-                name: .reference(variable: .variable(reference: .variable(name: .currentRinglet))),
-                index: .index(value: .literal(value: .integer(value: $0)))
-            ))
-        }
-        let stateBits = machine.numberOfStateBits
-        let remainingBits = 32 - stateBits - state.encodedSize(in: representation)
-        guard remainingBits >= 0, let stateEncoding = machine.states.firstIndex(where: { $0 == state }) else {
-            fatalError("Incorrect number of remaining bits \(remainingBits) for this ringlet cache.")
-        }
-        let bitString = BitLiteral.bitVersion(of: stateEncoding, bitsRequired: stateBits)
-        let entireCache = (ringletAccess + [
-            Expression.literal(value: .vector(value: .bits(
-                value: BitVector(values: [BitLiteral](repeating: .low, count: remainingBits))
-            ))),
-            .literal(value: .vector(value: .bits(value: BitVector(values: bitString))))
-        ]).concatenated
+        let entireCache = state.entireCache(in: representation)
         let condition = [
             Expression.conditional(condition: .comparison(value: .equality(
                 lhs: .reference(variable: .variable(reference: .variable(name: .previousReadAddress))),
@@ -227,6 +210,7 @@ extension ProcessBlock {
                     condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
                     cases: [
                         .ringletCacheSmallInitial,
+                        WhenCase(ringletCacheSmallWaitForNewRingletsFor: state, in: representation),
                         .ringletCacheSmallSetRingletRAMValue,
                         .othersNull
                     ]
@@ -341,5 +325,139 @@ extension WhenCase {
             ))
         ])
     )
+
+    init<T>(
+        ringletCacheSmallWaitForNewRingletsFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let indexes = readSnapshot.encodedIndexes
+        let readExternals = Set(
+            representation.machine.externalSignals.filter { $0.mode != .output }.map(\.name)
+        )
+        let invalidExternals = Set(state.externalVariables.filter { !readExternals.contains($0) })
+        let validIndexes = indexes.filter { !invalidExternals.contains($0.0.name) }
+        let condition = validIndexes.map {
+            Expression.conditional(condition: .comparison(value: .notEquals(
+                lhs: .reference(variable: .indexed(
+                    name: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .newRinglets))),
+                        index: .index(value: .literal(value: .integer(value: 0)))
+                    )),
+                    index: $0.1
+                )),
+                rhs: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "last_\($0.0.name.rawValue)")!
+                )))
+            )))
+        } + [.reference(variable: .variable(reference: .variable(name: .isInitial)))]
+        let conditionReduced = condition.joined { .logical(operation: .or(lhs: $0, rhs: $1)) }
+        let assignments = validIndexes.map {
+            SynchronousBlock.statement(statement: Statement.assignment(
+                name: .variable(reference: .variable(
+                    name: VariableName(rawValue: "last_\($0.0.name.rawValue)")!
+                )),
+                value: .reference(variable: .indexed(
+                    name: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .newRinglets))),
+                        index: .index(value: .literal(value: .integer(value: 0)))
+                    )),
+                    index: $0.1
+                ))
+            ))
+        }
+        let ifBlock = SynchronousBlock.blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .writeElement)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .high))
+            ))
+        ] + assignments + [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .workingRinglets)),
+                value: .reference(variable: .variable(reference: .variable(name: .newRinglets)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .isInitial)),
+                value: .literal(value: .boolean(value: false))
+            ))
+        ])
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .waitForNewRinglets)
+            ))),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .ifStatement(block: .ifElse(
+                        condition: .logical(operation: .not(value: .reference(variable: .variable(
+                            reference: .variable(name: .read)
+                        )))),
+                        ifBlock: .ifStatement(block: .ifElse(
+                            condition: conditionReduced,
+                            ifBlock: ifBlock,
+                            elseBlock: .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .busy)),
+                                value: .literal(value: .bit(value: .low))
+                            ))
+                        )),
+                        elseBlock: .blocks(blocks: [
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .busy)),
+                                value: .literal(value: .bit(value: .low))
+                            )),
+                            .ifStatement(block: .ifElse(
+                                condition: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .reference(variable: .variable(
+                                        reference: .variable(name: .readAddress)
+                                    )),
+                                    rhs: .reference(variable: .variable(
+                                        reference: .variable(name: .currentRingletAddress)
+                                    ))
+                                ))),
+                                ifBlock: .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .value)),
+                                    value: state.entireCache(in: representation)
+                                )),
+                                elseBlock: .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .value)),
+                                    value: .reference(variable: .variable(
+                                        reference: .variable(name: .cacheValue)
+                                    ))
+                                ))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .index)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .readAddress)
+                                ))
+                            ))
+                        ])
+                    )),
+                    elseBlock: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .ringletIndex)),
+                    value: .literal(value: .integer(value: 0))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .we)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .isDuplicate)),
+                    value: .literal(value: .boolean(value: false))
+                ))
+            ])
+        )
+    }
 
 }

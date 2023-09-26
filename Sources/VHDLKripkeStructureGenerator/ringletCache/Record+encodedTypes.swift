@@ -1,4 +1,4 @@
-// State+ringletsPerAddress.swift
+// Record+encodedTypes.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,44 +54,31 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
 import VHDLMachines
 import VHDLParsing
 
-extension State {
+extension Record {
 
-    func entireCache<T>(in representation: T) -> Expression where T: MachineVHDLRepresentable {
-        let ringletsPerAddress = self.ringletsPerAddress(in: representation)
-        let machine = representation.machine
-        let ringletAccess = (0..<(ringletsPerAddress - 1)).map {
-            Expression.reference(variable: .indexed(
-                name: .reference(variable: .variable(reference: .variable(name: .currentRinglet))),
-                index: .index(value: .literal(value: .integer(value: $0)))
-            ))
-        }
-        let stateBits = machine.numberOfStateBits
-        let remainingBits = 32 - stateBits - self.encodedSize(in: representation)
-        guard remainingBits >= 0, let stateEncoding = machine.states.firstIndex(where: { $0 == self }) else {
-            fatalError("Incorrect number of remaining bits \(remainingBits) for this ringlet cache.")
-        }
-        let bitString = BitLiteral.bitVersion(of: stateEncoding, bitsRequired: stateBits)
-        return (ringletAccess + [
-            Expression.literal(value: .vector(value: .bits(
-                value: BitVector(values: [BitLiteral](repeating: .low, count: remainingBits))
-            ))),
-            .literal(value: .vector(value: .bits(value: BitVector(values: bitString))))
-        ]).concatenated
+    var encodedTypes: [(RecordTypeDeclaration, Type)] {
+        self.types.map { ($0, Type(encodedType: $0.type)!)}
     }
 
-    func ringletsPerAddress<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
-        let encodedSize = Double(self.encodedSize(in: representation))
-        let stateSize = representation.machine.numberOfStateBits
-        let availableBits = Double(max(0 ,32 - stateSize))
-        let ringletsPerAddress = availableBits / encodedSize
-        guard ringletsPerAddress < 1.0 else {
-            return 1
+    var encodedIndexes: [(RecordTypeDeclaration, VectorIndex)] {
+        var currentIndex = 0
+        return self.types.map {
+            let numberOfBits = $0.type.signalType.encodedBits
+            let index: VectorIndex
+            if numberOfBits == 1 {
+                index = VectorIndex.index(value: .literal(value: .integer(value: currentIndex)))
+            } else {
+                index = VectorIndex.range(value: .to(
+                    lower: .literal(value: .integer(value: currentIndex)),
+                    upper: .literal(value: .integer(value: currentIndex + numberOfBits - 1))
+                ))
+            }
+            currentIndex += numberOfBits
+            return ($0, index)
         }
-        return Int(ringletsPerAddress)
     }
 
 }
