@@ -63,35 +63,43 @@ extension Entity {
         let clock = representation.machine.clocks[representation.machine.drivingClock]
         self.init(
             name: VariableName(rawValue: "\(state.name.rawValue)BRAM")!,
-            port: PortBlock(signals: [
-                PortSignal(clock: clock),
-                PortSignal(type: .stdLogic, name: .we, mode: .input),
-                PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(
-                        upper: .literal(value: .integer(value: 31)),
-                        lower: .literal(value: .integer(value: 0))
-                    ))),
-                    name: .addr,
-                    mode: .input
-                ),
-                PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(
-                        upper: .literal(value: .integer(value: 31)),
-                        lower: .literal(value: .integer(value: 0))
-                    ))),
-                    name: .di,
-                    mode: .input
-                ),
-                PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(
-                        upper: .literal(value: .integer(value: 31)),
-                        lower: .literal(value: .integer(value: 0))
-                    ))),
-                    name: .do,
-                    mode: .output
-                )
-            ])!
+            port: PortBlock(bramWith: clock)
         )
+    }
+
+}
+
+extension PortBlock {
+
+    init(bramWith clock: Clock) {
+        self.init(signals: [
+            PortSignal(clock: clock),
+            PortSignal(type: .stdLogic, name: .we, mode: .input),
+            PortSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 31)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .addr,
+                mode: .input
+            ),
+            PortSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 31)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .di,
+                mode: .input
+            ),
+            PortSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 31)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .do,
+                mode: .output
+            )
+        ])!
     }
 
 }
