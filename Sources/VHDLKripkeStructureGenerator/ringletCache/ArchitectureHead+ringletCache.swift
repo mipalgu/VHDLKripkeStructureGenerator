@@ -148,7 +148,7 @@ extension ArchitectureHead {
         let internalStates = [ConstantSignal].ringletCacheInternalStates.map {
             HeadStatement.definition(value: .constant(value: $0))
         }
-        let entity = Entity(ringletCacheFor: state, representation: representation)
+        let entity = Entity(bramFor: state, in: representation)
         let component = [
             HeadStatement.definition(
                 value: .component(value: ComponentDefinition(name: entity.name, port: entity.port))
