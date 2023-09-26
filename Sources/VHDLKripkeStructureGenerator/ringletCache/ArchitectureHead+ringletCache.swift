@@ -97,6 +97,12 @@ extension ArchitectureHead {
                 name: VariableName(pre: "last_", name: $0.name)!
             )))
         }
+        let memoryIndexType = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: state.numberOfMemoryAddresses(
+                for: state, in: representation
+            )))
+        )
         let indexSize = state.memoryStorage(for: state, in: representation)
         let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
         let arrayMaxIndex = ringletsPerAddress - 1
@@ -109,7 +115,7 @@ extension ArchitectureHead {
                 type: .alias(name: VariableName(pre: "\(state.name.rawValue)_", name: .stateExecutionType)!),
                 name: .workingRinglets
             ),
-            LocalSignal(type: .ranged(type: .integer(size: indexSize)), name: .memoryIndex),
+            LocalSignal(type: .ranged(type: .integer(size: memoryIndexType)), name: .memoryIndex),
             LocalSignal(type: .ranged(type: .integer(size: executionSize)), name: .ringletIndex),
             LocalSignal(type: .logicVector32, name: .di),
             LocalSignal(type: .logicVector32, name: .index),
