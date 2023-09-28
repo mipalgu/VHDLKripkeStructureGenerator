@@ -169,7 +169,82 @@ extension ArchitectureHead {
         ringletsPerAddress: Int,
         maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        fatalError("Ringlet cache not fully supported for large state \(state.name).")
+        let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let machine = representation.machine
+        let inputVariables = machine.externalSignals.filter { $0.mode != .output }.map(\.name)
+        let invalidVariables = state.externalVariables.filter { !inputVariables.contains($0) }
+        let recordTypes = readSnapshot.types.filter { !invalidVariables.contains($0.name) }
+        let lastVariables = recordTypes.map {
+            HeadStatement.definition(value: .signal(value: LocalSignal(
+                type: Type(encodedType: $0.type)!,
+                name: VariableName(pre: "last_", name: $0.name)!
+            )))
+        }
+        let memoryIndexType = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: state.numberOfMemoryAddresses(
+                for: state, in: representation
+            )))
+        )
+        let indexSize = state.memoryStorage(for: state, in: representation)
+        let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
+        let arrayMaxIndex = ringletsPerAddress - 1
+        let arrayType = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: arrayMaxIndex))
+        )
+        let statements = lastVariables + [
+            LocalSignal(
+                type: .alias(name: VariableName(pre: "\(state.name.rawValue)_", name: .stateExecutionType)!),
+                name: .workingRinglets
+            ),
+            LocalSignal(type: .ranged(type: .integer(size: memoryIndexType)), name: .memoryIndex),
+            LocalSignal(type: .ranged(type: .integer(size: executionSize)), name: .ringletIndex),
+            LocalSignal(type: .logicVector32, name: .di),
+            LocalSignal(type: .logicVector32, name: .index),
+            LocalSignal(type: .boolean, name: .isDuplicate),
+            LocalSignal(type: .stdLogic, name: .we)
+        ].map { HeadStatement.definition(value: .signal(value: $0)) }
+        let newTypes: [HeadStatement] = [
+            .definition(value: .constant(value: ConstantSignal(
+                name: .lastAccessibleAddress,
+                type: .unsigned32bit,
+                value: .functionCall(call: .custom(function: CustomFunctionCall(
+                    name: .toUnsigned,
+                    parameters: [
+                        Argument(argument: indexSize.max),
+                        Argument(argument: .literal(value: .integer(value: 32)))
+                    ]
+                )))
+            )!))
+        ]
+        let ringletBits = state.encodedSize(in: representation)
+        let trackers = [
+            LocalSignal(type: .logicVector32, name: .currentRingletAddress),
+            LocalSignal(type: .signal(type: state.encodedType(in: representation)), name: .currentRinglet),
+            LocalSignal(type: .ranged(type: .integer(size: arrayType)), name: .currentRingletIndex),
+            LocalSignal(type: .logicVector32, name: .cacheValue),
+            LocalSignal(type: .logicVector32, name: .genIndex),
+            LocalSignal(type: .boolean, name: .isInitial),
+            LocalSignal(
+                type: .ranged(type: .integer(size: .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: max(ringletBits - 1, 0)))
+                ))),
+                name: .topIndex
+            ),
+            LocalSignal(type: .logicVector4, name: .internalState)
+        ].map { HeadStatement.definition(value: .signal(value: $0)) }
+        let internalStates = [ConstantSignal].ringletCacheLargeInternalStates.map {
+            HeadStatement.definition(value: .constant(value: $0))
+        }
+        let entity = Entity(bramFor: state, in: representation)
+        let component = [
+            HeadStatement.definition(
+                value: .component(value: ComponentDefinition(name: entity.name, port: entity.port))
+            )
+        ]
+        self.init(statements: statements + newTypes + trackers + internalStates + component)
     }
 
 }

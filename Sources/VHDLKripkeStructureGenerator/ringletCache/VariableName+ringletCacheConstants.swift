@@ -121,6 +121,9 @@ extension VariableName {
     /// The `SetRingletValue` constant.
     @usableFromInline static let setRingletValue = VariableName(rawValue: "SetRingletValue")!
 
+    /// The `topIndex` signals.
+    @usableFromInline static let topIndex = VariableName(rawValue: "topIndex")!
+
     /// The `WaitForNewRinglets` constant.
     @usableFromInline static let waitForNewRinglets = VariableName(rawValue: "WaitForNewRinglets")!
 
