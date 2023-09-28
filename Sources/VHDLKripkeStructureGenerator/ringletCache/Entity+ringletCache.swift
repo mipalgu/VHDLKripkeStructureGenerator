@@ -68,7 +68,7 @@ extension Entity {
     init<T>(ringletCacheFor state: State, representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let clk = machine.clocks[machine.drivingClock]
-        let name = VariableName(rawValue: "\(machine.name)RingletCache")!
+        let name = VariableName(rawValue: "\(state.name)RingletCache")!
         self.init(
             name: name,
             port: PortBlock(signals: [
