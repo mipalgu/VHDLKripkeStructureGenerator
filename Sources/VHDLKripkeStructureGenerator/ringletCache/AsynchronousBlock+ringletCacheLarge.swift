@@ -65,7 +65,102 @@ extension AsynchronousBlock {
         ringletsPerAddress: Int,
         maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        nil
+        guard
+            let block = ProcessBlock(
+                ringletCacheLargeFor: state,
+                in: representation,
+                ringletsPerAddress: ringletsPerAddress,
+                maxExecutionSize: maxExecutionSize
+            )
+        else {
+            return nil
+        }
+        let entity = Entity(bramFor: state, in: representation)
+        let machine = representation.machine
+        let clk = machine.clocks[machine.drivingClock].name
+        let component = ComponentInstantiation(
+            label: VariableName(rawValue: "bram_inst")!,
+            name: entity.name,
+            port: PortMap(variables: [
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: clk)),
+                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: clk))))
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .we)),
+                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .we))))
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .addr)),
+                    rhs: .expression(value: .reference(variable: .variable(
+                        reference: .variable(name: .index)
+                    )))
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .di)),
+                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .di))))
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .do)),
+                    rhs: .expression(value: .reference(variable: .variable(
+                        reference: .variable(name: .value)
+                    )))
+                )
+            ])
+        )
+        let indexAssignment = AsynchronousBlock.statement(statement: .assignment(
+            name: .variable(reference: .variable(name: .index)),
+            value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                value: .reference(variable: .variable(reference: .variable(name: .readAddress))),
+                condition: [
+                    Expression.conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    .reference(variable: .variable(reference: .variable(name: .read))),
+                    .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                        rhs: .reference(variable: .variable(reference: .variable(name: .waitForNewRinglets)))
+                    )))
+                ].joined { Expression.logical(operation: .and(lhs: $0, rhs: $1)) },
+                elseBlock: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .genIndex)
+                )))
+            )))
+        ))
+        self = .blocks(blocks: [
+            .component(block: component),
+            indexAssignment,
+            .process(block: block)
+        ])
+    }
+
+}
+
+extension ProcessBlock {
+
+    init?<T>(
+        ringletCacheLargeFor state: State,
+        in representation: T,
+        ringletsPerAddress: Int,
+        maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        let clk = representation.machine.clocks[representation.machine.drivingClock].name
+        self.init(
+            sensitivityList: [clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clk))
+                )))),
+                ifBlock: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                    cases: [
+                        WhenCase(ringletCacheLargeInitialFor: state, in: representation),
+                        .othersNull
+                    ]
+                ))
+            ))
+        )
     }
 
 }

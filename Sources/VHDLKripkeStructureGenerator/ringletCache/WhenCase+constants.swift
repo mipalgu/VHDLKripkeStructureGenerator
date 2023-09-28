@@ -146,4 +146,66 @@ extension WhenCase {
         ])
     )
 
+    init<T>(
+        ringletCacheLargeInitialFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .initial)
+            ))),
+            code: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .busy)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .waitForNewRinglets)))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .memoryIndex)),
+                    value: .literal(value: .integer(value: 0))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .ringletIndex)),
+                    value: .literal(value: .integer(value: 0))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .we)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .di)),
+                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                    ))))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .isDuplicate)),
+                    value: .literal(value: .boolean(value: false))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentRingletAddress)),
+                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                    ))))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .genIndex)),
+                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                    ))))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .isInitial)),
+                    value: .literal(value: .boolean(value: false))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .topIndex)),
+                    value: .literal(value: .integer(value: max(0, state.encodedSize(in: representation) - 1)))
+                ))
+            ])
+        )
+    }
+
 }
