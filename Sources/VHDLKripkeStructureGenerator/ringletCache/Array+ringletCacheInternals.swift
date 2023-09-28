@@ -102,13 +102,7 @@ extension Array where Element == ConstantSignal {
     }
 
     @inlinable static var ringletCacheLargeInternalStates: [ConstantSignal] {
-        self.ringletCacheCommonInternalStates + [
-            ConstantSignal(
-                name: .setNextAddress,
-                type: .logicVector4,
-                value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.five]))))
-            )!,
-        ]
+        self.ringletCacheCommonInternalStates
     }
 
 }

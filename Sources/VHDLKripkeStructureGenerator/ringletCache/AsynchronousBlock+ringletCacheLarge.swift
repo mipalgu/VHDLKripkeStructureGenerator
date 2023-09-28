@@ -156,6 +156,13 @@ extension ProcessBlock {
                     condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
                     cases: [
                         WhenCase(ringletCacheLargeInitialFor: state, in: representation),
+                        WhenCase(ringletCacheSmallWaitForNewRingletsFor: state, in: representation),
+                        WhenCase(
+                            ringletCacheLargeCheckPreviousRingletsFor: state,
+                            in: representation,
+                            maxExecutionSize: maxExecutionSize
+                        ),
+                        WhenCase(ringletCacheLargeWriteElementFor: state, in: representation),
                         .othersNull
                     ]
                 ))

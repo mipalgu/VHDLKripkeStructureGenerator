@@ -112,9 +112,6 @@ extension VariableName {
     /// The `ringletIndex` signal.
     @usableFromInline static let ringletIndex = VariableName(rawValue: "ringletIndex")!
 
-    /// The `SetNextAddress` constant.
-    @usableFromInline static let setNextAddress = VariableName(rawValue: "SetNextAddress")!
-
     /// The `SetRingletRAMValue` constant.
     @usableFromInline static let setRingletRAMValue = VariableName(rawValue: "SetRingletRAMValue")!
 
