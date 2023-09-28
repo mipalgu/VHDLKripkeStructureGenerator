@@ -174,77 +174,6 @@ extension ArchitectureHead {
 
 }
 
-/// A variable names for ringlet cache.
-extension VariableName {
-
-    /// The `cacheValue` signal.
-    @usableFromInline static let cacheValue = VariableName(rawValue: "cacheValue")!
-
-    /// The `CheckPreviousRinglets` constant.
-    @usableFromInline static let checkPreviousRinglets = VariableName(rawValue: "CheckPreviousRinglets")!
-
-    /// The `currentRinglet` signal.
-    @usableFromInline static let currentRinglet = VariableName(rawValue: "currentRinglet")!
-
-    /// The `currentRingletAddress` signal.
-    @usableFromInline static let currentRingletAddress = VariableName(rawValue: "currentRingletAddress")!
-
-    /// The `currentRingletIndex` signal.
-    @usableFromInline static let currentRingletIndex = VariableName(rawValue: "currentRingletIndex")!
-
-    /// The `CurrentRinglet_t` type.
-    @usableFromInline static let currentRingletType = VariableName(rawValue: "CurrentRinglet_t")!
-
-    /// The `Error` constant.
-    @usableFromInline static let error = VariableName(rawValue: "Error")!
-
-    /// The `genIndex` signal.
-    @usableFromInline static let genIndex = VariableName(rawValue: "genIndex")!
-
-    /// The `genValue` signal.
-    @usableFromInline static let genValue = VariableName(rawValue: "genValue")!
-
-    /// The `index` signal.
-    @usableFromInline static let index = VariableName(rawValue: "index")!
-
-    /// The `Initial` state.
-    @usableFromInline static let initial = VariableName(rawValue: "Initial")!
-
-    /// The `isDuplicate` signal.
-    @usableFromInline static let isDuplicate = VariableName(rawValue: "isDuplicate")!
-
-    /// The `isInitial` signal.
-    @usableFromInline static let isInitial = VariableName(rawValue: "isInitial")!
-
-    /// The `lastAccessibleAddress` constant.
-    @usableFromInline static let lastAccessibleAddress = VariableName(rawValue: "lastAccessibleAddress")!
-
-    /// The `memoryIndex` signal.
-    @usableFromInline static let memoryIndex = VariableName(rawValue: "memoryIndex")!
-
-    /// The `previousReadAddress` signal.
-    @usableFromInline static let previousReadAddress = VariableName(rawValue: "previousReadAddress")!
-
-    /// The `ringletIndex` signal.
-    @usableFromInline static let ringletIndex = VariableName(rawValue: "ringletIndex")!
-
-    /// The `SetRingletRAMValue` constant.
-    @usableFromInline static let setRingletRAMValue = VariableName(rawValue: "SetRingletRAMValue")!
-
-    /// The `SetRingletValue` constant.
-    @usableFromInline static let setRingletValue = VariableName(rawValue: "SetRingletValue")!
-
-    /// The `WaitForNewRinglets` constant.
-    @usableFromInline static let waitForNewRinglets = VariableName(rawValue: "WaitForNewRinglets")!
-
-    /// The `WriteElement` constant.
-    @usableFromInline static let writeElement = VariableName(rawValue: "WriteElement")!
-
-    /// The `workingRinglets` signal.
-    @usableFromInline static let workingRinglets = VariableName(rawValue: "workingRinglets")!
-
-}
-
 /// Add common types.
 extension SignalType {
 
@@ -257,47 +186,5 @@ extension SignalType {
     @usableFromInline static let unsigned32bit = SignalType.ranged(type: .unsigned(size: .downto(
         upper: .literal(value: .integer(value: 31)), lower: .literal(value: .integer(value: 0))
     )))
-
-}
-
-extension Array where Element == ConstantSignal {
-
-    @usableFromInline static let ringletCacheInternalStates = [
-        ConstantSignal(
-            name: .initial,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.zero]))))
-        )!,
-        ConstantSignal(
-            name: .waitForNewRinglets,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.one]))))
-        )!,
-        ConstantSignal(
-            name: .writeElement,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.two]))))
-        )!,
-        ConstantSignal(
-            name: .error,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.three]))))
-        )!,
-        ConstantSignal(
-            name: .checkPreviousRinglets,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.four]))))
-        )!,
-        ConstantSignal(
-            name: .setRingletValue,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.five]))))
-        )!,
-        ConstantSignal(
-            name: .setRingletRAMValue,
-            type: .logicVector4,
-            value: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.six]))))
-        )!,
-    ]
 
 }

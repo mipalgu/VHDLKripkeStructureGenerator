@@ -64,7 +64,13 @@ extension AsynchronousBlock {
     ) where T: MachineVHDLRepresentable {
         let ringletsPerAddress = state.ringletsPerAddress(in: representation)
         guard ringletsPerAddress >= 2 else {
-            fatalError("Not yet supported!")
+            self.init(
+                ringletCacheLargeFor: state,
+                in: representation,
+                ringletsPerAddress: ringletsPerAddress,
+                maxExecutionSize: maxExecutionSize
+            )
+            return
         }
         self.init(
             ringletCacheSmallFor: state,
