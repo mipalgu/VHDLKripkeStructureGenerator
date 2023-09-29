@@ -226,6 +226,7 @@ extension ProcessBlock {
                         .stateGeneratorWaitForRunnerToFinish,
                         .stateGeneratorWaitForCacheToStart,
                         checkForDuplicates,
+                        WhenCase(stateGeneratorAddToStatesFor: state, in: representation),
                         .othersNull
                     ]
                 ))
