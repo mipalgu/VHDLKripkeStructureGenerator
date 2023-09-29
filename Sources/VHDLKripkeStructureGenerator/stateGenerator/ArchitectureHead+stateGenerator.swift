@@ -62,15 +62,20 @@ extension ArchitectureHead {
     init?<T>(
         stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        guard let runner = Entity(stateRunnerFor: state, in: representation) else {
+        guard
+            let runner = Entity(stateRunnerFor: state, in: representation),
+            let size = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize).size
+        else {
             return nil
         }
+        let executionIndexSize = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: size))
+        )
         let numberOfTargets = representation.machine.numberOfTargetStates
         let indexType = VectorSize.to(
             lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: max(0, numberOfTargets - 1)))
+            upper: .literal(value: .integer(value: numberOfTargets))
         )
-        let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
         let cache = Entity(ringletCacheFor: state, representation: representation)
         let internalStates = [
             (VariableName.initial, HexLiteral.zero),
@@ -105,7 +110,7 @@ extension ArchitectureHead {
                 type: .ranged(type: .integer(size: indexType)), name: .statesIndex
             ))),
             .definition(value: .signal(value: LocalSignal(
-                type: .ranged(type: .integer(size: executionSize)), name: .ringletIndex
+                type: .ranged(type: .integer(size: executionIndexSize)), name: .ringletIndex
             ))),
             .definition(value: .signal(value: LocalSignal(
                 type: .alias(name: .targetStatesType), name: .states
