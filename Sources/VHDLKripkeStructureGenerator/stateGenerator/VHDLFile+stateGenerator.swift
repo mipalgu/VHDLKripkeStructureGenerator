@@ -69,6 +69,7 @@ extension VHDLFile {
             let head = ArchitectureHead(
                 stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
             ),
+            let entity = Entity(stateGeneratorFor: state, in: representation),
             let typesInclude = UseStatement(rawValue: "use \(representation.machine.name.rawValue)Types.all;")
         else {
             return nil
@@ -78,7 +79,6 @@ extension VHDLFile {
             .include(statement: .stdLogic1164),
             .include(statement: typesInclude)
         ]
-        let entity = Entity(stateGeneratorFor: state, in: representation)
         self.init(
             architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
             entities: [entity],

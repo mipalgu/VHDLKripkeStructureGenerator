@@ -59,12 +59,13 @@ import VHDLParsing
 
 extension Entity {
 
-    init<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        guard let writeSnapshot = Record(writeSnapshotFor: state, in: representation) else {
+            return nil
+        }
         let machine = representation.machine
         let clk = machine.clocks[machine.drivingClock]
-        let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let inputVariables = Set(machine.externalSignals.filter { $0.mode == .input }.map(\.name))
-        let variables = readSnapshot.types.filter { !inputVariables.contains($0.name) }.map {
+        let variables = writeSnapshot.types.filter { $0.name != .nextState }.map {
             PortSignal(type: $0.type, name: $0.name, mode: .input)
         }
         let name = VariableName(rawValue: "\(state.name.rawValue)Generator")!
