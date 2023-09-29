@@ -254,18 +254,3 @@ extension ArchitectureHead {
     }
 
 }
-
-/// Add common types.
-extension SignalType {
-
-    /// A 4-bit `std_logic_vector` type.
-    @usableFromInline static let logicVector4 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 3)), lower: .literal(value: .integer(value: 0))
-    )))
-
-    /// A 32-bit unsigned type.
-    @usableFromInline static let unsigned32bit = SignalType.ranged(type: .unsigned(size: .downto(
-        upper: .literal(value: .integer(value: 31)), lower: .literal(value: .integer(value: 0))
-    )))
-
-}

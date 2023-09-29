@@ -1,4 +1,4 @@
-// Entity+ringletCache.swift
+// SignalType+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,39 +54,25 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-/// Add ringlet cache.
-extension Entity {
+/// Add constants.
+extension SignalType {
 
-    /// Create the entity declaration for a states ringlet cache.
-    /// - Parameters:
-    ///   - state: The state to create the cache for.
-    ///   - representation: The machine representation to use.
-    @inlinable
-    init<T>(ringletCacheFor state: State, representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let clk = machine.clocks[machine.drivingClock]
-        let name = VariableName(rawValue: "\(state.name)RingletCache")!
-        self.init(
-            name: name,
-            port: PortBlock(signals: [
-                PortSignal(clock: clk),
-                PortSignal(
-                    type: .alias(name: VariableName(
-                        rawValue: "\(state.name.rawValue)_\(VariableName.stateExecutionType)"
-                    )!),
-                    name: .newRinglets,
-                    mode: .input
-                ),
-                PortSignal(type: .logicVector32, name: .readAddress, mode: .input),
-                PortSignal(type: .logicVector32, name: .value, mode: .output),
-                PortSignal(type: .boolean, name: .read, mode: .input),
-                PortSignal(type: .stdLogic, name: .ready, mode: .input),
-                PortSignal(type: .stdLogic, name: .busy, mode: .output),
-                PortSignal(type: .logicVector32, name: .lastAddress, mode: .output)
-            ])!
-        )
-    }
+    /// A 32-bit `std_logic_vector`.
+    @usableFromInline static let logicVector32 = SignalType.ranged(type: .stdLogicVector(size: .downto(
+        upper: .literal(value: .integer(value: 31)),
+        lower: .literal(value: .integer(value: 0))
+    )))
+
+    /// A 4-bit `std_logic_vector` type.
+    @usableFromInline static let logicVector4 = SignalType.ranged(type: .stdLogicVector(size: .downto(
+        upper: .literal(value: .integer(value: 3)), lower: .literal(value: .integer(value: 0))
+    )))
+
+    /// A 32-bit unsigned type.
+    @usableFromInline static let unsigned32bit = SignalType.ranged(type: .unsigned(size: .downto(
+        upper: .literal(value: .integer(value: 31)), lower: .literal(value: .integer(value: 0))
+    )))
+
 }
