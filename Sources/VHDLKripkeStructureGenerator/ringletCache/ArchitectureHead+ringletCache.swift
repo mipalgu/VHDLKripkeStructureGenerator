@@ -188,6 +188,12 @@ extension ArchitectureHead {
         )
         let indexSize = state.memoryStorage(for: state, in: representation)
         let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
+        guard let size = executionSize.size else {
+            fatalError("Execution size is invalid for state \(state.name.rawValue). Found \(executionSize).")
+        }
+        let ringletIndexSize = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: size))
+        )
         let arrayMaxIndex = ringletsPerAddress - 1
         let arrayType = VectorSize.to(
             lower: .literal(value: .integer(value: 0)),
@@ -199,7 +205,7 @@ extension ArchitectureHead {
                 name: .workingRinglets
             ),
             LocalSignal(type: .ranged(type: .integer(size: memoryIndexType)), name: .memoryIndex),
-            LocalSignal(type: .ranged(type: .integer(size: executionSize)), name: .ringletIndex),
+            LocalSignal(type: .ranged(type: .integer(size: ringletIndexSize)), name: .ringletIndex),
             LocalSignal(type: .logicVector32, name: .di),
             LocalSignal(type: .logicVector32, name: .index),
             LocalSignal(type: .boolean, name: .isDuplicate),

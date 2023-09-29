@@ -65,7 +65,10 @@ extension WhenCase {
         maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
-        let maxIndex = executionSize.max
+        guard let size = executionSize.size else {
+            fatalError("Execution size \(executionSize) is invalid for state \(state.name.rawValue)!")
+        }
+        let maxIndex = Expression.literal(value: .integer(value: size))
         let encodedTypeMaxIndex = max(0, state.encodedSize(in: representation) - 1)
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
@@ -171,7 +174,10 @@ extension WhenCase {
         maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         let executionSize = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize)
-        let maxIndex = executionSize.max
+        guard let size = executionSize.size else {
+            fatalError("Execution size \(executionSize) is invalid for state \(state.name.rawValue)!")
+        }
+        let maxIndex = Expression.literal(value: .integer(value: size))
         let encodedTypeMaxIndex = max(0, state.encodedSize(in: representation) - 1)
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
