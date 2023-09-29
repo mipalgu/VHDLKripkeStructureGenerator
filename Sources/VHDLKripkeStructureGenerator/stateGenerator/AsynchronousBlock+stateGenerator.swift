@@ -62,15 +62,16 @@ extension AsynchronousBlock {
     init?<T>(
         stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        guard let process = ProcessBlock(
-            stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
-        ) else {
+        guard
+            let process = ProcessBlock(
+                stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            ),
+            let writeSnapshot = Record(writeSnapshotFor: state, in: representation)
+        else {
             return nil
         }
         let machine = representation.machine
-        let inputExternals = Set(machine.externalSignals.filter { $0.mode != .input }.map(\.name))
-        let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let validSignals = readSnapshot.types.filter { !inputExternals.contains($0.name) }
+        let validSignals = writeSnapshot.types.filter { $0.name != .nextState }
         let snapshotMappings = validSignals.map {
             let ref = VariableReference.variable(reference: .variable(name: $0.name))
             return VariableMap(lhs: ref, rhs: .expression(value: .reference(variable: ref)))
