@@ -70,7 +70,10 @@ extension State {
             fatalError("Failed to get state encoding for \(self.name)!")
         }
         let read = Record(readSnapshotFor: self, in: representation)
-        return read.encodedBits + write.encodedBits + 1
+        let writeBits = write.types.filter { $0.name != .nextState }.reduce(0) {
+            $0 + $1.type.signalType.encodedBits
+        }
+        return read.encodedBits + writeBits + representation.machine.numberOfStateBits + 1
     }
 
     /// The type to encode a ringlet of this state.
