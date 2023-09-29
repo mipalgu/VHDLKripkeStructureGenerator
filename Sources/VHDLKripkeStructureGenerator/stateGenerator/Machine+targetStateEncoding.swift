@@ -60,13 +60,31 @@ import VHDLParsing
 extension Machine {
 
     @inlinable var numberOfTargetStates: Int {
-        let numberOfValues = self.externalSignals.filter { $0.mode != .input }
-            .map { $0.type.signalType.numberOfValues } +
-            self.machineSignals.map { $0.type.signalType.numberOfValues } +
-            self.stateVariables.values.flatMap {
-                $0.map { $0.type.signalType.numberOfValues }
+        let numberOfExternalValues = self.externalSignals.filter { $0.mode != .input }
+            .map { $0.type.signalType.numberOfValues }
+        let groupedTransitions = self.transitionsGroupedBySources
+        let valuesPerState = Dictionary(uniqueKeysWithValues: groupedTransitions.map { state, transitions in
+            let hasState = transitions.contains { self.transitionHasTarget(transition: $0, target: state) }
+            guard self.states[self.initialState] != state else {
+                return (state, max(1, hasState ? transitions.count : transitions.count + 1))
             }
-        return numberOfValues.reduce(self.states.count, *) * 2
+            guard let suspendedState = self.suspendedState, state == self.states[suspendedState] else {
+                return (state, hasState ? transitions.count : transitions.count + 1)
+            }
+            return (state, max(1, hasState ? transitions.count : transitions.count + 1))
+        })
+        let values = self.states.map {
+            guard let valueForState = valuesPerState[$0] else {
+                return 0
+            }
+            let numberOfValues = numberOfExternalValues + self.machineSignals.map {
+                $0.type.signalType.numberOfValues
+            } + self.stateVariables.values.flatMap {
+                $0.map { $0.type.signalType.numberOfValues }
+            } * 2
+            return numberOfValues.reduce(valueForState, *)
+        }
+        return values.reduce(1, *)
     }
 
     @inlinable var targetStateBits: Int {
@@ -88,6 +106,27 @@ extension Machine {
 
     @inlinable var targetStateEncoding: SignalType {
         .ranged(type: .stdLogicVector(size: targetStateSize))
+    }
+
+    @inlinable var transitionsGroupedBySources: [State: [Transition]] {
+        var groupedTransitions: [State: [Transition]] = [:]
+        self.transitions.forEach {
+            let state = self.states[$0.source]
+            guard let currentValue = groupedTransitions[state] else {
+                groupedTransitions[state] = [$0]
+                return
+            }
+            groupedTransitions[state] = currentValue + [$0]
+        }
+        return groupedTransitions
+    }
+
+    @inlinable
+    func transitionHasTarget(transition: Transition, target: State) -> Bool {
+        guard let index = self.states.firstIndex(of: target) else {
+            return false
+        }
+        return transition.target == index
     }
 
 }
