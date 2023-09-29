@@ -316,7 +316,7 @@ extension WhenCase {
     init<T>(
         ringletCacheLargeWriteElementFor state: State, in representation: T
     ) where T: MachineVHDLRepresentable {
-        let memoryMaxIndex = max(0, state.numberOfMemoryAddresses(for: state, in: representation) - 1)
+        let memoryMaxIndex = max(1, state.numberOfMemoryAddresses(for: state, in: representation))
         let encodedSize = state.encodedSize(in: representation)
         let ringletLastIndex = max(0, encodedSize - 1)
         let stateSize = representation.machine.numberOfStateBits
