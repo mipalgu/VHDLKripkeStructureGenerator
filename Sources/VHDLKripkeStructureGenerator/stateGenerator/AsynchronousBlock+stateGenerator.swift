@@ -199,7 +199,26 @@ extension AsynchronousBlock {
 extension ProcessBlock {
 
     init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        nil
+        let clk = representation.machine.clocks[representation.machine.drivingClock].name
+        self.init(
+            sensitivityList: [clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clk))
+                )))),
+                ifBlock: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                    cases: [
+                        .stateGeneratorInitial,
+                        .stateGeneratorCheckForJob,
+                        .stateGeneratorWaitForRunnerToStart,
+                        .stateGeneratorWaitForRunnerToFinish,
+                        .stateGeneratorWaitForCacheToStart,
+                        .othersNull
+                    ]
+                ))
+            ))
+        )
     }
 
 }
