@@ -66,7 +66,7 @@ extension Machine {
             self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.numberOfValues }
             }
-        return numberOfValues.reduce(1, *) * self.states.count
+        return numberOfValues.reduce(self.states.count, *) * 2
     }
 
     @inlinable var targetStateBits: Int {
