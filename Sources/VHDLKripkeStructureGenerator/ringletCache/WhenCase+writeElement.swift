@@ -337,6 +337,98 @@ extension WhenCase {
             lhs: .literal(value: .vector(value: .bits(value: nullBitsEncoded))),
             rhs: .literal(value: stateEncoding)
         ))
+        let assignment: SynchronousBlock
+        let elseBlock = SynchronousBlock.blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .di)),
+                value: .binary(operation: .concatenate(
+                    lhs: .reference(variable: .indexed(
+                        name: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .workingRinglets)
+                            )),
+                            index: .index(value: .reference(variable: .variable(
+                                reference: .variable(name: .ringletIndex)
+                            )))
+                        )),
+                        index: .range(value: .downto(
+                            upper: .reference(variable: .variable(
+                                reference: .variable(name: .topIndex)
+                            )),
+                            lower: .literal(value: .integer(value: 0))
+                        ))
+                    )),
+                    rhs: delimiter
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .ringletIndex)),
+                value: .binary(operation: .addition(
+                    lhs: .reference(variable: .variable(
+                        reference: .variable(name: .ringletIndex)
+                    )),
+                    rhs: .literal(value: .integer(value: 1))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .checkPreviousRinglets)
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .topIndex)),
+                value: .literal(value: .integer(value: ringletLastIndex))
+            ))
+        ])
+        if encodedSize < (32 - stateSize) {
+            assignment = elseBlock
+        } else {
+            assignment = .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .greaterThan(
+                    lhs: .reference(variable: .variable(
+                        reference: .variable(name: .topIndex)
+                    )),
+                    rhs: .literal(value: .integer(value: 31))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .di)),
+                        value: .reference(variable: .indexed(
+                            name: .reference(variable: .indexed(
+                                name: .reference(variable: .variable(
+                                    reference: .variable(name: .workingRinglets)
+                                )),
+                                index: .index(value: .reference(variable: .variable(
+                                    reference: .variable(name: .ringletIndex)
+                                )))
+                            )),
+                            index: .range(value: .downto(
+                                upper: .reference(variable: .variable(
+                                    reference: .variable(name: .topIndex)
+                                )),
+                                lower: .binary(operation: .subtraction(
+                                    lhs: .reference(variable: .variable(
+                                        reference: .variable(name: .topIndex)
+                                    )),
+                                    rhs: .literal(value: .integer(value: 31))
+                                ))
+                            ))
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .topIndex)),
+                        value: .binary(operation: .subtraction(
+                            lhs: .reference(variable: .variable(
+                                reference: .variable(name: .topIndex)
+                            )),
+                            rhs: .literal(value: .integer(value: 32))
+                        ))
+                    ))
+                ]),
+                elseBlock: elseBlock
+            ))
+        }
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
                 reference: .variable(name: .writeElement)
@@ -378,92 +470,7 @@ extension WhenCase {
                             ))))
                         )),
                         ifBlock: .blocks(blocks: [
-                            .ifStatement(block: .ifElse(
-                                condition: .conditional(condition: .comparison(value: .greaterThan(
-                                    lhs: .reference(variable: .variable(
-                                        reference: .variable(name: .topIndex)
-                                    )),
-                                    rhs: .literal(value: .integer(value: 31))
-                                ))),
-                                ifBlock: .blocks(blocks: [
-                                    .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .di)),
-                                        value: .reference(variable: .indexed(
-                                            name: .reference(variable: .indexed(
-                                                name: .reference(variable: .variable(
-                                                    reference: .variable(name: .workingRinglets)
-                                                )),
-                                                index: .index(value: .reference(variable: .variable(
-                                                    reference: .variable(name: .ringletIndex)
-                                                )))
-                                            )),
-                                            index: .range(value: .downto(
-                                                upper: .reference(variable: .variable(
-                                                    reference: .variable(name: .topIndex)
-                                                )),
-                                                lower: .binary(operation: .subtraction(
-                                                    lhs: .reference(variable: .variable(
-                                                        reference: .variable(name: .topIndex)
-                                                    )),
-                                                    rhs: .literal(value: .integer(value: 31))
-                                                ))
-                                            ))
-                                        ))
-                                    )),
-                                    .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .topIndex)),
-                                        value: .binary(operation: .subtraction(
-                                            lhs: .reference(variable: .variable(
-                                                reference: .variable(name: .topIndex)
-                                            )),
-                                            rhs: .literal(value: .integer(value: 32))
-                                        ))
-                                    ))
-                                ]),
-                                elseBlock: .blocks(blocks: [
-                                    .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .di)),
-                                        value: .binary(operation: .concatenate(
-                                            lhs: .reference(variable: .indexed(
-                                                name: .reference(variable: .indexed(
-                                                    name: .reference(variable: .variable(
-                                                        reference: .variable(name: .workingRinglets)
-                                                    )),
-                                                    index: .index(value: .reference(variable: .variable(
-                                                        reference: .variable(name: .ringletIndex)
-                                                    )))
-                                                )),
-                                                index: .range(value: .downto(
-                                                    upper: .reference(variable: .variable(
-                                                        reference: .variable(name: .topIndex)
-                                                    )),
-                                                    lower: .literal(value: .integer(value: 0))
-                                                ))
-                                            )),
-                                            rhs: delimiter
-                                        ))
-                                    )),
-                                    .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .ringletIndex)),
-                                        value: .binary(operation: .addition(
-                                            lhs: .reference(variable: .variable(
-                                                reference: .variable(name: .ringletIndex)
-                                            )),
-                                            rhs: .literal(value: .integer(value: 1))
-                                        ))
-                                    )),
-                                    .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .internalState)),
-                                        value: .reference(variable: .variable(
-                                            reference: .variable(name: .checkPreviousRinglets)
-                                        ))
-                                    )),
-                                    .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .topIndex)),
-                                        value: .literal(value: .integer(value: ringletLastIndex))
-                                    ))
-                                ])
-                            )),
+                            assignment,
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .memoryIndex)),
                                 value: .binary(operation: .addition(
