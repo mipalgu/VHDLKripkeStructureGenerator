@@ -84,7 +84,9 @@ extension Machine {
                 }
             }
         }
-        return Set(allReachableStates + reachableStates).map { self.states[$0] }
+        let reachableSet = Set(allReachableStates + reachableStates)
+        print("Reachable set: \(reachableSet.count), all states: \(self.states.count)")
+        return reachableSet.map { self.states[$0] }
     }
 
     @inlinable var targetStateBits: Int {
