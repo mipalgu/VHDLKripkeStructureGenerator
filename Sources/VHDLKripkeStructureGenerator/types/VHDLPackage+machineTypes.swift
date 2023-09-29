@@ -114,7 +114,18 @@ extension VHDLPackage {
                 .definition(value: .type(value: .record(value: readSnapshot))),
                 .definition(value: .type(value: .record(value: writeSnapshot))),
                 .definition(value: .type(value: .record(value: totalSnapshot)))
-            ] + unwrappedStateRecords + stateExecutionTypes + representation.allConstants
+            ] + unwrappedStateRecords + stateExecutionTypes + representation.allConstants + [
+                .definition(value: .type(value: .array(value: ArrayDefinition(
+                    name: .targetStatesType,
+                    size: [
+                        .to(
+                            lower: .literal(value: .integer(value: 0)),
+                            upper: .literal(value: .integer(value: max(0, machine.numberOfTargetStates - 1)))
+                        )
+                    ],
+                    elementType: .signal(type: machine.targetStateEncoding)
+                ))))
+            ]
         )
     }
 

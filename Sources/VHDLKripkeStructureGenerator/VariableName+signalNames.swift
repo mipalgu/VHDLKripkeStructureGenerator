@@ -278,6 +278,9 @@ extension VariableName {
     /// The `targetStateOut` signal.
     @usableFromInline static let targetStateOut = VariableName(rawValue: "targetStateOut")!
 
+    /// The `TargetStates_t` type.
+    @usableFromInline static let targetStatesType = VariableName(rawValue: "TargetStates_t")!
+
     /// The `to_signed` function.
     @usableFromInline static let toSigned = VariableName(rawValue: "to_signed")!
 

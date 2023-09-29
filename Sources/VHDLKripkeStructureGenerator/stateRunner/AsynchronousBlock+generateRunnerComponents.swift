@@ -384,18 +384,18 @@ extension VectorSize {
 
 extension Type {
 
-    var signalType: SignalType {
+    @inlinable var signalType: SignalType {
         guard case .signal(let type) = self else {
             fatalError("Cannot discern signal type of \(self)!")
         }
         return type
     }
 
-    var lowerTypeIndex: [Int] {
+    @inlinable var lowerTypeIndex: [Int] {
         signalType.lowerTypeIndex
     }
 
-    var upperTypeIndex: [Int] {
+    @inlinable var upperTypeIndex: [Int] {
         signalType.upperTypeIndex
     }
 
@@ -407,7 +407,7 @@ extension Type {
 
 extension SignalType {
 
-    var lowerTypeIndex: [Int] {
+    @inlinable var lowerTypeIndex: [Int] {
         switch self {
         case .bit, .boolean, .stdLogic, .stdULogic, .natural:
             return [0]
@@ -422,7 +422,7 @@ extension SignalType {
         }
     }
 
-    var upperTypeIndex: [Int] {
+    @inlinable var upperTypeIndex: [Int] {
         switch self {
         case .bit, .boolean:
             return [1]
@@ -474,7 +474,7 @@ extension SignalType {
 
 extension RangedType {
 
-    var lowerTypeIndex: [Int] {
+    @inlinable var lowerTypeIndex: [Int] {
         switch self {
         case .bitVector(let size), .stdLogicVector(let size), .stdULogicVector(let size):
             guard let numberOfBits = size.size else {
@@ -496,7 +496,7 @@ extension RangedType {
         }
     }
 
-    var upperTypeIndex: [Int] {
+    @inlinable var upperTypeIndex: [Int] {
         switch self {
         case .bitVector(let size):
             guard let numberOfBits = size.size else {
