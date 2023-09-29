@@ -129,6 +129,10 @@ extension WhenCase {
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .internalState)),
                                 value: .reference(variable: .variable(reference: .variable(name: .error)))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .we)),
+                                value: .literal(value: .bit(value: .low))
                             ))
                         ]),
                         elseBlock: .blocks(blocks: [
@@ -347,6 +351,10 @@ extension WhenCase {
                         .statement(statement: .assignment(
                             name: .variable(reference: .variable(name: .internalState)),
                             value: .reference(variable: .variable(reference: .variable(name: .error)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .we)),
+                            value: .literal(value: .bit(value: .low))
                         ))
                     ]),
                     elseBlock: .ifStatement(block: .ifElse(
