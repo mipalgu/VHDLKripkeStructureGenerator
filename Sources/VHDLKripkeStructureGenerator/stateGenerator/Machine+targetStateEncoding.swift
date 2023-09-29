@@ -66,7 +66,25 @@ extension Machine {
             self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.numberOfValues }
             }
-        return numberOfValues.reduce(self.states.count, *) * 2
+        return numberOfValues.reduce(Set(self.reachableStates).count * 2, *)
+    }
+
+    @inlinable var reachableStates: [State] {
+        let reachableStates: [Int]
+        if let suspendedState = self.suspendedState {
+            reachableStates = [self.initialState, suspendedState]
+        } else {
+            reachableStates = [self.initialState]
+        }
+        let allReachableStates = self.states.indices.filter { index in
+            let targetTransitions = self.transitions.filter { $0.target == index }
+            return reachableStates.contains { reachableIndex in
+                targetTransitions.contains { transition in
+                    self.isTransitionReachable(from: reachableIndex, transition: transition)
+                }
+            }
+        }
+        return Set(allReachableStates + reachableStates).map { self.states[$0] }
     }
 
     @inlinable var targetStateBits: Int {
@@ -88,6 +106,16 @@ extension Machine {
 
     @inlinable var targetStateEncoding: SignalType {
         .ranged(type: .stdLogicVector(size: targetStateSize))
+    }
+
+    @inlinable
+    func isTransitionReachable(from state: Int, transition: Transition) -> Bool {
+        guard transition.source != state else {
+            return true
+        }
+        return transitions.filter { $0.target == transition.source }.contains {
+            isTransitionReachable(from: state, transition: $0)
+        }
     }
 
 }
