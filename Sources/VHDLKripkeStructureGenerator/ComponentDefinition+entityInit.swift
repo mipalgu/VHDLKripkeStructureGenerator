@@ -1,4 +1,4 @@
-// VariableName+stateGeneratorConstants.swift
+// ComponentDefinition+entityInit.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,63 +56,10 @@
 
 import VHDLParsing
 
-extension VariableName {
+extension ComponentDefinition {
 
-    /// The `address` signal.
-    @usableFromInline static let address = VariableName(rawValue: "address")!
-
-    /// The `AddToStates` constant.
-    @usableFromInline static let addToStates = VariableName(rawValue: "AddToStates")!
-
-    /// The `cacheBusy` signal.
-    @usableFromInline static let cacheBusy = VariableName(rawValue: "cacheBusy")!
-
-    /// The `cacheRead` signal.
-    @usableFromInline static let cacheRead = VariableName(rawValue: "cacheRead")!
-
-    /// The `CheckForDuplicates` constant.
-    @usableFromInline static let checkForDuplicates = VariableName(rawValue: "CheckForDuplicates")!
-
-    /// The `CheckForJob` constant.
-    @usableFromInline static let checkForJob = VariableName(rawValue: "CheckForJob")!
-
-    /// The `genRead` signal.
-    @usableFromInline static let genRead = VariableName(rawValue: "genRead")!
-
-    /// The `genReady` signal.
-    @usableFromInline static let genReady = VariableName(rawValue: "genReady")!
-
-    /// The `hasDuplicate` signal.
-    @usableFromInline static let hasDuplicate = VariableName(rawValue: "hasDuplicate")!
-
-    /// The `runnerBusy` signal.
-    @usableFromInline static let runnerBusy = VariableName(rawValue: "runnerBusy")!
-
-    /// The `startCache` signal.
-    @usableFromInline static let startCache = VariableName(rawValue: "startCache")!
-
-    /// The `startGeneration` signal.
-    @usableFromInline static let startGeneration = VariableName(rawValue: "startGeneration")!
-
-    /// The `states` signal.
-    @usableFromInline static let states = VariableName(rawValue: "states")!
-
-    /// The `statesIndex` signal.
-    @usableFromInline static let statesIndex = VariableName(rawValue: "statesIndex")!
-
-    /// The `targetStates` signal.
-    @usableFromInline static let targetStates = VariableName(rawValue: "targetStates")!
-
-    /// The `WaitForCacheToEnd` constant.
-    @usableFromInline static let waitForCacheToEnd = VariableName(rawValue: "WaitForCacheToEnd")!
-
-    /// The `WaitForCacheToStart` constant.
-    @usableFromInline static let waitForCacheToStart = VariableName(rawValue: "WaitForCacheToStart")!
-
-    // The `WaitForRunnerToFinish` constant.
-    @usableFromInline static let waitForRunnerToFinish = VariableName(rawValue: "WaitForRunnerToFinish")!
-
-    /// The `WaitForRunnerToStart` constant.
-    @usableFromInline static let waitForRunnerToStart = VariableName(rawValue: "WaitForRunnerToStart")!
+    init(entity: Entity) {
+        self.init(name: entity.name, port: entity.port)
+    }
 
 }
