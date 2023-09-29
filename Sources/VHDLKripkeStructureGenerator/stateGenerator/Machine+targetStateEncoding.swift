@@ -84,7 +84,7 @@ extension Machine {
             }
             return numberOfValues.reduce(valueForState, *) * 2
         }
-        return values.reduce(0, +)
+        return values.reduce(1, *)
     }
 
     @inlinable var targetStateBits: Int {
