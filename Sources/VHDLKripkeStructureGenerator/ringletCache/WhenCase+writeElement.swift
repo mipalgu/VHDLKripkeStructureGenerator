@@ -321,6 +321,9 @@ extension WhenCase {
         let numberOfAddresses = state.numberOfMemoryAddresses(for: state, in: representation)
         let stateSize = representation.machine.numberOfStateBits
         let nullBits = 32 * numberOfAddresses - encodedSize - stateSize
+        guard nullBits < 32 && nullBits >= 0 else {
+            fatalError("Null bits calculation incorrect. Got \(nullBits) bits with \(numberOfAddresses) addresses, \(encodedSize) encoded size, and \(stateSize) stateSize.")
+        }
         let nullBitsEncoded = BitVector(values: [BitLiteral](repeating: .low, count: nullBits))
         let stateEncoding = state.representation(in: representation)
         let delimiter = Expression.binary(operation: .concatenate(
