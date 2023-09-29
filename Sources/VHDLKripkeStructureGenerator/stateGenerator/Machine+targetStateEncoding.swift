@@ -116,7 +116,7 @@ extension Machine {
             self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.encodedBits }
             }
-        return bits.reduce(0, +) + 3
+        return bits.reduce(self.numberOfStateBits + 1, +)
     }
 
     /// The size of an encoded target state.
