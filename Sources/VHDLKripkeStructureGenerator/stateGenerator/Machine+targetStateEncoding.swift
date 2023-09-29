@@ -114,7 +114,10 @@ extension Machine {
         guard transition.source != state else {
             return true
         }
-        return transitions.filter { $0.target == transition.source }.contains {
+        return transitions.filter {
+            $0.target == transition.source && $0.source != transition.source
+        }
+        .contains {
             isTransitionReachable(from: state, transition: $0)
         }
     }
