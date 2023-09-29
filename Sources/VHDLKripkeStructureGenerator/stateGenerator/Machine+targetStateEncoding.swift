@@ -66,7 +66,7 @@ extension Machine {
             self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.numberOfValues }
             }
-        return numberOfValues.reduce(Set(self.reachableStates).count * 2, *)
+        return numberOfValues.reduce(self.reachableStates.count * 2, *)
     }
 
     @inlinable var reachableStates: [State] {
@@ -85,7 +85,6 @@ extension Machine {
             }
         }
         let reachableSet = Set(allReachableStates + reachableStates)
-        print("Reachable set: \(reachableSet.count), all states: \(self.states.count)")
         return reachableSet.map { self.states[$0] }
     }
 
