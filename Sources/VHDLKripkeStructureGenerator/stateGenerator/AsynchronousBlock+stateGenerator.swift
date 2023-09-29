@@ -59,8 +59,12 @@ import VHDLParsing
 
 extension AsynchronousBlock {
 
-    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        guard let process = ProcessBlock(stateGeneratorFor: state, in: representation) else {
+    init?<T>(
+        stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        guard let process = ProcessBlock(
+            stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+        ) else {
             return nil
         }
         let machine = representation.machine
@@ -198,7 +202,14 @@ extension AsynchronousBlock {
 
 extension ProcessBlock {
 
-    init?<T>(stateGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(
+        stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        guard let checkForDuplicates = WhenCase(
+            stateGeneratorCheckForDuplicatesFor: state, in: representation, maxExecutionSize: maxExecutionSize
+        ) else {
+            return nil
+        }
         let clk = representation.machine.clocks[representation.machine.drivingClock].name
         self.init(
             sensitivityList: [clk],
@@ -214,6 +225,7 @@ extension ProcessBlock {
                         .stateGeneratorWaitForRunnerToStart,
                         .stateGeneratorWaitForRunnerToFinish,
                         .stateGeneratorWaitForCacheToStart,
+                        checkForDuplicates,
                         .othersNull
                     ]
                 ))
