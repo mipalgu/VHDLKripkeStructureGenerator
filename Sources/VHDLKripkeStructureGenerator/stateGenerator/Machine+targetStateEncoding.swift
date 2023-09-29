@@ -73,16 +73,16 @@ extension Machine {
             }
             return (state, max(1, hasState ? transitions.count : transitions.count + 1))
         })
-        let values = self.states.map {
+        let values: [Int] = self.states.map {
             guard let valueForState = valuesPerState[$0] else {
                 return 0
             }
-            let numberOfValues = numberOfExternalValues + self.machineSignals.map {
+            let numberOfValues: [Int] = numberOfExternalValues + self.machineSignals.map {
                 $0.type.signalType.numberOfValues
             } + self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.numberOfValues }
-            } * 2
-            return numberOfValues.reduce(valueForState, *)
+            }
+            return numberOfValues.reduce(valueForState, *) * 2
         }
         return values.reduce(1, *)
     }
