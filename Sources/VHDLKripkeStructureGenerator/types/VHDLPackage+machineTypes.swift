@@ -118,9 +118,9 @@ extension VHDLPackage {
                 .definition(value: .type(value: .array(value: ArrayDefinition(
                     name: .targetStatesType,
                     size: [
-                        .to(
-                            lower: .literal(value: .integer(value: 0)),
-                            upper: .literal(value: .integer(value: max(0, machine.numberOfTargetStates - 1)))
+                        .downto(
+                            upper: .literal(value: .integer(value: max(0, machine.numberOfTargetStates - 1))),
+                            lower: .literal(value: .integer(value: 0))
                         )
                     ],
                     elementType: .signal(type: machine.targetStateEncoding)
@@ -128,9 +128,11 @@ extension VHDLPackage {
                 .definition(value: .type(value: .array(value: ArrayDefinition(
                     name: .pendingStatesType,
                     size: [
-                        .to(
-                            lower: .literal(value: .integer(value: 0)),
-                            upper: .literal(value: .integer(value: max(0, machine.numberOfPendingStates - 1)))
+                        .downto(
+                            upper: .literal(value: .integer(
+                                value: max(0, machine.numberOfPendingStates - 1)
+                            )),
+                            lower: .literal(value: .integer(value: 0))
                         )
                     ],
                     elementType: .signal(type: machine.pendingStateEncoding)
