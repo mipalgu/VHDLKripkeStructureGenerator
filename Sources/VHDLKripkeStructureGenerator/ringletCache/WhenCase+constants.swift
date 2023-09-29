@@ -125,7 +125,7 @@ extension WhenCase {
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .isInitial)),
-                value: .literal(value: .boolean(value: false))
+                value: .literal(value: .boolean(value: true))
             ))
         ])
     )
@@ -198,7 +198,7 @@ extension WhenCase {
                 )),
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(name: .isInitial)),
-                    value: .literal(value: .boolean(value: false))
+                    value: .literal(value: .boolean(value: true))
                 )),
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(name: .topIndex)),
