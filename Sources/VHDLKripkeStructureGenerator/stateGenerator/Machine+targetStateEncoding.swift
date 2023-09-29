@@ -59,10 +59,12 @@ import VHDLParsing
 
 extension Machine {
 
+    /// The number of values represented by the pending state encoding.
     @inlinable var numberOfPendingStates: Int {
         self.numberOfTargetStates * 2
     }
 
+    /// The number of values represented by the target state encoding.
     @inlinable var numberOfTargetStates: Int {
         let numberOfValues = self.externalSignals.filter { $0.mode != .input }
             .map { $0.type.signalType.numberOfValues } +
@@ -73,17 +75,20 @@ extension Machine {
         return numberOfValues.reduce(self.reachableStates.count * 2, *)
     }
 
+    /// The type of a single encoded pending state.
     @inlinable var pendingStateEncoding: SignalType {
         .ranged(type: .stdLogicVector(size: pendingStateSize))
     }
 
+    /// The size of a single encoded pending state.
     @inlinable var pendingStateSize: VectorSize {
         .to(
             lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: max(0, numberOfPendingStates - 1)))
+            upper: .literal(value: .integer(value: max(0, targetStateBits - 1)))
         )
     }
 
+    /// Find all reachable states in this machine.
     @inlinable var reachableStates: [State] {
         let reachableStates: [Int]
         if let suspendedState = self.suspendedState {
@@ -103,6 +108,7 @@ extension Machine {
         return reachableSet.map { self.states[$0] }
     }
 
+    /// The number of bits in a target state encoding.
     @inlinable var targetStateBits: Int {
         let bits: [Int] = self.externalSignals.filter { $0.mode != .input }
             .map { $0.type.signalType.encodedBits } +
@@ -113,6 +119,7 @@ extension Machine {
         return bits.reduce(0, +) + 3
     }
 
+    /// The size of an encoded target state.
     @inlinable var targetStateSize: VectorSize {
         VectorSize.to(
             lower: .literal(value: .integer(value: 0)),
@@ -120,6 +127,7 @@ extension Machine {
         )
     }
 
+    /// The type of a single encoded target state.
     @inlinable var targetStateEncoding: SignalType {
         .ranged(type: .stdLogicVector(size: targetStateSize))
     }
