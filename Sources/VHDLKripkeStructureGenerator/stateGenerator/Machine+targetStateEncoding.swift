@@ -60,7 +60,13 @@ import VHDLParsing
 extension Machine {
 
     @inlinable var numberOfTargetStates: Int {
-        targetStateEncoding.numberOfValues
+        let numberOfValues = self.externalSignals.filter { $0.mode != .input }
+            .map { $0.type.signalType.numberOfValues } +
+            self.machineSignals.map { $0.type.signalType.numberOfValues } +
+            self.stateVariables.values.flatMap {
+                $0.map { $0.type.signalType.numberOfValues }
+            }
+        return numberOfValues.reduce(1, *) * self.states.count
     }
 
     @inlinable var targetStateBits: Int {
@@ -70,7 +76,7 @@ extension Machine {
             self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.encodedBits }
             }
-        return bits.reduce(0, +)
+        return bits.reduce(0, +) + 3
     }
 
     @inlinable var targetStateSize: VectorSize {
