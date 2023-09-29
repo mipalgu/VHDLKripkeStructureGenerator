@@ -122,4 +122,12 @@ extension Machine {
         }
     }
 
+    @inlinable
+    func isTransitionReachable(from state: State, transition: Transition) -> Bool {
+        guard let index = self.states.firstIndex(of: state) else {
+            return false
+        }
+        return isTransitionReachable(from: index, transition: transition)
+    }
+
 }
