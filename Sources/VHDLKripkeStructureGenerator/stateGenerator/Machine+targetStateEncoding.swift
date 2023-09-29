@@ -59,6 +59,10 @@ import VHDLParsing
 
 extension Machine {
 
+    @inlinable var numberOfPendingStates: Int {
+        self.numberOfTargetStates * 2
+    }
+
     @inlinable var numberOfTargetStates: Int {
         let numberOfValues = self.externalSignals.filter { $0.mode != .input }
             .map { $0.type.signalType.numberOfValues } +
@@ -67,6 +71,17 @@ extension Machine {
                 $0.map { $0.type.signalType.numberOfValues }
             }
         return numberOfValues.reduce(self.reachableStates.count * 2, *)
+    }
+
+    @inlinable var pendingStateEncoding: SignalType {
+        .ranged(type: .stdLogicVector(size: pendingStateSize))
+    }
+
+    @inlinable var pendingStateSize: VectorSize {
+        .to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: max(0, numberOfPendingStates - 1)))
+        )
     }
 
     @inlinable var reachableStates: [State] {
