@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import VHDLMachines
 import VHDLParsing
 
@@ -318,11 +319,14 @@ extension WhenCase {
         let memoryMaxIndex = max(0, state.numberOfMemoryAddresses(for: state, in: representation) - 1)
         let encodedSize = state.encodedSize(in: representation)
         let ringletLastIndex = max(0, encodedSize - 1)
-        let numberOfAddresses = state.numberOfMemoryAddresses(for: state, in: representation)
+        let numberOfAddresses = Int(ceil(Double(encodedSize) / 32.0))
         let stateSize = representation.machine.numberOfStateBits
         let nullBits = 32 * numberOfAddresses - encodedSize - stateSize
         guard nullBits < 32 && nullBits >= 0 else {
-            fatalError("Null bits calculation incorrect. Got \(nullBits) bits with \(numberOfAddresses) addresses, \(encodedSize) encoded size, and \(stateSize) stateSize.")
+            fatalError(
+                "Null bits calculation incorrect. Got \(nullBits) bits with \(numberOfAddresses) " +
+                "addresses, \(encodedSize) encoded size, and \(stateSize) stateSize."
+            )
         }
         let nullBitsEncoded = BitVector(values: [BitLiteral](repeating: .low, count: nullBits))
         let stateEncoding = state.representation(in: representation)
