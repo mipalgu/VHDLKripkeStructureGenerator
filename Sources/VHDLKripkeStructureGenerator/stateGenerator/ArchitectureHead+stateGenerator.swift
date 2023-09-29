@@ -116,7 +116,11 @@ extension ArchitectureHead {
                 type: .alias(name: .targetStatesType), name: .states
             ))),
             .definition(value: .signal(value: LocalSignal(type: .boolean, name: .hasDuplicate))),
-            .definition(value: .signal(value: LocalSignal(type: .logicVector4, name: .internalState)))
+            .definition(value: .signal(value: LocalSignal(
+                type: .logicVector4,
+                name: .internalState,
+                defaultValue: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.zero]))))
+            )))
         ] + internalStates + [
             .definition(value: .signal(value: LocalSignal(type: .boolean, name: .genRead))),
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .genReady))),

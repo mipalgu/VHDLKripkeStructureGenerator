@@ -108,6 +108,10 @@ extension WhenCase {
                 ))
             )),
             .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startGeneration)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .busy)),
                 value: .literal(value: .bit(value: .high))
             )),
