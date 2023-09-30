@@ -111,10 +111,10 @@ extension Machine {
     /// The number of bits in a target state encoding.
     @inlinable var targetStateBits: Int {
         let bits: [Int] = self.externalSignals.filter { $0.mode != .input }
-            .map { $0.type.signalType.encodedBits } +
-            self.machineSignals.map { $0.type.signalType.encodedBits } +
+            .map { $0.type.signalType.bits } +
+            self.machineSignals.map { $0.type.signalType.bits } +
             self.stateVariables.values.flatMap {
-                $0.map { $0.type.signalType.encodedBits }
+                $0.map { $0.type.signalType.bits }
             }
         return bits.reduce(self.numberOfStateBits + 1, +)
     }
