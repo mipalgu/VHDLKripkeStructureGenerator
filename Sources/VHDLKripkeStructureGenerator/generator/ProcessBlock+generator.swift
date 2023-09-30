@@ -62,6 +62,9 @@ extension ProcessBlock {
     init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let clk = machine.clocks[machine.drivingClock].name
+        guard let initial = WhenCase(generatorInitialFor: representation) else {
+            return nil
+        }
         self.init(
             sensitivityList: [clk],
             code: .ifStatement(block: .ifStatement(
@@ -71,6 +74,7 @@ extension ProcessBlock {
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
                     cases: [
+                        initial,
                         .othersNull
                     ]
                 ))
