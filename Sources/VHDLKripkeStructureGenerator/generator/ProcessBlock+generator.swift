@@ -60,7 +60,22 @@ import VHDLParsing
 extension ProcessBlock {
 
     init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
-        nil
+        let machine = representation.machine
+        let clk = machine.clocks[machine.drivingClock].name
+        self.init(
+            sensitivityList: [clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clk))
+                )))),
+                ifBlock: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
+                    cases: [
+                        .othersNull
+                    ]
+                ))
+            ))
+        )
     }
 
 }
