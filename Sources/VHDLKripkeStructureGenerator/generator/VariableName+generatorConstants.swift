@@ -1,4 +1,4 @@
-// SignalType+constants.swift
+// VariableName+generatorConstants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,28 +56,45 @@
 
 import VHDLParsing
 
-/// Add constants.
-extension SignalType {
+extension VariableName {
 
-    /// A 32-bit `std_logic_vector`.
-    @usableFromInline static let logicVector32 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 31)),
-        lower: .literal(value: .integer(value: 0))
-    )))
+    /// The `CheckForDuplicate` constant.
+    @usableFromInline static let checkForDuplicate = VariableName(rawValue: "CheckForDuplicate")!
 
-    /// A 4-bit `std_logic_vector` type.
-    @usableFromInline static let logicVector4 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 3)), lower: .literal(value: .integer(value: 0))
-    )))
+    /// The `CheckIfFinished` constant.
+    @usableFromInline static let checkIfFinished = VariableName(rawValue: "CheckIfFinished")!
 
-    /// A 8-bit `std_logic_vector` type.
-    @usableFromInline static let logicVector8 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 7)), lower: .literal(value: .integer(value: 0))
-    )))
+    /// The `fromState` signal.
+    @usableFromInline static let fromState = VariableName(rawValue: "fromState")!
 
-    /// A 32-bit unsigned type.
-    @usableFromInline static let unsigned32bit = SignalType.ranged(type: .unsigned(size: .downto(
-        upper: .literal(value: .integer(value: 31)), lower: .literal(value: .integer(value: 0))
-    )))
+    /// The `HasFinished` signal.
+    @usableFromInline static let hasFinished = VariableName(rawValue: "HasFinished")!
+
+    /// The `isFinished` signal.
+    @usableFromInline static let isFinished = VariableName(rawValue: "isFinished")!
+
+    /// The `maxInsertIndex` signal.
+    @usableFromInline static let maxInsertIndex = VariableName(rawValue: "maxInsertIndex")!
+
+    /// The `observedIndex` signal.
+    @usableFromInline static let observedIndex = VariableName(rawValue: "observedIndex")!
+
+    /// The `observedStates` signal.
+    @usableFromInline static let observedStates = VariableName(rawValue: "observedStates")!
+
+    /// The `pendingInsertIndex` signal.
+    @usableFromInline static let pendingInsertIndex = VariableName(rawValue: "pendingInsertIndex")!
+
+    /// The `pendingStateIndex` signal.
+    @usableFromInline static let pendingStateIndex = VariableName(rawValue: "pendingStateIndex")!
+
+    /// The `SetJob` constant.
+    @usableFromInline static let setJob = VariableName(rawValue: "SetJob")!
+
+    /// The `VerifyDuplicate` constant.
+    @usableFromInline static let verifyDuplicate = VariableName(rawValue: "VerifyDuplicate")!
+
+    /// The `VerifyFinished` constant.
+    @usableFromInline static let verifyFinished = VariableName(rawValue: "VerifyFinished")!
 
 }
