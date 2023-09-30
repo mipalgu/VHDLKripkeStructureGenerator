@@ -168,6 +168,32 @@ extension VHDLPackage {
                 returnType: .signal(type: .stdLogic)
             ))),
             .definition(value: .function(value: FunctionDefinition(
+                name: .encodedToStdLogic,
+                arguments: [
+                    ArgumentDefinition(
+                        name: .value,
+                        type: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                            upper: .literal(value: .integer(value: 1)),
+                            lower: .literal(value: .integer(value: 0))
+                        ))))
+                    )
+                ],
+                returnType: .signal(type: .stdLogic)
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .encodedToStdULogic,
+                arguments: [
+                    ArgumentDefinition(
+                        name: .value,
+                        type: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                            upper: .literal(value: .integer(value: 1)),
+                            lower: .literal(value: .integer(value: 0))
+                        ))))
+                    )
+                ],
+                returnType: .signal(type: .stdULogic)
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
                 name: .stdLogicToBool,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
                 returnType: .signal(type: .boolean)

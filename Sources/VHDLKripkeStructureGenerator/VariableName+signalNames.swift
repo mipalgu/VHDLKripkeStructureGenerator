@@ -107,6 +107,12 @@ extension VariableName {
     /// The `do` signal.
     @usableFromInline static let `do` = VariableName(rawValue: "do")!
 
+    /// The `encodedToStdLogic` function.
+    @usableFromInline static let encodedToStdLogic = VariableName(rawValue: "encodedToStdLogic")!
+
+    /// The `encodedToStdULogic` function.
+    @usableFromInline static let encodedToStdULogic = VariableName(rawValue: "encodedToStdULogic")!
+
     /// The `executeOnEntry` signal.
     @usableFromInline static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
 
