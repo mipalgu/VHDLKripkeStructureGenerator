@@ -1,4 +1,4 @@
-// ProcessBlock+generator.swift
+// WhenCaseGeneratorTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,36 +54,41 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ProcessBlock {
+/// Test class for `WhenCase` generator extensions.
+final class WhenCaseGeneratorTests: XCTestCase {
 
-    init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let clk = machine.clocks[machine.drivingClock].name
-        guard
-            let initial = WhenCase(generatorInitialFor: representation),
-            let setJob = WhenCase(generatorSetJobFor: representation)
-        else {
-            return nil
-        }
-        self.init(
-            sensitivityList: [clk],
-            code: .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
-                    variable: .variable(reference: .variable(name: clk))
-                )))),
-                ifBlock: .caseStatement(block: CaseStatement(
-                    condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [
-                        initial,
-                        setJob,
-                        .othersNull
-                    ]
-                ))
-            ))
-        )
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use as test data.
+    var machine: Machine!
+
+    /// The representation of the machine.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialises the machine before each test.
+    override func setUp() {
+        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test set job has correct format.
+    func testSetJob() {
+        let result = WhenCase(generatorSetJobFor: representation)!
+        print(result.rawValue)
     }
 
 }
