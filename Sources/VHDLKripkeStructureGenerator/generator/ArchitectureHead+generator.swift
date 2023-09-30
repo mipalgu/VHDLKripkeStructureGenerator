@@ -129,6 +129,12 @@ extension ArchitectureHead {
                 LocalSignal(type: $0.type, name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!)
             }
             return typeSignals + [
+                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Ready")!),
+                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Busy")!),
+                LocalSignal(
+                    type: .alias(name: .targetStatesType),
+                    name: VariableName(rawValue: "\(name)TargetStates")!
+                ),
                 LocalSignal(type: .boolean, name: VariableName(rawValue: "\(name)Working")!),
                 LocalSignal(
                     type: .ranged(type: .integer(size: targetIndexSize)),
