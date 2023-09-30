@@ -64,6 +64,9 @@ extension VariableName {
     /// The `CheckIfFinished` constant.
     @usableFromInline static let checkIfFinished = VariableName(rawValue: "CheckIfFinished")!
 
+    /// The `ChooseNextInsertion` constant.
+    @usableFromInline static let chooseNextInsertion = VariableName(rawValue: "ChooseNextInsertion")!
+
     /// The `fromState` signal.
     @usableFromInline static let fromState = VariableName(rawValue: "fromState")!
 
