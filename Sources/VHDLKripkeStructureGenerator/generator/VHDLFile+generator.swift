@@ -71,7 +71,8 @@ extension VHDLFile {
         let entity = Entity(generatorFor: representation)
         let includes = [
             Include.library(value: .ieee), .include(statement: .stdLogic1164),
-            .include(statement: .primitiveTypes), .include(statement: typesInclude)
+            .include(statement: .numericStd) .include(statement: .primitiveTypes),
+            .include(statement: typesInclude)
         ]
         self.init(
             architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
