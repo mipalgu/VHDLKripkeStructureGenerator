@@ -82,9 +82,9 @@ extension Machine {
 
     /// The size of a single encoded pending state.
     @inlinable var pendingStateSize: VectorSize {
-        .to(
-            lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: max(0, targetStateBits - 1)))
+        .downto(
+            upper: .literal(value: .integer(value: max(0, targetStateBits - 1))),
+            lower: .literal(value: .integer(value: 0))
         )
     }
 
