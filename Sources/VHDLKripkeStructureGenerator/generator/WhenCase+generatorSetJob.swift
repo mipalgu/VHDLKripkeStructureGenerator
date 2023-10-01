@@ -64,8 +64,8 @@ extension WhenCase {
         let endPendingIndex = machine.numberOfPendingStates
         let numberOfStateBits = machine.numberOfStateBits
         let stateIndex = VectorIndex.range(value: .downto(
-            upper: .literal(value: .integer(value: numberOfStateBits)),
-            lower: .literal(value: .integer(value: 0))
+            upper: .literal(value: .integer(value: numberOfStateBits + 1)),
+            lower: .literal(value: .integer(value: 2))
         ))
         let stateLogics = machine.states.map {
             let name = $0.name.rawValue
