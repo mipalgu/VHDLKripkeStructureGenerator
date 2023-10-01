@@ -87,6 +87,7 @@ extension ProcessBlock {
                         WhenCase(generatorChooseNextInsertionFor: representation),
                         WhenCase(generatorCheckForDuplicateFor: representation),
                         .generatorVerifyDuplicate,
+                        WhenCase(generatorCheckIfFinishedFor: representation),
                         .othersNull
                     ]
                 ))
