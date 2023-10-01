@@ -1,4 +1,4 @@
-// ProcessBlock+generator.swift
+// WhenCase+generatorVerifyDuplicate.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,42 +54,50 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-extension ProcessBlock {
+extension WhenCase {
 
-    init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let clk = machine.clocks[machine.drivingClock].name
-        guard
-            let initial = WhenCase(generatorInitialFor: representation),
-            let setJob = WhenCase(generatorSetJobFor: representation)
-        else {
-            return nil
-        }
-        let stateInternals = machine.states.flatMap {
-            [
-                WhenCase(generatorUpdatedPendingStatesFor: $0, in: representation)
-            ]
-        }
-        self.init(
-            sensitivityList: [clk],
-            code: .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
-                    variable: .variable(reference: .variable(name: clk))
-                )))),
-                ifBlock: .caseStatement(block: CaseStatement(
-                    condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [initial, setJob] + stateInternals + [
-                        WhenCase(generatorChooseNextInsertionFor: representation),
-                        WhenCase(generatorCheckForDuplicateFor: representation),
-                        .generatorVerifyDuplicate,
-                        .othersNull
-                    ]
+    @usableFromInline static let generatorVerifyDuplicate = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .verifyDuplicate)
+        ))),
+        code: .ifStatement(block: .ifElse(
+            condition: .reference(variable: .variable(reference: .variable(name: .isDuplicate))),
+            ifBlock: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .indexed(
+                        name: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
+                            index: .index(value: .reference(variable: .variable(
+                                reference: .variable(name: .pendingStateIndex)
+                            )))
+                        )),
+                        index: .index(value: .literal(value: .integer(value: 0)))
+                    ),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .pendingStateIndex)),
+                    value: .binary(operation: .addition(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .pendingStateIndex))),
+                        rhs: .literal(value: .integer(value: 1))
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .setJob)))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .isDuplicate)),
+                    value: .literal(value: .boolean(value: false))
                 ))
+            ]),
+            elseBlock: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(reference: .variable(name: .nextState)))
             ))
-        )
-    }
+        ))
+    )
 
 }
