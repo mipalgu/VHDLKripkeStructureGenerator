@@ -1,4 +1,4 @@
-// VHDLKripkeStructureGenerator.swift
+// VHDLFile+bramInterface.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,48 +54,24 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
 import VHDLParsing
 
-public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
+extension VHDLFile {
 
-    public init() {}
-
-    public func generate(machine: Machine) -> [VHDLFile] {
-        guard
-            let representation = MachineRepresentation(machine: machine),
-            let verifiedMachine = VHDLFile(verifiable: representation),
-            let runner = VHDLFile(runnerFor: representation),
-            let ringletRunner = VHDLFile(ringletRunnerFor: representation),
-            let types = VHDLFile(typesFor: representation),
-            let generator = VHDLFile(generatorFor: representation)
-        else {
-            return []
-        }
-        let primitiveTypes = VHDLFile.primitiveTypes
-        let states = machine.states
-        let bramInterface = VHDLFile(bramInterfaceFor: representation)
-        let stateFiles: [[VHDLFile]] = states.compactMap {
-            guard
-                let expander = VHDLFile(ringletExpanderFor: $0, in: representation),
-                let kripkeGenerator = VHDLFile(stateKripkeGeneratorFor: $0, in: representation),
-                let runner = VHDLFile(stateRunnerFor: $0, in: representation),
-                let cache = VHDLFile(ringletCacheFor: $0, in: representation),
-                let stateGenerator = VHDLFile(stateGeneratorFor: $0, in: representation)
-            else {
-                return nil
-            }
-            return [
-                expander, kripkeGenerator, runner, VHDLFile(bramFor: $0, in: representation), cache,
-                stateGenerator
-            ]
-        }
-        guard stateFiles.count == states.count else {
-            return []
-        }
-        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes, generator, bramInterface] +
-            stateFiles.flatMap { $0 }
+    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
+        let entity = Entity(bramInterfaceFor: representation)
+        let head = ArchitectureHead(bramInterfaceFor: representation)
+        let body = AsynchronousBlock(bramInterfaceFor: representation)
+        let includes = [
+            Include.library(value: .ieee), .include(statement: .stdLogic1164),
+            .include(statement: .numericStd)
+        ]
+        self.init(
+            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            entities: [entity],
+            includes: includes
+        )
     }
 
 }
