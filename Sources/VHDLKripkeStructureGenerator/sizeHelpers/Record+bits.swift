@@ -81,7 +81,7 @@ extension Record {
 
     func bitsIndex(for name: VariableName, isDownto: Bool = false) -> VectorIndex? {
         var startIndex = isDownto ? max(0, self.bits - 1) : 0
-        return self.types.lazy.compactMap {
+        return self.types.compactMap {
             let numberOfBits = $0.type.bits
             defer {
                 if isDownto {
