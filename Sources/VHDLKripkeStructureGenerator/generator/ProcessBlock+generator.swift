@@ -72,7 +72,8 @@ extension ProcessBlock {
             [
                 WhenCase(generatorUpdatedPendingStatesFor: $0, in: representation),
                 WhenCase(generatorStartStateFor: $0, in: representation),
-                WhenCase(generatorResetStateReadyFor: $0)
+                WhenCase(generatorResetStateReadyFor: $0),
+                WhenCase(generatorCheckStateFinishedFor: $0, in: representation)
             ]
         }
         self.init(
