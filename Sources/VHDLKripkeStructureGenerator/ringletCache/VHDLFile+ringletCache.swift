@@ -67,7 +67,7 @@ extension VHDLFile {
             .include(statement: .stdLogic1164),
             .include(statement: .numericStd),
             .include(statement: UseStatement(
-                rawValue: "use \(representation.machine.name.rawValue)Types.all;"
+                rawValue: "use work.\(representation.machine.name.rawValue)Types.all;"
             )!)
         ]
         let entity = Entity(ringletCacheFor: state, representation: representation)
