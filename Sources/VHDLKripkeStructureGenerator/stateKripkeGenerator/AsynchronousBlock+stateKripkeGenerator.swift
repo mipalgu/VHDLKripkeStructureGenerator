@@ -87,7 +87,30 @@ extension AsynchronousBlock {
             )
         }
         let writeSnapshot = writeRecord.types.map {
-            IndexedValue(
+            let name = $0.name.rawValue
+            guard !name.hasPrefix(machine.name.rawValue) else {
+                let withoutPrefix = name.dropFirst(machine.name.rawValue.count + 1)
+                let newName = VariableName(rawValue: String(withoutPrefix))!
+                guard !externals.contains(newName) else {
+                    return IndexedValue(
+                        index: .index(value: .reference(variable: .variable(
+                            reference: .variable(name: $0.name)
+                        ))),
+                        value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                            record: .writeSnapshotSignal, member: .variable(name: newName)
+                        ))))
+                    )
+                }
+                return IndexedValue(
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: $0.name)
+                    ))),
+                    value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                        record: .writeSnapshotSignal, member: .variable(name: $0.name)
+                    ))))
+                )
+            }
+            return IndexedValue(
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: $0.name)))),
                 value: .reference(variable: .variable(reference: .member(access: MemberAccess(
                     record: .writeSnapshotSignal, member: .variable(name: $0.name)
