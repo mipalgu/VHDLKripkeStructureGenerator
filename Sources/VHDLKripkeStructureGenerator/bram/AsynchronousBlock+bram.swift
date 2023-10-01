@@ -76,13 +76,16 @@ extension AsynchronousBlock {
                         ifBlock: .statement(statement: .assignment(
                             name: .indexed(
                                 name: .reference(variable: .variable(reference: .variable(name: .ram))),
-                                index: .index(value: .cast(operation: .integer(
-                                    expression: .cast(operation: .unsigned(
-                                        expression: .reference(variable: .variable(
-                                            reference: .variable(name: .addr)
-                                        ))
-                                    ))
-                                )))
+                                index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
+                                    name: .toInteger,
+                                    parameters: [
+                                        Argument(argument: .cast(operation: .unsigned(
+                                            expression: .reference(variable: .variable(
+                                                reference: .variable(name: .addr)
+                                            ))
+                                        )))
+                                    ]
+                                ))))
                             ),
                             value: .reference(variable: .variable(reference: .variable(name: .di)))
                         ))
