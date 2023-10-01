@@ -234,7 +234,7 @@ extension AsynchronousBlock {
                         lhs: .variable(reference: .variable(name: .readSnapshotState)),
                         rhs: .expression(value: .reference(variable: .indexed(
                             name: .reference(variable: .variable(
-                                reference: .variable(name: .readSnapshotSignal)
+                                reference: .variable(name: .readSnapshots)
                             )),
                             index: .index(value: index)
                         )))
@@ -243,7 +243,7 @@ extension AsynchronousBlock {
                         lhs: .variable(reference: .variable(name: .writeSnapshotState)),
                         rhs: .expression(value: .reference(variable: .indexed(
                             name: .reference(variable: .variable(
-                                reference: .variable(name: .writeSnapshotSignal)
+                                reference: .variable(name: .writeSnapshots)
                             )),
                             index: .index(value: index)
                         )))
