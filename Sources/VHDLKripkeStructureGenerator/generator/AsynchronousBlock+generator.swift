@@ -98,7 +98,7 @@ extension AsynchronousBlock {
                     VariableMap(
                         lhs: .variable(reference: .variable(name: .ready)),
                         rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "get\(name)Ready")!)
+                            reference: .variable(name: VariableName(rawValue: "gen\(name)Ready")!)
                         )))
                     ),
                     VariableMap(
