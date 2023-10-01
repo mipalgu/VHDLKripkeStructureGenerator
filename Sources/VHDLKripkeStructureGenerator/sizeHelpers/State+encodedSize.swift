@@ -73,12 +73,6 @@ extension State {
         let writeBits = write.types.filter { $0.name != .nextState }.reduce(0) {
             $0 + $1.type.signalType.encodedBits
         }
-        print("Encoding state : \(self.name.rawValue)")
-        print("Encoding bits for:\nread snapshot: \(read)\n\nwriteSnapshot: \(write).")
-        print("Read bits: \(read.encodedBits)")
-        print("Write bits: \(write.encodedBits)")
-        print("State bits: \(representation.machine.numberOfStateBits)")
-        print("Observed bit: 1")
         return read.encodedBits + writeBits + representation.machine.numberOfStateBits + 1
     }
 

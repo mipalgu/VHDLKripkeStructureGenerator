@@ -91,16 +91,12 @@ extension SignalType {
     /// The number of bits to encode the different values of this type. This will include an additional bit
     /// for logic types as they represent tri-state signals.
     @inlinable var encodedBits: Int {
-        print("Encoding for encodedBits: \(self)")
         switch self {
         case .bit, .boolean, .integer, .natural, .positive, .real:
-            print("return bits: \(self.bits)")
             return self.bits
         case .stdLogic, .stdULogic:
-            print("return 2")
             return 2
         case .ranged(let type):
-            print("Doing ranged...")
             return type.encodedBits
         }
     }
@@ -139,13 +135,10 @@ extension RangedType {
     /// The number of bits to encode the different values of this type. This will include an additional bit
     /// for logic types as they represent tri-state signals.
     @inlinable var encodedBits: Int {
-        print("Encoding ranged \(self)")
         switch self {
         case .bitVector, .signed, .unsigned, .integer:
-            print("Encoded \(self.bits)")
             return self.bits
         case .stdLogicVector, .stdULogicVector:
-            print("Encoded \(self.bits * 2)")
             return self.bits * 2
         }
     }
