@@ -121,9 +121,9 @@ extension Machine {
 
     /// The size of an encoded target state.
     @inlinable var targetStateSize: VectorSize {
-        VectorSize.to(
-            lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: max(targetStateBits - 1, 0)))
+        VectorSize.downto(
+            upper: .literal(value: .integer(value: max(targetStateBits - 1, 0))),
+            lower: .literal(value: .integer(value: 0))
         )
     }
 
