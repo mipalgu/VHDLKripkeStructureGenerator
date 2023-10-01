@@ -189,7 +189,7 @@ extension ArchitectureHead {
                     type: .ranged(type: .integer(size: pendingIndexSize)),
                     name: .maxInsertIndex
                 )))
-            ] + stateSignals + [
+            ] + constants + stateSignals + [
                 .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isDuplicate))),
                 .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isFinished)))
             ] + genSignals + generators
