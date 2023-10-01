@@ -105,7 +105,7 @@ extension ArchitectureHead {
             ))),
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .runnerBusy))),
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .cacheBusy))),
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .cacheRead))),
+            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .cacheRead))),
             .definition(value: .signal(value: LocalSignal(
                 type: .ranged(type: .integer(size: indexType)), name: .statesIndex
             ))),
