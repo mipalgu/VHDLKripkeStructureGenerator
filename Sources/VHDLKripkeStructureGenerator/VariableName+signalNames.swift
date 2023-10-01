@@ -287,6 +287,9 @@ extension VariableName {
     /// The `TargetStates_t` type.
     @usableFromInline static let targetStatesType = VariableName(rawValue: "TargetStates_t")!
 
+    /// The `to_integer` function.
+    @usableFromInline static let toInteger = VariableName(rawValue: "to_integer")!
+
     /// The `to_signed` function.
     @usableFromInline static let toSigned = VariableName(rawValue: "to_signed")!
 
