@@ -79,8 +79,8 @@ extension Record {
         }
     }
 
-    func bitsIndex(for name: VariableName, isDownto: Bool = false) -> VectorIndex? {
-        var startIndex = isDownto ? max(0, self.bits - 1) : 0
+    func bitsIndex(for name: VariableName, isDownto: Bool = false, adding value: Int = 0) -> VectorIndex? {
+        var startIndex = (isDownto ? max(0, self.bits - 1) : 0) + value
         return self.types.compactMap {
             let numberOfBits = $0.type.bits
             defer {
