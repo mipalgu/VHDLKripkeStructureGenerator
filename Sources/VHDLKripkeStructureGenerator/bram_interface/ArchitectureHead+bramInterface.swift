@@ -1,4 +1,4 @@
-// VariableName+bramInterfaceConstants.swift
+// ArchitectureHead+bramInterface.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,20 +54,39 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-extension VariableName {
+extension ArchitectureHead {
 
-    /// The `data` signal.
-    @usableFromInline static let data = VariableName(rawValue: "data")!
-
-    /// The `generatorFinished` signal.
-    @usableFromInline static let generatorFinished = VariableName(rawValue: "generatorFinished")!
-
-    /// The `previousAddress` signal.
-    @usableFromInline static let previousAddress = VariableName(rawValue: "previousAddress")!
-
-    /// The `unsignedAddress` signal.
-    @usableFromInline static let unsignedAddress = VariableName(rawValue: "unsignedAddress")!
+    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let stateSignals = machine.states.flatMap {
+            let name = $0.name.rawValue
+            return [
+                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
+                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
+                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
+                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
+                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
+                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
+                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
+                LocalSignal(
+                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
+                ),
+                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
+                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
+            ]
+        }
+        .map { HeadStatement.definition(value: .signal(value: $0)) }
+        let generatorEntity = Entity(generatorFor: representation)
+        let component = ComponentDefinition(entity: generatorEntity)
+        self.init(statements: stateSignals + [
+            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .generatorFinished))),
+            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
+            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
+            .definition(value: .component(value: component))
+        ])
+    }
 
 }
