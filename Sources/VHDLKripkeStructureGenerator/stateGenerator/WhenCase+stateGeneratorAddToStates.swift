@@ -100,18 +100,21 @@ extension WhenCase {
                                         reference: .variable(name: .statesIndex)
                                     )))
                                 ),
-                                value: writeSnapshot.reducedEncoding(
-                                    for: .reference(variable: .indexed(
-                                        name: .reference(variable: .variable(
-                                            reference: .variable(name: .ringlets)
+                                value: .binary(operation: .concatenate(
+                                    lhs: writeSnapshot.reducedEncoding(
+                                        for: .reference(variable: .indexed(
+                                            name: .reference(variable: .variable(
+                                                reference: .variable(name: .ringlets)
+                                            )),
+                                            index: .index(value: .reference(variable: .variable(
+                                                reference: .variable(name: .ringletIndex)
+                                            )))
                                         )),
-                                        index: .index(value: .reference(variable: .variable(
-                                            reference: .variable(name: .ringletIndex)
-                                        )))
-                                    )),
-                                    offset: readBits,
-                                    ignoring: [.nextState]
-                                )
+                                        offset: readBits,
+                                        ignoring: [.nextState]
+                                    ),
+                                    rhs: .literal(value: .bit(value: .high))
+                                ))
                             )),
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .statesIndex)),
