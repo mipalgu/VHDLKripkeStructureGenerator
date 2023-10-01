@@ -1,4 +1,4 @@
-// VHDLKripkeStructureGenerator.swift
+// VHDLFile+generator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,47 +54,30 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
 import VHDLParsing
 
-public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
+extension VHDLFile {
 
-    public init() {}
-
-    public func generate(machine: Machine) -> [VHDLFile] {
+    init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
         guard
-            let representation = MachineRepresentation(machine: machine),
-            let verifiedMachine = VHDLFile(verifiable: representation),
-            let runner = VHDLFile(runnerFor: representation),
-            let ringletRunner = VHDLFile(ringletRunnerFor: representation),
-            let types = VHDLFile(typesFor: representation),
-            let generator = VHDLFile(generatorFor: representation)
+            let head = ArchitectureHead(generatorFor: representation),
+            let body = AsynchronousBlock(generatorFor: representation),
+            let typesInclude = UseStatement(rawValue: "use \(machine.name.rawValue)Types.all;")
         else {
-            return []
+            return nil
         }
-        let primitiveTypes = VHDLFile.primitiveTypes
-        let states = machine.states
-        let stateFiles: [[VHDLFile]] = states.compactMap {
-            guard
-                let expander = VHDLFile(ringletExpanderFor: $0, in: representation),
-                let kripkeGenerator = VHDLFile(stateKripkeGeneratorFor: $0, in: representation),
-                let runner = VHDLFile(stateRunnerFor: $0, in: representation),
-                let cache = VHDLFile(ringletCacheFor: $0, in: representation),
-                let stateGenerator = VHDLFile(stateGeneratorFor: $0, in: representation)
-            else {
-                return nil
-            }
-            return [
-                expander, kripkeGenerator, runner, VHDLFile(bramFor: $0, in: representation), cache,
-                stateGenerator
-            ]
-        }
-        guard stateFiles.count == states.count else {
-            return []
-        }
-        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes, generator] +
-            stateFiles.flatMap { $0 }
+        let entity = Entity(generatorFor: representation)
+        let includes = [
+            Include.library(value: .ieee), .include(statement: .stdLogic1164),
+            .include(statement: .primitiveTypes), .include(statement: typesInclude)
+        ]
+        self.init(
+            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            entities: [entity],
+            includes: includes
+        )
     }
 
 }
