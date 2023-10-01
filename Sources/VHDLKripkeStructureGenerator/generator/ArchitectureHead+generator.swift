@@ -75,11 +75,11 @@ extension ArchitectureHead {
                 name: $1,
                 type: .logicVector8,
                 value: .literal(value: .vector(value: .bits(value: BitVector(
-                    values: BitLiteral.bitVersion(of: $0 + 1, bitsRequired: 8)
+                    values: BitLiteral.bitVersion(of: $0, bitsRequired: 8)
                 ))))
             )!))
         }
-        var startIndex = constants.count + 1
+        var startIndex = constants.count
         let stateInternals = representation.machine.states.enumerated().flatMap {
             let internals = [
                 HeadStatement.definition(value: .constant(value: ConstantSignal(
@@ -166,7 +166,7 @@ extension ArchitectureHead {
                         values: [BitLiteral](repeating: .low, count: 8)
                     ))))
                 )))
-            ] + stateInternals + [
+            ] + constants + stateInternals + [
                 .definition(value: .signal(value: LocalSignal(
                     type: .alias(name: .pendingStatesType), name: .pendingStates
                 ))),
@@ -189,7 +189,7 @@ extension ArchitectureHead {
                     type: .ranged(type: .integer(size: pendingIndexSize)),
                     name: .maxInsertIndex
                 )))
-            ] + constants + stateSignals + [
+            ] + stateSignals + [
                 .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isDuplicate))),
                 .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isFinished)))
             ] + genSignals + generators
