@@ -79,15 +79,27 @@ extension Record {
         }
     }
 
-    func bitsIndex(for name: VariableName) -> VectorIndex? {
-        var startIndex = 0
+    func bitsIndex(for name: VariableName, isDownto: Bool = false) -> VectorIndex? {
+        var startIndex = isDownto ? max(0, self.bits - 1) : 0
         return self.types.lazy.compactMap {
             let numberOfBits = $0.type.bits
-            defer { startIndex += numberOfBits }
+            defer {
+                if isDownto {
+                    startIndex -= numberOfBits
+                } else {
+                    startIndex += numberOfBits
+                }
+            }
             guard $0.name == name else {
                 return nil
             }
             guard numberOfBits <= 1 else {
+                guard !isDownto else {
+                    return VectorIndex.range(value: .downto(
+                        upper: .literal(value: .integer(value: startIndex)),
+                        lower: .literal(value: .integer(value: startIndex - numberOfBits + 1))
+                    ))
+                }
                 return VectorIndex.range(value: .to(
                     lower: .literal(value: .integer(value: startIndex)),
                     upper: .literal(value: .integer(value: startIndex + numberOfBits - 1))
