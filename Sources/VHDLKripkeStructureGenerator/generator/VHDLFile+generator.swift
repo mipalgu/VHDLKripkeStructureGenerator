@@ -64,7 +64,7 @@ extension VHDLFile {
         guard
             let head = ArchitectureHead(generatorFor: representation),
             let body = AsynchronousBlock(generatorFor: representation),
-            let typesInclude = UseStatement(rawValue: "use \(machine.name.rawValue)Types.all;")
+            let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;")
         else {
             return nil
         }
