@@ -86,7 +86,7 @@ extension WhenCase {
             return types.map {
                 SynchronousBlock.statement(statement: .assignment(
                     name: .variable(reference: .variable(
-                        name: VariableName(rawValue: "\(name)\($0)")!
+                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
                     )),
                     value: .literal(value: $0.type.signalType.defaultValue)
                 ))
