@@ -77,6 +77,7 @@ extension AsynchronousBlock {
         else {
             return nil
         }
+        let externals = Set(machine.externalSignals.map(\.name))
         let clock = machine.clocks[machine.drivingClock].name
         let readSnapshot = Record(readSnapshotFor: state, in: representation).types.map {
             IndexedValue(
@@ -145,7 +146,6 @@ extension AsynchronousBlock {
             ]))))
         )
         let writeSignals = writeRecord.types.filter { $0.name != .nextState && $0.name != .executeOnEntry }
-        let externals = Set(machine.externalSignals.map(\.name))
         let joinedSignals = writeSignals.reduce(Expression.reference(variable: .variable(
             reference: .member(access: MemberAccess(
                 record: .writeSnapshotSignal, member: .variable(name: .nextState)
