@@ -135,10 +135,13 @@ extension RangedType {
     /// The number of bits to encode the different values of this type. This will include an additional bit
     /// for logic types as they represent tri-state signals.
     @inlinable var encodedBits: Int {
+        print("Encoding \(self)")
         switch self {
         case .bitVector, .signed, .unsigned, .integer:
+            print("Encoded \(self.bits)")
             return self.bits
         case .stdLogicVector, .stdULogicVector:
+            print("Encoded \(self.bits * 2)")
             return self.bits * 2
         }
     }

@@ -71,12 +71,7 @@ extension Record {
 
     /// The minimum number of bits required to represent the entire encoded version of the record.
     @inlinable var encodedBits: Int {
-        self.types.reduce(0) {
-            guard case .signal(let type) = $1.type else {
-                fatalError("Failed to find size of type \($1.type)!")
-            }
-            return $0 + type.encodedBits
-        }
+        self.types.reduce(0) { $0 + $1.type.signalType.encodedBits }
     }
 
     func bitsIndex(for name: VariableName, isDownto: Bool = false, adding value: Int = 0) -> VectorIndex? {
