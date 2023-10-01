@@ -83,6 +83,7 @@ extension ProcessBlock {
                     condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
                     cases: [initial, setJob] + stateInternals + [
                         WhenCase(generatorChooseNextInsertionFor: representation),
+                        WhenCase(generatorCheckForDuplicateFor: representation),
                         .othersNull
                     ]
                 ))
