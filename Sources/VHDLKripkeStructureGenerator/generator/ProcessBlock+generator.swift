@@ -68,6 +68,11 @@ extension ProcessBlock {
         else {
             return nil
         }
+        let stateInternals = machine.states.flatMap {
+            [
+                WhenCase(generatorUpdatedPendingStatesFor: $0, in: representation)
+            ]
+        }
         self.init(
             sensitivityList: [clk],
             code: .ifStatement(block: .ifStatement(
@@ -76,11 +81,7 @@ extension ProcessBlock {
                 )))),
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [
-                        initial,
-                        setJob,
-                        .othersNull
-                    ]
+                    cases: [initial, setJob] + stateInternals + [.othersNull]
                 ))
             ))
         )
