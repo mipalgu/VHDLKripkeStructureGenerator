@@ -90,7 +90,12 @@ extension WhenCase {
                     )),
                     value: .literal(value: $0.type.signalType.defaultValue)
                 ))
-            }
+            } + [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: VariableName(rawValue: "\(name)Ready")!)),
+                    value: .literal(value: .bit(value: .low))
+                ))
+            ]
         }
         let stateWorking = machine.states.map {
             SynchronousBlock.statement(statement: .assignment(
