@@ -1,4 +1,4 @@
-// ProcessBlock+generator.swift
+// WhenCase+generatorVerifyFinished.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,47 +54,35 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-extension ProcessBlock {
+extension WhenCase {
 
-    init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let clk = machine.clocks[machine.drivingClock].name
-        guard
-            let initial = WhenCase(generatorInitialFor: representation),
-            let setJob = WhenCase(generatorSetJobFor: representation)
-        else {
-            return nil
-        }
-        let stateInternals = machine.states.flatMap {
-            [
-                WhenCase(generatorUpdatedPendingStatesFor: $0, in: representation),
-                WhenCase(generatorStartStateFor: $0, in: representation),
-                WhenCase(generatorResetStateReadyFor: $0)
-            ]
-        }
-        self.init(
-            sensitivityList: [clk],
-            code: .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
-                    variable: .variable(reference: .variable(name: clk))
-                )))),
-                ifBlock: .caseStatement(block: CaseStatement(
-                    condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [initial, setJob] + stateInternals + [
-                        WhenCase(generatorChooseNextInsertionFor: representation),
-                        WhenCase(generatorCheckForDuplicateFor: representation),
-                        .generatorVerifyDuplicate,
-                        WhenCase(generatorCheckIfFinishedFor: representation),
-                        .generatorVerifyFinished,
-                        .generatorHasFinished,
-                        .othersNull
-                    ]
-                ))
+    @usableFromInline static let generatorVerifyFinished = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .verifyFinished)
+        ))),
+        code: .ifStatement(block: .ifElse(
+            condition: .reference(variable: .variable(reference: .variable(name: .isFinished))),
+            ifBlock: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
+            )),
+            elseBlock: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(reference: .variable(name: .setJob)))
             ))
-        )
-    }
+        ))
+    )
+
+    @usableFromInline static let generatorHasFinished = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .hasFinished)
+        ))),
+        code: .statement(statement: .assignment(
+            name: .variable(reference: .variable(name: .finished)),
+            value: .literal(value: .bit(value: .high))
+        ))
+    )
 
 }
