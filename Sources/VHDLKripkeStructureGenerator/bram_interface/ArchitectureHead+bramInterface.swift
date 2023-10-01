@@ -82,7 +82,7 @@ extension ArchitectureHead {
         let generatorEntity = Entity(generatorFor: representation)
         let component = ComponentDefinition(entity: generatorEntity)
         self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .generatorFinished))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
             .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
             .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
             .definition(value: .component(value: component))
