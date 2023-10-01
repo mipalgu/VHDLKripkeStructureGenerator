@@ -79,7 +79,8 @@ extension VHDLFile {
         let includes = [
             Include.library(value: .ieee),
             .include(statement: .stdLogic1164),
-            .include(statement: typesInclude)
+            .include(statement: typesInclude),
+            .include(statement: .primitiveTypes)
         ]
         self.init(
             architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
