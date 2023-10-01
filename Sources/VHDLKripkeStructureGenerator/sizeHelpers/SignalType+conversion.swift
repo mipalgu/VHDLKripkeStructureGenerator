@@ -168,7 +168,7 @@ extension RangedType {
                 guard
                     case .literal(let literal) = size.min,
                     case .integer(let min) = literal,
-                    min < 0
+                    min >= 0
                 else {
                     return .functionCall(call: .custom(function: CustomFunctionCall(
                         name: .toInteger,
