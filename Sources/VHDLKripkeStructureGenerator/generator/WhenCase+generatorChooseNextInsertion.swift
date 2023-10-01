@@ -1,4 +1,4 @@
-// ProcessBlock+generator.swift
+// WhenCase+generatorChooseNextInsertion.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,36 +57,50 @@
 import VHDLMachines
 import VHDLParsing
 
-extension ProcessBlock {
+extension WhenCase {
 
-    init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let clk = machine.clocks[machine.drivingClock].name
-        guard
-            let initial = WhenCase(generatorInitialFor: representation),
-            let setJob = WhenCase(generatorSetJobFor: representation)
-        else {
-            return nil
-        }
-        let stateInternals = machine.states.flatMap {
-            [
-                WhenCase(generatorUpdatedPendingStatesFor: $0, in: representation)
-            ]
-        }
+    init<T>(generatorChooseNextInsertionFor representation: T) where T: MachineVHDLRepresentable {
+        let maxIndex = max(0, representation.machine.numberOfTargetStates - 1)
         self.init(
-            sensitivityList: [clk],
-            code: .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
-                    variable: .variable(reference: .variable(name: clk))
-                )))),
-                ifBlock: .caseStatement(block: CaseStatement(
-                    condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [initial, setJob] + stateInternals + [
-                        WhenCase(generatorChooseNextInsertionFor: representation),
-                        .othersNull
-                    ]
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .chooseNextInsertion)
+            ))),
+            code: .blocks(blocks: [
+                .forLoop(loop: ForLoop(
+                    iterator: .i,
+                    range: .to(
+                        lower: .literal(value: .integer(value: 0)),
+                        upper: .literal(value: .integer(value: maxIndex))
+                    ),
+                    body: .ifStatement(block: .ifStatement(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .indexed(
+                                name: .reference(variable: .indexed(
+                                    name: .reference(variable: .variable(
+                                        reference: .variable(name: .pendingStates)
+                                    )),
+                                    index: .index(value: .reference(variable: .variable(
+                                        reference: .variable(name: .i)
+                                    )))
+                                )),
+                                index: .index(value: .literal(value: .integer(value: 0)))
+                            )),
+                            rhs: .literal(value: .bit(value: .low))
+                        ))),
+                        ifBlock: .blocks(blocks: [
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .pendingInsertIndex)),
+                                value: .reference(variable: .variable(reference: .variable(name: .i)))
+                            )),
+                            .statement(statement: .exit)
+                        ])
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .fromState)))
                 ))
-            ))
+            ])
         )
     }
 
