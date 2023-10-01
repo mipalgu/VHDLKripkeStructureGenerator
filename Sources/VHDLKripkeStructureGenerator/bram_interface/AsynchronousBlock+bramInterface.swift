@@ -67,10 +67,13 @@ extension AsynchronousBlock {
             let lastAddress = VariableName(rawValue: "\(name)LastAddress")!
             let address = VariableName(rawValue: "\(name)Address")!
             let isState = VariableName(rawValue: "is\(name)")!
+            let read = VariableName(rawValue: "\(name)Read")!
+            let isPreviousState = VariableName(rawValue: "isPrevious\(name)")!
+            let ready = VariableName(rawValue: "\(name)ReadReady")!
             guard $0 != 0 else {
                 return [
                     AsynchronousBlock.statement(statement: .assignment(
-                        name: unsignedLastAddress,
+                        name: .variable(reference: .variable(name: unsignedLastAddress)),
                         value: .expression(value: .cast(operation: .unsigned(expression: .reference(
                             variable: .variable(reference: .variable(name: lastAddress))
                         ))))
@@ -106,19 +109,269 @@ extension AsynchronousBlock {
                             ))))
                         )))
                     )),
-                    
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: read)),
+                        value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                            value: .reference(variable: .variable(reference: .variable(name: .read))),
+                            condition: .logical(operation: .or(
+                                lhs: .reference(variable: .variable(reference: .variable(name: isState))),
+                                rhs: .reference(variable: .variable(
+                                    reference: .variable(name: isPreviousState)
+                                ))
+                            )),
+                            elseBlock: .expression(value: .literal(value: .bit(value: .low)))
+                        )))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: ready)),
+                        value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                            value: .reference(variable: .variable(reference: .variable(name: .ready))),
+                            condition: .logical(operation: .or(
+                                lhs: .reference(variable: .variable(reference: .variable(name: isState))),
+                                rhs: .reference(variable: .variable(
+                                    reference: .variable(name: isPreviousState)
+                                ))
+                            )),
+                            elseBlock: .expression(value: .literal(value: .bit(value: .low)))
+                        )))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: isPreviousState)),
+                        value: .expression(value: .logical(operation: .and(
+                            lhs: .conditional(condition: .comparison(value: .lessThanOrEqual(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .previousAddress)
+                                )),
+                                rhs: .reference(variable: .variable(
+                                    reference: .variable(name: unsignedLastAddress)
+                                ))
+                            ))),
+                            rhs: .conditional(condition: .comparison(value: .equality(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .generatorFinished)
+                                )),
+                                rhs: .literal(value: .bit(value: .high))
+                            )))
+                        )))
+                    ))
                 ]
             }
-            return []
+            let previousStateName = machine.states[$0 - 1].name
+            let previousUnsignedStateLastAddress = VariableName(
+                rawValue: "unsigned\(previousStateName)LastAddress"
+            )!
+            return [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: unsignedLastAddress)),
+                    value: .expression(value: .binary(operation: .addition(
+                        lhs: .binary(operation: .addition(
+                            lhs: .cast(operation: .unsigned(expression: .reference(variable: .variable(
+                                reference: .variable(name: lastAddress)
+                            )))),
+                            rhs: .reference(variable: .variable(reference: .variable(
+                                name: previousUnsignedStateLastAddress
+                            )))
+                        )),
+                        rhs: .literal(value: .integer(value: 1))
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: isState)),
+                    value: .expression(value: .logical(operation: .and(
+                        lhs: .logical(operation: .and(
+                            lhs: .conditional(condition: .comparison(value: .greaterThan(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .unsignedAddress)
+                                )),
+                                rhs: .reference(variable: .variable(reference: .variable(
+                                    name: previousUnsignedStateLastAddress
+                                )))
+                            ))),
+                            rhs: .conditional(condition: .comparison(value: .lessThanOrEqual(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .unsignedAddress)
+                                )),
+                                rhs: .reference(variable: .variable(
+                                    reference: .variable(name: unsignedLastAddress)
+                                ))
+                            )))
+                        )),
+                        rhs: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(
+                                reference: .variable(name: .generatorFinished)
+                            )),
+                            rhs: .literal(value: .bit(value: .high))
+                        )))
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: address)),
+                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                        value: .cast(operation: .stdLogicVector(expression: .binary(
+                            operation: .subtraction(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .unsignedAddress)
+                                )),
+                                rhs: .precedence(value: .binary(operation: .addition(
+                                    lhs: .literal(value: .integer(value: 1)),
+                                    rhs: .reference(variable: .variable(
+                                        reference: .variable(name: previousUnsignedStateLastAddress)
+                                    ))
+                                )))
+                            )
+                        ))),
+                        condition: .reference(variable: .variable(reference: .variable(name: isState))),
+                        elseBlock: .expression(value: .literal(value: .vector(value: .indexed(
+                            values: IndexedVector(
+                                values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                            )
+                        ))))
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: read)),
+                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                        value: .reference(variable: .variable(reference: .variable(name: .read))),
+                        condition: .logical(operation: .or(
+                            lhs: .reference(variable: .variable(reference: .variable(name: isState))),
+                            rhs: .reference(variable: .variable(
+                                reference: .variable(name: isPreviousState)
+                            ))
+                        )),
+                        elseBlock: .expression(value: .literal(value: .bit(value: .low)))
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: ready)),
+                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                        value: .reference(variable: .variable(reference: .variable(name: .ready))),
+                        condition: .logical(operation: .or(
+                            lhs: .reference(variable: .variable(reference: .variable(name: isState))),
+                            rhs: .reference(variable: .variable(
+                                reference: .variable(name: isPreviousState)
+                            ))
+                        )),
+                        elseBlock: .expression(value: .literal(value: .bit(value: .low)))
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: isPreviousState)),
+                    value: .expression(value: .logical(operation: .and(
+                        lhs: .logical(operation: .and(
+                            lhs: .conditional(condition: .comparison(value: .greaterThan(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .previousAddress)
+                                )),
+                                rhs: .reference(variable: .variable(reference: .variable(
+                                    name: previousUnsignedStateLastAddress
+                                )))
+                            ))),
+                            rhs: .conditional(condition: .comparison(value: .lessThanOrEqual(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .previousAddress)
+                                )),
+                                rhs: .reference(variable: .variable(
+                                    reference: .variable(name: unsignedLastAddress)
+                                ))
+                            )))
+                        )),
+                        rhs: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(
+                                reference: .variable(name: .generatorFinished)
+                            )),
+                            rhs: .literal(value: .bit(value: .high))
+                        )))
+                    )))
+                ))
+            ]
         }
+        let stateValues = machine.states.map {
+            let name = $0.name.rawValue
+            return AsynchronousExpression.whenBlock(value: .when(statement: WhenStatement(
+                condition: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "isPrevious\(name)")!
+                ))),
+                value: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "\(name)Value")!
+                )))
+            )))
+        }
+        let trailer = AsynchronousExpression.expression(value: .literal(value: .vector(value: .indexed(
+            values: IndexedVector(values: [IndexedValue(index: .others, value: .bit(value: .low))])
+        ))))
+        let whenStatement = (stateValues + [trailer]).reversed().joined {
+            guard case .whenBlock(let block) = $1, case .when(let statement) = block else {
+                fatalError("Invalid syntax in state values for data assignment in BRAM interface!")
+            }
+            return AsynchronousExpression.whenBlock(value: .whenElse(statement: WhenElseStatement(
+                value: statement.value,
+                condition: statement.condition,
+                elseBlock: $0
+            )))
+        }
+        let generatorEntity = Entity(generatorFor: representation)
+        let mappings = generatorEntity.port.signals.map {
+            guard $0.name != .finished else {
+                return VariableMap(
+                    lhs: .variable(reference: .variable(name: .finished)),
+                    rhs: .expression(value: .reference(variable: .variable(
+                        reference: .variable(name: .generatorFinished)
+                    )))
+                )
+            }
+            return VariableMap(
+                lhs: .variable(reference: .variable(name: $0.name)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: $0.name))))
+            )
+        }
+        let component = ComponentInstantiation(
+            label: VariableName(rawValue: "gen_inst")!,
+            name: generatorEntity.name,
+            port: PortMap(variables: mappings)
+        )
         self = .blocks(blocks: [
             .statement(statement: .assignment(
-                name: .unsignedAddress,
+                name: .variable(reference: .variable(name: .unsignedAddress)),
                 value: .expression(value: .cast(operation: .unsigned(expression: .reference(
                     variable: .variable(reference: .variable(name: .address))
                 ))))
+            ))
+        ] + stateAssignments + [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .data)),
+                value: whenStatement
             )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .finished)),
+                value: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .generatorFinished)
+                )))
+            )),
+            .component(block: component),
+            .process(block: ProcessBlock(bramInterfaceFor: representation))
         ])
+    }
+
+}
+
+extension ProcessBlock {
+
+    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
+        let clk = representation.machine.clocks[representation.machine.drivingClock].name
+        self.init(
+            sensitivityList: [clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clk))
+                )))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .previousAddress)),
+                    value: .cast(operation: .unsigned(expression: .reference(variable: .variable(
+                        reference: .variable(name: .address)
+                    ))))
+                ))
+            ))
+        )
     }
 
 }
