@@ -71,7 +71,8 @@ extension ProcessBlock {
         let stateInternals = machine.states.flatMap {
             [
                 WhenCase(generatorUpdatedPendingStatesFor: $0, in: representation),
-                WhenCase(generatorStartStateFor: $0, in: representation)
+                WhenCase(generatorStartStateFor: $0, in: representation),
+                WhenCase(generatorResetStateReadyFor: $0)
             ]
         }
         self.init(
