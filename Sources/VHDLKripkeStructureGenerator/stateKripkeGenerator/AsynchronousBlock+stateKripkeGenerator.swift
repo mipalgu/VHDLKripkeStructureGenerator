@@ -122,12 +122,32 @@ extension AsynchronousBlock {
             ]))))
         )
         let writeSignals = writeRecord.types.filter { $0.name != .nextState && $0.name != .executeOnEntry }
+        let externals = Set(machine.externalSignals.map(\.name))
         let joinedSignals = writeSignals.reduce(Expression.reference(variable: .variable(
             reference: .member(access: MemberAccess(
                 record: .writeSnapshotSignal, member: .variable(name: .nextState)
             ))
         ))) {
-            Expression.binary(operation: .concatenate(
+            let name = $1.name.rawValue
+            guard !name.hasPrefix(machine.name.rawValue) else {
+                let withoutPrefix = name.dropFirst(machine.name.rawValue.count + 1)
+                let newName = VariableName(rawValue: String(withoutPrefix))!
+                guard !externals.contains(newName) else {
+                    return Expression.binary(operation: .concatenate(
+                        lhs: $0,
+                        rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                            record: .writeSnapshotSignal, member: .variable(name: newName)
+                        ))))
+                    ))
+                }
+                return Expression.binary(operation: .concatenate(
+                    lhs: $0,
+                    rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                        record: .writeSnapshotSignal, member: .variable(name: $1.name)
+                    ))))
+                ))
+            }
+            return Expression.binary(operation: .concatenate(
                 lhs: $0,
                 rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
                     record: .writeSnapshotSignal, member: .variable(name: $1.name)
