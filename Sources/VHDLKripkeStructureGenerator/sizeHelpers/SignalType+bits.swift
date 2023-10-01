@@ -101,7 +101,7 @@ extension SignalType {
             return 2
         case .ranged(let type):
             print("Doing ranged...")
-            return type.bits
+            return type.encodedBits
         }
     }
 
