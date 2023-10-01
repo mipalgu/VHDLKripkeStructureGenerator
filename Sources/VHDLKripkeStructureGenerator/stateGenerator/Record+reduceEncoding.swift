@@ -64,6 +64,23 @@ extension Record {
     ) -> Expression {
         var startIndex = offset
         return self.types.map {
+            guard !names.contains($0.name) else {
+                let bits = $0.type.signalType.bits
+                defer { startIndex += bits }
+                guard bits > 1 else {
+                    return Expression.reference(variable: .indexed(
+                        name: value,
+                        index: .index(value: .literal(value: .integer(value: startIndex)))
+                    ))
+                }
+                return Expression.reference(variable: .indexed(
+                    name: value,
+                    index: .range(value: .to(
+                        lower: .literal(value: .integer(value: startIndex)),
+                        upper: .literal(value: .integer(value: startIndex + bits - 1))
+                    ))
+                ))
+            }
             let numberOfBits = $0.type.signalType.encodedBits
             defer { startIndex += numberOfBits }
             guard numberOfBits > 1 else {
@@ -77,7 +94,7 @@ extension Record {
                 upper: .literal(value: .integer(value: startIndex + numberOfBits - 1))
             ))
             let indexedExpression = Expression.reference(variable: .indexed(name: value, index: index))
-            guard !names.contains($0.name), $0.type.signalType.isStdLogicType else {
+            guard $0.type.signalType.isStdLogicType else {
                 return indexedExpression
             }
             guard case .ranged(let rangedType) = $0.type.signalType else {
