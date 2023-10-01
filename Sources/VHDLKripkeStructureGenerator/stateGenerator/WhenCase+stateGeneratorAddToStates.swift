@@ -64,11 +64,8 @@ extension WhenCase {
     ) where T: MachineVHDLRepresentable {
         let maxIndex = max(0, state.encodedSize(in: representation) - 1)
         let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let startIndex = readSnapshot.encodedBits
-        let range = VectorSize.to(
-            lower: .literal(value: .integer(value: startIndex)),
-            upper: .literal(value: .integer(value: state.encodedSize(in: representation) - 1))
-        )
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let readBits = readSnapshot.encodedBits
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
                 reference: .variable(name: .addToStates)
@@ -103,8 +100,8 @@ extension WhenCase {
                                         reference: .variable(name: .statesIndex)
                                     )))
                                 ),
-                                value: .reference(variable: .indexed(
-                                    name: .reference(variable: .indexed(
+                                value: writeSnapshot.reducedEncoding(
+                                    for: .reference(variable: .indexed(
                                         name: .reference(variable: .variable(
                                             reference: .variable(name: .ringlets)
                                         )),
@@ -112,8 +109,9 @@ extension WhenCase {
                                             reference: .variable(name: .ringletIndex)
                                         )))
                                     )),
-                                    index: .range(value: range)
-                                ))
+                                    offset: readBits,
+                                    ignoring: [.nextState]
+                                )
                             )),
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .statesIndex)),
