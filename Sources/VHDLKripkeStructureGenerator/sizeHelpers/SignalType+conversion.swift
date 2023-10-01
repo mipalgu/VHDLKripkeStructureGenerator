@@ -164,10 +164,20 @@ extension RangedType {
             switch rangedType {
             case .bitVector:
                 return .cast(operation: .bitVector(expression: value))
-            case .integer:
+            case .integer(let size):
+                guard
+                    case .literal(let literal) = size.min,
+                    case .integer(let min) = literal,
+                    min < 0
+                else {
+                    return .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .toInteger,
+                        parameters: [Argument(argument: .cast(operation: .signed(expression: value)))]
+                    )))
+                }
                 return .functionCall(call: .custom(function: CustomFunctionCall(
                     name: .toInteger,
-                    parameters: [Argument(argument: .cast(operation: .signed(expression: value)))]
+                    parameters: [Argument(argument: .cast(operation: .unsigned(expression: value)))]
                 )))
             case .signed:
                 return .cast(operation: .signed(expression: value))
