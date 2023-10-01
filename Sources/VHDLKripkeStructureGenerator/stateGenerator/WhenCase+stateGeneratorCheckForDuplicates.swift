@@ -64,7 +64,7 @@ extension WhenCase {
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let maxIndex = machine.numberOfTargetStates
-        let observedIndex = max(0, machine.targetStateBits - 1)
+        let observedIndex = state.encodedSize(in: representation) - 1
         guard let executionMaxIndex = state.executionSize(
             in: representation, maxExecutionSize: maxExecutionSize
         ).size else {
@@ -76,6 +76,8 @@ extension WhenCase {
             lower: .literal(value: .integer(value: startIndex)),
             upper: .literal(value: .integer(value: state.encodedSize(in: representation) - 1))
         )
+        let readBits = readSnapshot.encodedBits
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
                 reference: .variable(name: .checkForDuplicates)
@@ -148,16 +150,22 @@ extension WhenCase {
                                                         reference: .variable(name: .i)
                                                     )))
                                                 )),
-                                                rhs: .reference(variable: .indexed(
-                                                    name: .reference(variable: .indexed(
-                                                        name: .reference(variable: .variable(
-                                                            reference: .variable(name: .ringlets)
+                                                rhs: .binary(operation: .concatenate(
+                                                    lhs: writeSnapshot.reducedEncoding(
+                                                        for: .reference(variable: .indexed(
+                                                            name: .reference(variable: .variable(
+                                                                reference: .variable(name: .ringlets)
+                                                            )),
+                                                            index: .index(value: .reference(
+                                                                variable: .variable(
+                                                                    reference: .variable(name: .ringletIndex)
+                                                                )
+                                                            ))
                                                         )),
-                                                        index: .index(value: .reference(variable: .variable(
-                                                            reference: .variable(name: .ringletIndex)
-                                                        )))
-                                                    )),
-                                                    index: .range(value: range)
+                                                        offset: readBits,
+                                                        ignoring: [.nextState]
+                                                    ),
+                                                    rhs: .literal(value: .bit(value: .high))
                                                 ))
                                             ))),
                                             ifBlock: .statement(statement: .assignment(
