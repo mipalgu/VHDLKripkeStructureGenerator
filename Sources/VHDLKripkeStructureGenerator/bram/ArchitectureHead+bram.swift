@@ -63,7 +63,7 @@ extension ArchitectureHead {
         self.init(statements: [
             .definition(value: .signal(value: LocalSignal(
                 type: .alias(name: VariableName(
-                    rawValue: "\(state.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
+                    rawValue: "STATE_\(state.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
                 )!),
                 name: .ram
             )))
