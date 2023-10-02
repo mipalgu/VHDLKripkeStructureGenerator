@@ -351,11 +351,11 @@ extension WhenCase {
                                 reference: .variable(name: .ringletIndex)
                             )))
                         )),
-                        index: .range(value: .downto(
+                        index: .range(value: .to(
+                            lower: .literal(value: .integer(value: 0)),
                             upper: .reference(variable: .variable(
                                 reference: .variable(name: .topIndex)
-                            )),
-                            lower: .literal(value: .integer(value: 0))
+                            ))
                         ))
                     )),
                     rhs: delimiter
@@ -403,15 +403,15 @@ extension WhenCase {
                                     reference: .variable(name: .ringletIndex)
                                 )))
                             )),
-                            index: .range(value: .downto(
-                                upper: .reference(variable: .variable(
-                                    reference: .variable(name: .topIndex)
-                                )),
+                            index: .range(value: .to(
                                 lower: .binary(operation: .subtraction(
                                     lhs: .reference(variable: .variable(
                                         reference: .variable(name: .topIndex)
                                     )),
                                     rhs: .literal(value: .integer(value: 31))
+                                )),
+                                upper: .reference(variable: .variable(
+                                    reference: .variable(name: .topIndex)
                                 ))
                             ))
                         ))
