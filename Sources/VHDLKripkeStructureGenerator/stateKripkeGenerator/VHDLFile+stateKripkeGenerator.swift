@@ -85,7 +85,8 @@ extension VHDLFile {
             Include.library(value: .ieee),
             .include(statement: .stdLogic1164),
             .include(statement: typesInclude),
-            .include(statement: .primitiveTypes)
+            .include(statement: .primitiveTypes),
+            .include(statement: .numericStd)
         ]
         self.init(architectures: [architecture], entities: [entity], includes: includes)
     }
