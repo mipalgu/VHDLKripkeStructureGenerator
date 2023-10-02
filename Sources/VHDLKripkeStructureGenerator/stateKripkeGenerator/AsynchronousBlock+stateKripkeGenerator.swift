@@ -158,23 +158,29 @@ extension AsynchronousBlock {
                 guard !externals.contains(newName) else {
                     return Expression.binary(operation: .concatenate(
                         lhs: $0,
-                        rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                            record: .writeSnapshotSignal, member: .variable(name: newName)
-                        ))))
+                        rhs: $1.type.signalType.conversion(value: .reference(variable: .variable(
+                            reference: .member(access: MemberAccess(
+                                record: .writeSnapshotSignal, member: .variable(name: newName)
+                            ))
+                        )))
                     ))
                 }
                 return Expression.binary(operation: .concatenate(
                     lhs: $0,
-                    rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                        record: .writeSnapshotSignal, member: .variable(name: $1.name)
-                    ))))
+                    rhs: $1.type.signalType.conversion(value: .reference(variable: .variable(
+                        reference: .member(access: MemberAccess(
+                            record: .writeSnapshotSignal, member: .variable(name: $1.name)
+                        ))
+                    )))
                 ))
             }
             return Expression.binary(operation: .concatenate(
                 lhs: $0,
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: .writeSnapshotSignal, member: .variable(name: $1.name)
-                ))))
+                rhs: $1.type.signalType.conversion(value: .reference(variable: .variable(
+                    reference: .member(access: MemberAccess(
+                        record: .writeSnapshotSignal, member: .variable(name: $1.name)
+                    ))
+                )))
             ))
         }
         let allJoined = Expression.binary(operation: .concatenate(
