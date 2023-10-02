@@ -130,10 +130,21 @@ extension RangedType {
         switch self {
         case .bitVector, .stdULogicVector, .signed, .unsigned:
             return .cast(operation: .stdLogicVector(expression: value))
-        case .integer:
+        case .integer(let size):
+            guard case .literal(let literal) = size.min, case .integer(let min) = literal, min < 0 else {
+                return .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
+                    function: CustomFunctionCall(
+                        name: .toSigned,
+                        parameters: [
+                            Argument(argument: value),
+                            Argument(argument: .literal(value: .integer(value: self.bits)))
+                        ]
+                    )
+                ))))
+            }
             return .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
-                    name: .toSigned,
+                    name: .toUnsigned,
                     parameters: [
                         Argument(argument: value),
                         Argument(argument: .literal(value: .integer(value: self.bits)))
