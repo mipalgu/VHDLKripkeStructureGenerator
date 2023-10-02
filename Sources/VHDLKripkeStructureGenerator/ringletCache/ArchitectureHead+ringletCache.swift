@@ -239,7 +239,9 @@ extension ArchitectureHead {
                 ))),
                 name: .topIndex
             ),
-            LocalSignal(type: .logicVector4, name: .internalState)
+            LocalSignal(type: .logicVector4, name: .internalState, defaultValue: .literal(value: .vector(
+                value: .hexademical(value: HexVector(values: [.zero]))
+            )))
         ].map { HeadStatement.definition(value: .signal(value: $0)) }
         let internalStates = [ConstantSignal].ringletCacheLargeInternalStates.map {
             HeadStatement.definition(value: .constant(value: $0))
