@@ -133,7 +133,7 @@ extension RangedType {
         case .bitVector, .stdULogicVector, .signed, .unsigned:
             return .cast(operation: .stdLogicVector(expression: value))
         case .integer(let size):
-            guard case .literal(let literal) = size.min, case .integer(let min) = literal, min < 0 else {
+            guard case .literal(let literal) = size.min, case .integer(let min) = literal, min >= 0 else {
                 return .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                     function: CustomFunctionCall(
                         name: .toSigned,
