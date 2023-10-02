@@ -58,6 +58,7 @@ import VHDLParsing
 
 extension SignalType {
 
+    @inlinable
     func conversion(value: Expression) -> Expression {
         switch self {
         case .bit, .stdULogic:
@@ -126,6 +127,7 @@ extension SignalType {
 
 extension RangedType {
 
+    @inlinable
     func conversion(value: Expression) -> Expression {
         switch self {
         case .bitVector, .stdULogicVector, .signed, .unsigned:
