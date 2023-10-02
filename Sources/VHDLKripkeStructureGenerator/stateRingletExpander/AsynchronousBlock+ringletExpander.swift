@@ -229,16 +229,29 @@ extension Expression {
         switch ranged {
         case .bitVector:
             self = .cast(operation: .stdLogicVector(expression: name))
-        case .integer:
+        case .integer(let size):
+            guard case .literal(let literal) = size.min, case .integer(let min) = literal, min >= 0 else {
+                self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
+                    function: CustomFunctionCall(
+                        name: .toSigned,
+                        parameters: [
+                            Argument(argument: name),
+                            Argument(argument: .literal(value: .integer(value: ranged.encodedBits)))
+                        ]
+                    )
+                ))))
+                return
+            }
             self = .cast(operation: .stdLogicVector(expression: .functionCall(call: .custom(
                 function: CustomFunctionCall(
-                    name: .toSigned,
+                    name: .toUnsigned,
                     parameters: [
                         Argument(argument: name),
                         Argument(argument: .literal(value: .integer(value: ranged.encodedBits)))
                     ]
                 )
             ))))
+            return
         case .signed, .unsigned:
             self = .cast(operation: .stdLogicVector(expression: name))
         case .stdLogicVector(let size):
