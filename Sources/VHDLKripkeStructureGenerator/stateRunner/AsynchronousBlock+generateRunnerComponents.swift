@@ -169,7 +169,7 @@ extension AsynchronousBlock {
             }
         } + machineSignals.map {
             VariableMap(
-                lhs: .variable(reference: .variable(name: $0.name)),
+                lhs: .variable(reference: .variable(name: VariableName(rawValue: "\(preamble)$0.name")!)),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(
                         name: VariableName(rawValue: "current_\(preamble)\($0.name.rawValue)")!
