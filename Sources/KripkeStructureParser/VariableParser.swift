@@ -252,8 +252,9 @@ extension String {
     ) where T: MachineVHDLRepresentable {
         let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
         guard numberOfAddresses == 1 else {
-            self = "uint32_t *data"
-            return
+            fatalError("Not supported!")
+            // self = "uint32_t *data"
+            // return
         }
         self = "uint32_t data"
     }
