@@ -35,11 +35,16 @@ let package = Package(
             ]
         ),
         .target(name: "VHDLKripkeStructureGeneratorProtocols", dependencies: ["VHDLParsing", "VHDLMachines"]),
+        .target(name: "Utilities", dependencies: ["VHDLMachines", "VHDLParsing"]),
+        .target(name: "KripkeStructureParser", dependencies: ["VHDLMachines", "VHDLParsing", "Utilities"]),
         .testTarget(
             name: "VHDLKripkeStructureGeneratorTests",
             dependencies: ["VHDLKripkeStructureGenerator", "VHDLMachines", "VHDLParsing", "Utilities"]
         ),
-        .target(name: "Utilities", dependencies: ["VHDLMachines", "VHDLParsing"]),
-        .testTarget(name: "UtilitiesTests", dependencies: ["Utilities", "VHDLMachines", "VHDLParsing"])
+        .testTarget(name: "UtilitiesTests", dependencies: ["Utilities", "VHDLMachines", "VHDLParsing"]),
+        .testTarget(
+            name: "KripkeStructureParserTests",
+            dependencies: ["KripkeStructureParser", "VHDLMachines", "VHDLParsing", "Utilities"]
+        )
     ]
 )
