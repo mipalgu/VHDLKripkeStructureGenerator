@@ -324,7 +324,8 @@ extension WhenCase {
         let encodedSize = state.encodedSize(in: representation)
         let ringletLastIndex = max(0, encodedSize - 1)
         let stateSize = representation.machine.numberOfStateBits
-        let dataBits = 32 - stateSize
+        // Every memory address has `stateRepresentation & '1'` at the end to indicate a valid ringlet.
+        let dataBits = 32 - stateSize - 1
         let nullBits = dataBits - (encodedSize - encodedSize / dataBits * dataBits)
         guard nullBits < 32 && nullBits >= 0 else {
             fatalError(
@@ -336,7 +337,9 @@ extension WhenCase {
         let stateEncoding = state.representation(in: representation)
         let delimiter = Expression.binary(operation: .concatenate(
             lhs: .literal(value: .vector(value: .bits(value: nullBitsEncoded))),
-            rhs: .literal(value: stateEncoding)
+            rhs: .binary(operation: .concatenate(
+                lhs: .literal(value: stateEncoding), rhs: .literal(value: .bit(value: .high))
+            ))
         ))
         let assignment: SynchronousBlock
         let elseBlock = SynchronousBlock.blocks(blocks: [
@@ -417,7 +420,9 @@ extension WhenCase {
                                     ))
                                 ))
                             )),
-                            rhs: .literal(value: stateEncoding)
+                            rhs: .binary(operation: .concatenate(
+                                lhs: .literal(value: stateEncoding), rhs: .literal(value: .bit(value: .high))
+                            ))
                         ))
                     )),
                     .statement(statement: .assignment(
