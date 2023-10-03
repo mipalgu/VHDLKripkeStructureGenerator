@@ -67,7 +67,7 @@ extension Record {
     ///   - state: The state to create the read snapshot for.
     ///   - representation: The machine that owns the state.
     @inlinable
-    init<T>(readSnapshotFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    public init<T>(readSnapshotFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let stateExternals = Set(state.externalVariables)
         let validExternals = machine.externalSignals.filter {
@@ -106,7 +106,7 @@ extension Record {
     ///   - state: The state to create the write snapshot for.
     ///   - representation: The machine that owns the state.
     @inlinable
-    init?<T>(writeSnapshotFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    public init?<T>(writeSnapshotFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         guard let stateType = representation.stateType else {
             return nil
         }
@@ -146,7 +146,7 @@ extension Record {
     /// Create the ringlet type for a state.
     /// - Parameter state: The state to create the ringlet for.
     @inlinable
-    init(ringletFor state: State) {
+    public init(ringletFor state: State) {
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .ringletType)!
         let preamble = "\(state.name.rawValue)_"
         let readSnapshot = VariableName(pre: preamble, name: .readSnapshotType)!

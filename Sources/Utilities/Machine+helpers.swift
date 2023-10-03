@@ -1,4 +1,4 @@
-// Type+encodedType.swift
+// Machine+helpers.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,61 +54,30 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-extension Type {
+/// Add helpers to machine.
+public extension Machine {
 
-    init?(encodedType: Type) {
-        guard case .signal(let type) = encodedType else {
-            return nil
-        }
-        self = .signal(type: SignalType(encodedType: type))
+    /// The number of state variables in this machine.
+    @inlinable var stateVariablesAmount: Int {
+        self.states.reduce(0) { $0 + $1.signals.count }
     }
 
-}
-
-extension SignalType {
-
-    @usableFromInline static let logicVector2 = SignalType.ranged(type: .stdLogicVector(
-        size: .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
-    ))
-
-    init(encodedType: SignalType) {
-        switch encodedType {
-        case .bit, .boolean:
-            self = .stdLogic
-        case .integer, .natural, .positive, .real:
-            self = SignalType.logicVector32
-        case .stdLogic, .stdULogic:
-            self = .logicVector2
-        case .ranged(let type):
-            self = .ranged(type: RangedType(encodedType: type))
-        }
-    }
-
-}
-
-extension RangedType {
-
-    init(encodedType: RangedType) {
-        switch encodedType {
-        case .bitVector(let size), .signed(let size), .unsigned(let size):
-            self = .stdLogicVector(size: size)
-        case .integer:
-            self = .stdLogicVector(
-                size: .downto(
-                    upper: .literal(value: .integer(value: max(0, encodedType.bits - 1))),
-                    lower: .literal(value: .integer(value: 0))
-                )
-            )
-        case .stdLogicVector(let size), .stdULogicVector(let size):
-            self = .stdLogicVector(
-                size: .downto(
-                    upper: .literal(value: .integer(value: max(0, size.size! * 2 - 1))),
-                    lower: .literal(value: .integer(value: 0))
-                )
-            )
-        }
+    /// A dictionary of all the state variables that exist within the machine. The `Key` of the dictionary is
+    /// the name of the State, with the `Value` representing an array of variables local to that State.
+    /// - Note: This dictionary only includes States with State variables; all States without State variables
+    /// are not included.
+    /// - Warning: This property does not check for duplicate state names within the machine. The behaviour
+    /// is undefined in this case.
+    @inlinable var stateVariables: [VariableName: [LocalSignal]] {
+        Dictionary(uniqueKeysWithValues: self.states.compactMap {
+            guard !$0.signals.isEmpty else {
+                return nil
+            }
+            return ($0.name, $0.signals)
+        })
     }
 
 }

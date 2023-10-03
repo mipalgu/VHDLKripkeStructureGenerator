@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -71,11 +72,11 @@ extension WhenCase {
             return nil
         }
         let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let startIndex = readSnapshot.encodedBits
-        let range = VectorSize.to(
-            lower: .literal(value: .integer(value: startIndex)),
-            upper: .literal(value: .integer(value: state.encodedSize(in: representation) - 1))
-        )
+        // let startIndex = readSnapshot.encodedBits
+        // let range = VectorSize.to(
+        //     lower: .literal(value: .integer(value: startIndex)),
+        //     upper: .literal(value: .integer(value: state.encodedSize(in: representation) - 1))
+        // )
         let readBits = readSnapshot.encodedBits
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         self.init(

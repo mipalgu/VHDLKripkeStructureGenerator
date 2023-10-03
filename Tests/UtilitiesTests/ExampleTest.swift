@@ -1,4 +1,4 @@
-// LocalSignal+definitions.swift
+// ExampleTest.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,49 +54,12 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Utilities
-import VHDLParsing
+import XCTest
 
-/// Add common signals.
-extension LocalSignal {
+final class ExampleTest: XCTestCase {
 
-    /// The `goalInternal` signal.
-    @usableFromInline static let goalInternal = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .goalInternal
-    )
-
-    /// The `internalState` signal.
-    @usableFromInline static let internalState = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .internalState
-    )
-
-    /// The `rst` signal.
-    @usableFromInline static let rst = LocalSignal(
-        type: .stdLogic,
-        name: .rst,
-        defaultValue: .literal(value: .bit(value: .low))
-    )
-
-    /// the `setInternalSignals` signal.
-    @usableFromInline static let setInternalSignals = LocalSignal(
-        type: .stdLogic,
-        name: .setInternalSignals,
-        defaultValue: .literal(value: .bit(value: .low))
-    )
-
-    /// The `stateTracker` signal.
-    @usableFromInline static let stateTracker = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .stateTracker,
-        defaultValue: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .low]))))
-    )
+    func testTrue() {
+        XCTAssertTrue(true)
+    }
 
 }

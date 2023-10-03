@@ -30,12 +30,16 @@ let package = Package(
         // depends on.
         .target(
             name: "VHDLKripkeStructureGenerator",
-            dependencies: ["VHDLMachines", "VHDLParsing", "VHDLKripkeStructureGeneratorProtocols"]
+            dependencies: [
+                "VHDLMachines", "VHDLParsing", "VHDLKripkeStructureGeneratorProtocols", "Utilities"
+            ]
         ),
         .target(name: "VHDLKripkeStructureGeneratorProtocols", dependencies: ["VHDLParsing", "VHDLMachines"]),
         .testTarget(
             name: "VHDLKripkeStructureGeneratorTests",
-            dependencies: ["VHDLKripkeStructureGenerator", "VHDLMachines", "VHDLParsing"]
-        )
+            dependencies: ["VHDLKripkeStructureGenerator", "VHDLMachines", "VHDLParsing", "Utilities"]
+        ),
+        .target(name: "Utilities", dependencies: ["VHDLMachines", "VHDLParsing"]),
+        .testTarget(name: "UtilitiesTests", dependencies: ["Utilities", "VHDLMachines", "VHDLParsing"])
     ]
 )

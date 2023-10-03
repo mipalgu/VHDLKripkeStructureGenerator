@@ -1,4 +1,4 @@
-// LocalSignal+definitions.swift
+// Type+encodedType.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,49 +54,68 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Utilities
 import VHDLParsing
 
-/// Add common signals.
-extension LocalSignal {
+extension Type {
 
-    /// The `goalInternal` signal.
-    @usableFromInline static let goalInternal = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .goalInternal
-    )
+    @inlinable public var signalType: SignalType {
+        guard case .signal(let type) = self else {
+            fatalError("Cannot discern signal type of \(self)!")
+        }
+        return type
+    }
 
-    /// The `internalState` signal.
-    @usableFromInline static let internalState = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .internalState
-    )
+    public init?(encodedType: Type) {
+        guard case .signal(let type) = encodedType else {
+            return nil
+        }
+        self = .signal(type: SignalType(encodedType: type))
+    }
 
-    /// The `rst` signal.
-    @usableFromInline static let rst = LocalSignal(
-        type: .stdLogic,
-        name: .rst,
-        defaultValue: .literal(value: .bit(value: .low))
-    )
+}
 
-    /// the `setInternalSignals` signal.
-    @usableFromInline static let setInternalSignals = LocalSignal(
-        type: .stdLogic,
-        name: .setInternalSignals,
-        defaultValue: .literal(value: .bit(value: .low))
-    )
+extension SignalType {
 
-    /// The `stateTracker` signal.
-    @usableFromInline static let stateTracker = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .stateTracker,
-        defaultValue: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .low]))))
-    )
+    public static let logicVector2 = SignalType.ranged(type: .stdLogicVector(
+        size: .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
+    ))
+
+    public init(encodedType: SignalType) {
+        switch encodedType {
+        case .bit, .boolean:
+            self = .stdLogic
+        case .integer, .natural, .positive, .real:
+            self = SignalType.logicVector32
+        case .stdLogic, .stdULogic:
+            self = .logicVector2
+        case .ranged(let type):
+            self = .ranged(type: RangedType(encodedType: type))
+        }
+    }
+
+}
+
+extension RangedType {
+
+    public init(encodedType: RangedType) {
+        switch encodedType {
+        case .bitVector(let size), .signed(let size), .unsigned(let size):
+            self = .stdLogicVector(size: size)
+        case .integer:
+            self = .stdLogicVector(
+                size: .downto(
+                    upper: .literal(value: .integer(value: max(0, encodedType.bits - 1))),
+                    lower: .literal(value: .integer(value: 0))
+                )
+            )
+        case .stdLogicVector(let size), .stdULogicVector(let size):
+            self = .stdLogicVector(
+                size: .downto(
+                    upper: .literal(value: .integer(value: max(0, size.size! * 2 - 1))),
+                    lower: .literal(value: .integer(value: 0))
+                )
+            )
+        }
+    }
 
 }

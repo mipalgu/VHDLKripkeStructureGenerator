@@ -1,4 +1,4 @@
-// SignalType+numberOfValues.swift
+// Array+helpers.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,69 +54,30 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
 import VHDLParsing
 
-/// Add state calculations.
-extension SignalType {
+/// Add concatenated helper property.
+public extension Array where Element == Expression {
 
-    /// The number of possible values represented by this type.
-    @inlinable var numberOfValues: Int {
-        switch self {
-        case .bit, .boolean:
-            return 2
-        case .integer, .natural, .positive, .real:
-            return Int(UInt32.max) + 1
-        case .stdLogic, .stdULogic:
-            return 3
-        case .ranged(let type):
-            return type.numberOfValues
-        }
+    /// Concatenate expressions together.
+    @inlinable var concatenated: Expression {
+        self.joined { .binary(operation: .concatenate(lhs: $0, rhs: $1)) }
     }
-
-    // @inlinable var numberOfUnresolvedValues: Int {
-    //     switch self {
-    //     case .bit, .boolean, .integer, .natural, .positive, .real:
-    //         return self.numberOfValues
-    //     case .stdLogic, .stdULogic:
-    //         return 9
-    //     case .ranged(let type):
-    //         return type.numberOfUnresolvedValues
-    //     }
-    // }
 
 }
 
-/// Add state calculations.
-extension RangedType {
+/// Create joined method.
+public extension Array {
 
-    // swiftlint:disable force_unwrapping
-
-    /// The number of possible values represented by this type.
-    @inlinable var numberOfValues: Int {
-        let size = self.size.size!
-        switch self {
-        case .bitVector, .signed, .unsigned:
-            return Int(ceil(pow(Double(SignalType.bit.numberOfValues), Double(size))))
-        case .integer:
-            return size
-        case .stdLogicVector, .stdULogicVector:
-            return Int(ceil(pow(Double(SignalType.stdLogic.numberOfValues), Double(size))))
+    /// Join elements of an array together using a reducing function.
+    /// - Parameter fn: The function that reduces two elements into 1.
+    /// - Returns: The joined element.
+    @inlinable
+    func joined(fn: (Element, Element) -> Element) -> Element {
+        guard let first = self.first else {
+            fatalError("Failed to join empty array!")
         }
+        return self.dropFirst().reduce(first) { fn($0, $1) }
     }
-
-    /// The number of possible values represented by this type.
-    // @inlinable var numberOfUnresolvedValues: Int {
-    //     switch self {
-    //     case .bitVector, .signed, .unsigned, .integer:
-    //         return self.numberOfValues
-    //     case .stdLogicVector, .stdULogicVector:
-    //         return Int(
-    //             ceil(pow(Double(SignalType.stdLogic.numberOfUnresolvedValues), Double(self.size.size!)))
-    //         )
-    //     }
-    // }
-
-    // swiftlint:enable force_unwrapping
 
 }

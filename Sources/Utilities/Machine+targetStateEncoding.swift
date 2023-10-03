@@ -57,7 +57,7 @@
 import VHDLMachines
 import VHDLParsing
 
-extension Machine {
+public extension Machine {
 
     /// The number of values represented by the pending state encoding.
     @inlinable var numberOfPendingStates: Int {

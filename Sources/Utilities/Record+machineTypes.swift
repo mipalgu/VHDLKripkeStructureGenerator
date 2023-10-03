@@ -65,7 +65,7 @@ extension Record {
     /// Create the `ReadSnapshot_t` record for a machine.
     /// - Parameter representation: The representation to create the record for.
     @inlinable
-    init?<T>(readSnapshotFor representation: T) where T: MachineVHDLRepresentable {
+    public init?<T>(readSnapshotFor representation: T) where T: MachineVHDLRepresentable {
         guard let stateType = representation.stateType else {
             return nil
         }
@@ -105,7 +105,7 @@ extension Record {
     /// Create the `WriteSnapshot_t` record for a machine.
     /// - Parameter representation: The representation to create the record for.
     @inlinable
-    init?<T>(writeSnapshotFor representation: T) where T: MachineVHDLRepresentable {
+    public init?<T>(writeSnapshotFor representation: T) where T: MachineVHDLRepresentable {
         guard let stateType = representation.stateType else {
             return nil
         }
@@ -140,7 +140,7 @@ extension Record {
     /// Create the `TotalSnapshot_t` record for a machine.
     /// - Parameter representation: The representation to create the record for.
     @inlinable
-    init?<T>(totalSnapshotFor representation: T) where T: MachineVHDLRepresentable {
+    public init?<T>(totalSnapshotFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let stateType = representation.stateType, let internalStateType = representation.internalStateType
         else {
@@ -212,7 +212,7 @@ extension Record {
 extension MachineVHDLRepresentable {
 
     /// Get the type of the `internalState` variable.
-    @inlinable var internalStateType: Type? {
+    @inlinable public var internalStateType: Type? {
         self.architectureHead.statements.compactMap {
             guard
                 case .definition(let def) = $0, case .signal(let signal) = def, signal.name == .internalState
@@ -235,7 +235,7 @@ extension Array where Element == RecordTypeDeclaration {
     ///   - internalStateType: The type of the internal state encoding.
     /// - Returns: The control signals.
     @inlinable
-    static func snapshotControlSignals(stateType: Type, internalStateType: Type) -> [RecordTypeDeclaration] {
+    public static func snapshotControlSignals(stateType: Type, internalStateType: Type) -> [RecordTypeDeclaration] {
         [
             RecordTypeDeclaration(name: .currentStateIn, type: stateType),
             RecordTypeDeclaration(name: .currentStateOut, type: stateType),

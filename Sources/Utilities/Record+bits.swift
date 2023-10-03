@@ -1,4 +1,4 @@
-// SignalType+constants.swift
+// Record+bits.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,28 +56,55 @@
 
 import VHDLParsing
 
-/// Add constants.
-extension SignalType {
+/// Add bit claculation helpers.
+extension Record {
 
-    /// A 32-bit `std_logic_vector`.
-    @usableFromInline static let logicVector32 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 31)),
-        lower: .literal(value: .integer(value: 0))
-    )))
+    /// The minimum number of bits required to represent the entire record.
+    @inlinable public var bits: Int {
+        self.types.reduce(0) {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Failed to find size of type \($1.type)!")
+            }
+            return $0 + type.bits
+        }
+    }
 
-    /// A 4-bit `std_logic_vector` type.
-    @usableFromInline static let logicVector4 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 3)), lower: .literal(value: .integer(value: 0))
-    )))
+    /// The minimum number of bits required to represent the entire encoded version of the record.
+    @inlinable public var encodedBits: Int {
+        self.types.reduce(0) { $0 + $1.type.signalType.encodedBits }
+    }
 
-    /// A 8-bit `std_logic_vector` type.
-    @usableFromInline static let logicVector8 = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 7)), lower: .literal(value: .integer(value: 0))
-    )))
-
-    /// A 32-bit unsigned type.
-    @usableFromInline static let unsigned32bit = SignalType.ranged(type: .unsigned(size: .downto(
-        upper: .literal(value: .integer(value: 31)), lower: .literal(value: .integer(value: 0))
-    )))
+    public func bitsIndex(
+        for name: VariableName, isDownto: Bool = false, adding value: Int = 0
+    ) -> VectorIndex? {
+        var startIndex = (isDownto ? max(0, self.bits - 1) : 0) + value
+        return self.types.compactMap {
+            let numberOfBits = $0.type.bits
+            defer {
+                if isDownto {
+                    startIndex -= numberOfBits
+                } else {
+                    startIndex += numberOfBits
+                }
+            }
+            guard $0.name == name else {
+                return nil
+            }
+            guard numberOfBits <= 1 else {
+                guard !isDownto else {
+                    return VectorIndex.range(value: .downto(
+                        upper: .literal(value: .integer(value: startIndex)),
+                        lower: .literal(value: .integer(value: startIndex - numberOfBits + 1))
+                    ))
+                }
+                return VectorIndex.range(value: .to(
+                    lower: .literal(value: .integer(value: startIndex)),
+                    upper: .literal(value: .integer(value: startIndex + numberOfBits - 1))
+                ))
+            }
+            return .index(value: .literal(value: .integer(value: startIndex)))
+        }
+        .first
+    }
 
 }

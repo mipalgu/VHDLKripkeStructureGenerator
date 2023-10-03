@@ -1,4 +1,4 @@
-// Machine+stateEncoding.swift
+// SignalType+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,27 +54,30 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-/// Add state encoding helpers.
-extension Machine {
+/// Add constants.
+extension SignalType {
 
-    /// The number of bits required to represent every state in this machine.
-    @inlinable var numberOfStateBits: Int {
-        let numberOfStates = max(self.states.count, 2)
-        guard let numberOfBits = BitLiteral.bitsRequired(for: numberOfStates - 1) else {
-            fatalError("Incorrect number of states \(self.states.count)")
-        }
-        return numberOfBits
-    }
+    /// A 32-bit `std_logic_vector`.
+    public static let logicVector32 = SignalType.ranged(type: .stdLogicVector(size: .downto(
+        upper: .literal(value: .integer(value: 31)),
+        lower: .literal(value: .integer(value: 0))
+    )))
 
-    /// The type for representing a state.
-    @inlinable var statesEncoding: SignalType {
-        .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: numberOfStateBits - 1)),
-            lower: .literal(value: .integer(value: 0))
-        )))
-    }
+    /// A 4-bit `std_logic_vector` type.
+    public static let logicVector4 = SignalType.ranged(type: .stdLogicVector(size: .downto(
+        upper: .literal(value: .integer(value: 3)), lower: .literal(value: .integer(value: 0))
+    )))
+
+    /// A 8-bit `std_logic_vector` type.
+    public static let logicVector8 = SignalType.ranged(type: .stdLogicVector(size: .downto(
+        upper: .literal(value: .integer(value: 7)), lower: .literal(value: .integer(value: 0))
+    )))
+
+    /// A 32-bit unsigned type.
+    public static let unsigned32bit = SignalType.ranged(type: .unsigned(size: .downto(
+        upper: .literal(value: .integer(value: 31)), lower: .literal(value: .integer(value: 0))
+    )))
 
 }

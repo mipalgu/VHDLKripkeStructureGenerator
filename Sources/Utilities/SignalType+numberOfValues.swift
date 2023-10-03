@@ -1,4 +1,4 @@
-// State+representation.swift
+// SignalType+numberOfValues.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,25 +54,69 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
+import Foundation
 import VHDLParsing
 
-/// Add state representation.
-extension State {
+/// Add state calculations.
+extension SignalType {
 
-    /// The encoded representation of this state.
-    /// - Parameter representation: The machine representation to use.
-    /// - Returns: The encoded value representing this state.
-    @inlinable
-    func representation<T>(in representation: T) -> SignalLiteral where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        guard let stateIndex = machine.states.firstIndex(of: self) else {
-            fatalError("Cannot find state \(self) in machine \(machine.name.rawValue)!")
+    /// The number of possible values represented by this type.
+    @inlinable public var numberOfValues: Int {
+        switch self {
+        case .bit, .boolean:
+            return 2
+        case .integer, .natural, .positive, .real:
+            return Int(UInt32.max) + 1
+        case .stdLogic, .stdULogic:
+            return 3
+        case .ranged(let type):
+            return type.numberOfValues
         }
-        let bitRepresentation = BitLiteral.bitVersion(
-            of: stateIndex, bitsRequired: machine.numberOfStateBits
-        )
-        return .vector(value: .bits(value: BitVector(values: bitRepresentation)))
     }
+
+    // @inlinable var numberOfUnresolvedValues: Int {
+    //     switch self {
+    //     case .bit, .boolean, .integer, .natural, .positive, .real:
+    //         return self.numberOfValues
+    //     case .stdLogic, .stdULogic:
+    //         return 9
+    //     case .ranged(let type):
+    //         return type.numberOfUnresolvedValues
+    //     }
+    // }
+
+}
+
+/// Add state calculations.
+extension RangedType {
+
+    // swiftlint:disable force_unwrapping
+
+    /// The number of possible values represented by this type.
+    @inlinable public var numberOfValues: Int {
+        let size = self.size.size!
+        switch self {
+        case .bitVector, .signed, .unsigned:
+            return Int(ceil(pow(Double(SignalType.bit.numberOfValues), Double(size))))
+        case .integer:
+            return size
+        case .stdLogicVector, .stdULogicVector:
+            return Int(ceil(pow(Double(SignalType.stdLogic.numberOfValues), Double(size))))
+        }
+    }
+
+    /// The number of possible values represented by this type.
+    // @inlinable var numberOfUnresolvedValues: Int {
+    //     switch self {
+    //     case .bitVector, .signed, .unsigned, .integer:
+    //         return self.numberOfValues
+    //     case .stdLogicVector, .stdULogicVector:
+    //         return Int(
+    //             ceil(pow(Double(SignalType.stdLogic.numberOfUnresolvedValues), Double(self.size.size!)))
+    //         )
+    //     }
+    // }
+
+    // swiftlint:enable force_unwrapping
 
 }

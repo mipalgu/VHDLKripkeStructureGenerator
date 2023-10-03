@@ -1,4 +1,4 @@
-// LocalSignal+definitions.swift
+// Machine+stateEncoding.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,49 +54,27 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Utilities
+import VHDLMachines
 import VHDLParsing
 
-/// Add common signals.
-extension LocalSignal {
+/// Add state encoding helpers.
+extension Machine {
 
-    /// The `goalInternal` signal.
-    @usableFromInline static let goalInternal = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .goalInternal
-    )
+    /// The number of bits required to represent every state in this machine.
+    @inlinable public var numberOfStateBits: Int {
+        let numberOfStates = max(self.states.count, 2)
+        guard let numberOfBits = BitLiteral.bitsRequired(for: numberOfStates - 1) else {
+            fatalError("Incorrect number of states \(self.states.count)")
+        }
+        return numberOfBits
+    }
 
-    /// The `internalState` signal.
-    @usableFromInline static let internalState = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .internalState
-    )
-
-    /// The `rst` signal.
-    @usableFromInline static let rst = LocalSignal(
-        type: .stdLogic,
-        name: .rst,
-        defaultValue: .literal(value: .bit(value: .low))
-    )
-
-    /// the `setInternalSignals` signal.
-    @usableFromInline static let setInternalSignals = LocalSignal(
-        type: .stdLogic,
-        name: .setInternalSignals,
-        defaultValue: .literal(value: .bit(value: .low))
-    )
-
-    /// The `stateTracker` signal.
-    @usableFromInline static let stateTracker = LocalSignal(
-        type: .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
-        ))),
-        name: .stateTracker,
-        defaultValue: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .low]))))
-    )
+    /// The type for representing a state.
+    @inlinable public var statesEncoding: SignalType {
+        .ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: numberOfStateBits - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+    }
 
 }

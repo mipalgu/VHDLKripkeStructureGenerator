@@ -59,7 +59,7 @@ import VHDLParsing
 extension SignalType {
 
     @inlinable
-    func conversion(value: Expression) -> Expression {
+    public func conversion(value: Expression) -> Expression {
         switch self {
         case .bit, .stdULogic:
             return .cast(operation: .stdLogic(expression: value))
@@ -96,7 +96,7 @@ extension SignalType {
         }
     }
 
-    func conversion(value: Expression, to type: SignalType) -> Expression {
+    public func conversion(value: Expression, to type: SignalType) -> Expression {
         guard case .ranged(let rangedType) = self else {
             guard self == .stdLogic else {
                 fatalError("Unsupported conversion from \(self) to \(type)!")
@@ -128,7 +128,7 @@ extension SignalType {
 extension RangedType {
 
     @inlinable
-    func conversion(value: Expression) -> Expression {
+    public func conversion(value: Expression) -> Expression {
         switch self {
         case .bitVector, .stdULogicVector, .signed, .unsigned:
             return .cast(operation: .stdLogicVector(expression: value))
@@ -158,7 +158,7 @@ extension RangedType {
         }
     }
 
-    func conversion(value: Expression, to type: SignalType) -> Expression {
+    public func conversion(value: Expression, to type: SignalType) -> Expression {
         guard case .stdLogicVector = self else {
             fatalError("Unsupported conversion from \(self) to \(type)!")
         }

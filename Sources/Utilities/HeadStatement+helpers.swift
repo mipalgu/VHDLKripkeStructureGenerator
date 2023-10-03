@@ -1,4 +1,4 @@
-// Machine+helpers.swift
+// HeadStatement+helpers.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,30 +54,15 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-/// Add helpers to machine.
-extension Machine {
+public extension HeadStatement {
 
-    /// The number of state variables in this machine.
-    @inlinable var stateVariablesAmount: Int {
-        self.states.reduce(0) { $0 + $1.signals.count }
-    }
-
-    /// A dictionary of all the state variables that exist within the machine. The `Key` of the dictionary is
-    /// the name of the State, with the `Value` representing an array of variables local to that State.
-    /// - Note: This dictionary only includes States with State variables; all States without State variables
-    /// are not included.
-    /// - Warning: This property does not check for duplicate state names within the machine. The behaviour
-    /// is undefined in this case.
-    @inlinable var stateVariables: [VariableName: [LocalSignal]] {
-        Dictionary(uniqueKeysWithValues: self.states.compactMap {
-            guard !$0.signals.isEmpty else {
-                return nil
-            }
-            return ($0.name, $0.signals)
-        })
+    /// Create an array definition.
+    /// - Parameter array: The array that is defined.
+    @inlinable
+    init(array: ArrayDefinition) {
+        self = .definition(value: .type(value: .array(value: array)))
     }
 
 }

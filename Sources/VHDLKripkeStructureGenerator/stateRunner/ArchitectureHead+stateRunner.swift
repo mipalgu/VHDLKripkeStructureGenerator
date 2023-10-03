@@ -55,6 +55,7 @@
 // 
 
 import Foundation
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -148,13 +149,6 @@ extension HeadStatement {
     @usableFromInline static let reset = HeadStatement.definition(value: .signal(value: LocalSignal(
         type: .stdLogic, name: .reset, defaultValue: .literal(value: .bit(value: .low))
     )))
-
-    /// Create an array definition.
-    /// - Parameter array: The array that is defined.
-    @inlinable
-    init(array: ArrayDefinition) {
-        self = .definition(value: .type(value: .array(value: array)))
-    }
 
     // swiftlint:disable force_unwrapping
 

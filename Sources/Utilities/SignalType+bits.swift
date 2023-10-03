@@ -62,7 +62,7 @@ import VHDLParsing
 extension Type {
 
     /// The number of bits required to represent this type.
-    @inlinable var bits: Int {
+    @inlinable public var bits: Int {
         switch self {
         case .signal(let type):
             return type.bits
@@ -77,7 +77,7 @@ extension Type {
 extension SignalType {
 
     /// Calculate the number of bits required to represent this type.
-    @inlinable var bits: Int {
+    @inlinable public var bits: Int {
         switch self {
         case .bit, .boolean, .stdLogic, .stdULogic:
             return 1
@@ -90,7 +90,7 @@ extension SignalType {
 
     /// The number of bits to encode the different values of this type. This will include an additional bit
     /// for logic types as they represent tri-state signals.
-    @inlinable var encodedBits: Int {
+    @inlinable public var encodedBits: Int {
         switch self {
         case .bit, .boolean, .integer, .natural, .positive, .real:
             return self.bits
@@ -109,7 +109,7 @@ extension RangedType {
     // swiftlint:disable force_unwrapping
 
     /// Calculate the number of bits required to represent this type.
-    @inlinable var bits: Int {
+    @inlinable public var bits: Int {
         switch self {
         case .bitVector(let size), .signed(let size), .unsigned(let size):
             return size.size!
@@ -134,7 +134,7 @@ extension RangedType {
 
     /// The number of bits to encode the different values of this type. This will include an additional bit
     /// for logic types as they represent tri-state signals.
-    @inlinable var encodedBits: Int {
+    @inlinable public var encodedBits: Int {
         switch self {
         case .bitVector, .signed, .unsigned, .integer:
             return self.bits
@@ -152,7 +152,7 @@ extension Int {
 
     /// Calculate the number of bits required to represent self. This is the minimum reqired bits to contain
     /// the value using an extra sign bit for negative numbers.
-    @inlinable var bits: Int {
+    @inlinable public var bits: Int {
         // let calculation = log2(abs(Double(self)))
         // if ceil(calculation) == calculation {
         //     if self < 0 {
@@ -177,7 +177,7 @@ extension Int {
     /// - Parameter other: The other value to compare to.
     /// - Returns: The maximum of self and other.
     @inlinable
-    func max(other: Int) -> Int {
+    public func max(other: Int) -> Int {
         self > other ? self : other
     }
 

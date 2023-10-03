@@ -65,7 +65,7 @@ extension State {
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The number of bits required to encode a ringlet for this state.
     @inlinable
-    func encodedSize<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
+    public func encodedSize<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
         guard let write = Record(writeSnapshotFor: self, in: representation) else {
             fatalError("Failed to get state encoding for \(self.name)!")
         }
@@ -80,7 +80,7 @@ extension State {
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The type of the encoded ringlet for this state.
     @inlinable
-    func encodedType<T>(in representation: T) -> SignalType where T: MachineVHDLRepresentable {
+    public func encodedType<T>(in representation: T) -> SignalType where T: MachineVHDLRepresentable {
         SignalType.ranged(type: .stdLogicVector(size: .to(
             lower: .literal(value: .integer(value: 0)),
             upper: .literal(value: .integer(value: self.encodedSize(in: representation) - 1))
@@ -91,7 +91,7 @@ extension State {
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The BRAM size.
     @inlinable
-    func memoryStorage<T>(
+    public func memoryStorage<T>(
         for state: State, in representation: T
     ) -> VectorSize where T: MachineVHDLRepresentable {
         .to(
@@ -106,7 +106,7 @@ extension State {
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The number of memory addresses.
     @inlinable
-    func numberOfMemoryAddresses<T>(
+    public func numberOfMemoryAddresses<T>(
         for state: State, in representation: T
     ) -> Int where T: MachineVHDLRepresentable {
         let numberOfValues: Int = Record(readSnapshotFor: state, in: representation).types.reduce(1) {

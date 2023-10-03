@@ -1,4 +1,4 @@
-// Record+bits.swift
+// MachineVHDLRepresentable+helpers.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,53 +54,60 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-/// Add bit claculation helpers.
-extension Record {
+public extension MachineVHDLRepresentable {
 
-    /// The minimum number of bits required to represent the entire record.
-    @inlinable var bits: Int {
-        self.types.reduce(0) {
-            guard case .signal(let type) = $1.type else {
-                fatalError("Failed to find size of type \($1.type)!")
+    /// Find all constants in the architecture head.
+    @inlinable var allConstants: [HeadStatement] {
+        self.architectureHead.statements.filter {
+            guard case .definition(let def) = $0, case .constant = def else {
+                return false
             }
-            return $0 + type.bits
+            return true
         }
     }
 
-    /// The minimum number of bits required to represent the entire encoded version of the record.
-    @inlinable var encodedBits: Int {
-        self.types.reduce(0) { $0 + $1.type.signalType.encodedBits }
+    /// Returns all the external variables in the representation.
+    @inlinable var externalVariables: [PortSignal] {
+        self.entity.port.signals.filter {
+            $0.name.rawValue.lowercased().hasPrefix("external_")
+        }
     }
 
-    func bitsIndex(for name: VariableName, isDownto: Bool = false, adding value: Int = 0) -> VectorIndex? {
-        var startIndex = (isDownto ? max(0, self.bits - 1) : 0) + value
-        return self.types.compactMap {
-            let numberOfBits = $0.type.bits
-            defer {
-                if isDownto {
-                    startIndex -= numberOfBits
-                } else {
-                    startIndex += numberOfBits
+    /// Get type of state array.
+    @inlinable var stateType: SignalType? {
+        let currentStateSignal: LocalSignal? = self.architectureHead.statements.lazy
+            .compactMap { (statement: HeadStatement) -> LocalSignal? in
+                guard
+                    case .definition(let def) = statement,
+                    case .signal(let signal) = def
+                else {
+                    return nil
                 }
+                return signal
             }
-            guard $0.name == name else {
+            .first { $0.name == .currentState }
+        guard case .signal(let type) = currentStateSignal?.type else {
+            return nil
+        }
+        return type
+    }
+
+    /// The number of bits in the state encoding.
+    @inlinable var numberOfStateBits: Int? {
+        self.architectureHead.statements.lazy.compactMap {
+            guard
+                case .definition(let def) = $0,
+                case .signal(let signal) = def,
+                signal.name == .currentState,
+                case .signal(let type) = signal.type,
+                case .ranged(let vec) = type
+            else {
                 return nil
             }
-            guard numberOfBits <= 1 else {
-                guard !isDownto else {
-                    return VectorIndex.range(value: .downto(
-                        upper: .literal(value: .integer(value: startIndex)),
-                        lower: .literal(value: .integer(value: startIndex - numberOfBits + 1))
-                    ))
-                }
-                return VectorIndex.range(value: .to(
-                    lower: .literal(value: .integer(value: startIndex)),
-                    upper: .literal(value: .integer(value: startIndex + numberOfBits - 1))
-                ))
-            }
-            return .index(value: .literal(value: .integer(value: startIndex)))
+            return vec.size.size
         }
         .first
     }
