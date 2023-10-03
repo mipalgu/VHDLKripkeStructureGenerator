@@ -66,7 +66,10 @@ extension String {
             self.init(value: value.pointee)
         }
 
-        init?(value: UInt8) {
+        init?(value: UInt8, numberOfBits: Int = 2) {
+            guard numberOfBits == 2 else {
+                return nil
+            }
             switch value {
             case 0:
                 self = .low
@@ -119,7 +122,10 @@ extension String {
             self.init(value: value.pointee)
         }
 
-        init?(value: UInt8) {
+        init?(value: UInt8, numberOfBits: Int = 1) {
+            guard numberOfBits == 1 else {
+                return nil
+            }
             switch value {
             case 0:
                 self = .low
@@ -221,6 +227,83 @@ extension String {
         }
 
     }
+
+    extension Bool {
+    
+        init?(value: Bool, numberOfBits: Int = 1) {
+            guard numberOfBits == 1 else {
+                return nil
+            }
+            self = value
+        }
+
+    }
+
+    extension Int {
+    
+        init?(value: Int32, numberOfBits: Int = 32) {
+            self.init(bigEndian: Int(value))
+        }
+
+        init?(value: Int16, numberOfBits: Int = 32) {
+            self.init(bigEndian: Int(value))
+        }
+
+        init?(value: Int8, numberOfBits: Int = 32) {
+            self.init(bigEndian: Int(value))
+        }
+
+        init?(value: UInt32, numberOfBits: Int = 32) {
+            self.init(bigEndian: Int(value))
+        }
+
+        init?(value: UInt16, numberOfBits: Int = 32) {
+            self.init(bigEndian: Int(value))
+        }
+
+        init?(value: UInt8, numberOfBits: Int = 32) {
+            self.init(bigEndian: Int(value))
+        }
+
+    }
+
+    extension UInt {
+    
+        init?(value: Int32, numberOfBits: Int = 32) {
+            guard value >= 0 else {
+                return nil
+            }
+            self.init(bigEndian: UInt(value))
+        }
+
+        init?(value: Int16, numberOfBits: Int = 32) {
+            guard value >= 0 else {
+                return nil
+            }
+            self.init(bigEndian: UInt(value))
+        }
+
+        init?(value: Int8, numberOfBits: Int = 32) {
+            guard value >= 0 else {
+                return nil
+            }
+            self.init(bigEndian: UInt(value) = 32)
+        }
+
+        init?(value: UInt32, numberOfBits: Int = 32) {
+            self.init(bigEndian: UInt(value))
+        }
+
+        init?(value: UInt16, numberOfBits: Int = 32) {
+            self.init(bigEndian: UInt(value))
+        }
+
+        init?(value: UInt8, numberOfBits: Int = 32) {
+            self.init(bigEndian: UInt(value))
+        }
+
+    }
+
     """
 
 }

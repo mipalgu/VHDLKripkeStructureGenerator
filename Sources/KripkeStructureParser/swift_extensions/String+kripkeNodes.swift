@@ -132,7 +132,7 @@ extension String {
             let functionName = String(
                 stateVariableAccessNameFor: state,
                 in: representation,
-                variable: NodeVariable(data: $0, type: .read)
+                variable: NodeVariable(data: $0, type: .write)
             )
             return "let \($0.name.rawValue)Value = \(functionName)(value)"
         }
