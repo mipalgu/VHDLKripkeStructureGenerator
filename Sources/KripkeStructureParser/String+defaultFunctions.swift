@@ -69,7 +69,7 @@ extension String {
         self = """
         bool \(name)_isValid(uint32_t data)
         {
-            return (data & x00000001) > 0;
+            return (data & 0x00000001) > 0;
         }
         """
     }
