@@ -68,13 +68,19 @@ public struct PackageGenerator {
     public func swiftPackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let name = machine.name.rawValue
-        let cFileRawData = (["#include \"includes/\(name)/\(name).h\""] + machine.states.map {
+        let cFileRawData = (["#include \"include/\(name)/\(name).h\""] + machine.states.map {
             VariableParser(state: $0, in: representation).functions.values.joined(separator: "\n\n")
         })
         .joined(separator: "\n\n")
-        let cHeaderRawData = machine.states.map {
-            VariableParser(state: $0, in: representation).definitions.values.joined(separator: "\n\n")
-        }
+        let cHeaderRawData = (
+            [
+                "#include <stdint.h>\n#include <stdbool.h>\n#ifndef \(name)_H\n#define \(name)_H\n" +
+                "#ifdef __cplusplus\nextern \"C\" {\n#endif"
+            ] +
+            machine.states.map {
+                VariableParser(state: $0, in: representation).definitions.values.joined(separator: "\n\n")
+            } + ["#ifdef __cplusplus\n}#endif\n#endif // \(name)_H"]
+        )
         .joined(separator: "\n\n")
         guard
             let cFileData = cFileRawData.data(using: .utf8),
@@ -148,6 +154,7 @@ extension String {
                 )
             ]
         )
+
         """
     }
 
