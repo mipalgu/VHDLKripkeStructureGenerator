@@ -251,7 +251,7 @@ extension String {
         stateVariableAccessParametersFor state: State, in representation: T
     ) where T: MachineVHDLRepresentable {
         let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
-        guard numberOfAddresses > 1 else {
+        guard numberOfAddresses == 1 else {
             self = "uint32_t *data"
             return
         }
