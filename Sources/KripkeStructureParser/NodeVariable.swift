@@ -1,4 +1,4 @@
-// ExampleTest.swift
+// NodeVariable.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,12 +54,12 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import XCTest
+import VHDLParsing
 
-final class ExampleTest: XCTestCase {
+struct NodeVariable: Equatable, Hashable, Sendable, Codable {
 
-    func testTrue() {
-        XCTAssertTrue(true)
-    }
+    let data: RecordTypeDeclaration
+
+    let type: NodeType
 
 }

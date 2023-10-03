@@ -1,4 +1,4 @@
-// Record+encodedTypes.swift
+// TestNames.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,31 +54,43 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-extension Record {
+/// Adds common test variable names.
+extension VariableName {
 
-    var encodedTypes: [(RecordTypeDeclaration, Type)] {
-        self.types.map { ($0, Type(encodedType: $0.type)!)}
-    }
+    // swiftlint:disable force_unwrapping
 
-    var encodedIndexes: [(RecordTypeDeclaration, VectorIndex)] {
-        var currentIndex = 0
-        return self.types.map {
-            let numberOfBits = $0.type.signalType.encodedBits
-            let index: VectorIndex
-            if numberOfBits == 1 {
-                index = VectorIndex.index(value: .literal(value: .integer(value: currentIndex)))
-            } else {
-                index = VectorIndex.range(value: .to(
-                    lower: .literal(value: .integer(value: currentIndex)),
-                    upper: .literal(value: .integer(value: currentIndex + numberOfBits - 1))
-                ))
-            }
-            currentIndex += numberOfBits
-            return ($0, index)
-        }
-    }
+    /// The `Behavioral` name for an architecture.
+    static let behavioral = VariableName(rawValue: "Behavioral")!
+
+    /// A variable `initialX`.
+    static let initialX = VariableName(rawValue: "initialX")!
+
+    /// A variable `initialY`.
+    static let initialY = VariableName(rawValue: "initialY")!
+
+    /// The name of `Machine1`.
+    static let machine1 = VariableName(rawValue: "Machine1")!
+
+    /// A variable name `NullRepresentation`.
+    static let nullRepresentation = VariableName(rawValue: "NullRepresentation")!
+
+    /// A variable `S0`.
+    static let s0 = VariableName(rawValue: "S0")!
+
+    /// A variable `suspendedX`.
+    static let suspendedX = VariableName(rawValue: "suspendedX")!
+
+    /// A variable `x`.
+    static let x = VariableName(rawValue: "x")!
+
+    /// A variable `y`
+    static let y = VariableName(rawValue: "y")!
+
+    /// A variable `y2`
+    static let y2 = VariableName(rawValue: "y2")!
+
+    // swiftlint:enable force_unwrapping
 
 }
