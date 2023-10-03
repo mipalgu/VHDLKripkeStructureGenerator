@@ -324,11 +324,12 @@ extension WhenCase {
         let encodedSize = state.encodedSize(in: representation)
         let ringletLastIndex = max(0, encodedSize - 1)
         let stateSize = representation.machine.numberOfStateBits
-        let nullBits = 32 - (encodedSize - encodedSize / 32 * 32) - stateSize
+        let dataBits = 32 - stateSize
+        let nullBits = dataBits - (encodedSize - encodedSize / dataBits * dataBits)
         guard nullBits < 32 && nullBits >= 0 else {
             fatalError(
                 "Null bits calculation incorrect. Got \(nullBits) bits with " +
-                "\(encodedSize) encoded size, and \(stateSize) stateSize."
+                "\(encodedSize) encoded size, \(dataBits) available data size, and \(stateSize) stateSize."
             )
         }
         let nullBitsEncoded = BitVector(values: [BitLiteral](repeating: .low, count: nullBits))
