@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import Utilities
 import VHDLMachines
 import VHDLParsing
@@ -272,12 +273,7 @@ extension State {
     func numberOfAddressesForRinglet<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
         let size = self.encodedSize(in: representation)
         let dataSize = 32 - representation.numberOfStateBits! - 1
-        let numberOfBaseAddresses = size / dataSize
-        let remainder = size - numberOfBaseAddresses * dataSize
-        guard remainder > 0 else {
-            return numberOfBaseAddresses
-        }
-        return numberOfBaseAddresses + 1
+        return Int(ceil(Double(size) / Double(dataSize)))
     }
 
 }
