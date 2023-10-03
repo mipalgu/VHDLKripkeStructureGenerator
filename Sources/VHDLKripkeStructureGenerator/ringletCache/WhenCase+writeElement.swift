@@ -390,7 +390,7 @@ extension WhenCase {
                     lhs: .reference(variable: .variable(
                         reference: .variable(name: .topIndex)
                     )),
-                    rhs: .literal(value: .integer(value: 31))
+                    rhs: .literal(value: .integer(value: dataBits))
                 ))),
                 ifBlock: .blocks(blocks: [
                     .statement(statement: .assignment(
