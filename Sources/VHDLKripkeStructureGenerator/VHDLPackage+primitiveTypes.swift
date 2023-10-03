@@ -69,7 +69,7 @@ extension VHDLPackage {
                 name: .stdLogicTypesT,
                 size: [
                     .to(
-                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 8))
+                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 2))
                     )
                 ],
                 elementType: .signal(type: .stdLogic)
@@ -78,41 +78,87 @@ extension VHDLPackage {
                 name: .stdLogicTypes,
                 type: .alias(name: .stdLogicTypesT),
                 value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 0))),
+                    //     value: .logic(value: .uninitialized)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 1))),
+                    //     value: .logic(value: .unknown)
+                    // ),
                     IndexedValue(
                         index: .index(value: .literal(value: .integer(value: 0))),
-                        value: .logic(value: .uninitialized)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 1))),
-                        value: .logic(value: .unknown)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 2))),
                         value: .logic(value: .low)
                     ),
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 3))),
+                        index: .index(value: .literal(value: .integer(value: 1))),
                         value: .logic(value: .high)
                     ),
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 4))),
+                        index: .index(value: .literal(value: .integer(value: 2))),
                         value: .logic(value: .highImpedance)
                     ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 5))),
+                    //     value: .logic(value: .weakSignal)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 6))),
+                    //     value: .logic(value: .weakSignalLow)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 7))),
+                    //     value: .logic(value: .weakSignalHigh)
+                    // ),
+                    // IndexedValue(
+                    //     index: .index(value: .literal(value: .integer(value: 8))),
+                    //     value: .logic(value: .dontCare)
+                    // )
+                ]))))
+            )!)),
+            .definition(value: .type(value: .array(value: ArrayDefinition(
+                name: .bitTypesT,
+                size: [
+                    .to(
+                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 1))
+                    )
+                ],
+                elementType: .signal(type: .bit)
+            )))),
+            .definition(value: .constant(value: ConstantSignal(
+                name: .bitTypes,
+                type: .alias(name: .bitTypesT),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 5))),
-                        value: .logic(value: .weakSignal)
+                        index: .index(value: .literal(value: .integer(value: 0))),
+                        value: .literal(value: .bit(value: .low))
                     ),
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 6))),
-                        value: .logic(value: .weakSignalLow)
+                        index: .index(value: .literal(value: .integer(value: 1))),
+                        value: .literal(value: .bit(value: .high))
+                    )
+                ]))))
+            )!)),
+            .definition(value: .type(value: .array(value: ArrayDefinition(
+                name: .booleanTypesT,
+                size: [
+                    .to(
+                        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 1))
+                    )
+                ],
+                elementType: .signal(type: .boolean)
+            )))),
+            .definition(value: .constant(value: ConstantSignal(
+                name: .booleanTypes,
+                type: .alias(name: .booleanTypesT),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(
+                        index: .index(value: .literal(value: .integer(value: 0))),
+                        value: .boolean(value: false)
                     ),
                     IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 7))),
-                        value: .logic(value: .weakSignalHigh)
-                    ),
-                    IndexedValue(
-                        index: .index(value: .literal(value: .integer(value: 8))),
-                        value: .logic(value: .dontCare)
+                        index: .index(value: .literal(value: .integer(value: 1))),
+                        value: .boolean(value: true)
                     )
                 ]))))
             )!)),
@@ -120,6 +166,32 @@ extension VHDLPackage {
                 name: .boolToStdLogic,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .boolean))],
                 returnType: .signal(type: .stdLogic)
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .encodedToStdLogic,
+                arguments: [
+                    ArgumentDefinition(
+                        name: .value,
+                        type: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                            upper: .literal(value: .integer(value: 1)),
+                            lower: .literal(value: .integer(value: 0))
+                        ))))
+                    )
+                ],
+                returnType: .signal(type: .stdLogic)
+            ))),
+            .definition(value: .function(value: FunctionDefinition(
+                name: .encodedToStdULogic,
+                arguments: [
+                    ArgumentDefinition(
+                        name: .value,
+                        type: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                            upper: .literal(value: .integer(value: 1)),
+                            lower: .literal(value: .integer(value: 0))
+                        ))))
+                    )
+                ],
+                returnType: .signal(type: .stdULogic)
             ))),
             .definition(value: .function(value: FunctionDefinition(
                 name: .stdLogicToBool,

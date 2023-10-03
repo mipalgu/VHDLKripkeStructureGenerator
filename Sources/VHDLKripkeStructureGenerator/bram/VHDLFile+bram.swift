@@ -1,4 +1,4 @@
-// VHDLFile+stateGenerator.swift
+// VHDLFile+bram.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,37 +57,24 @@
 import VHDLMachines
 import VHDLParsing
 
-/// Add state kripke generator.
 extension VHDLFile {
 
-    /// Create a state kripke generator. This file computes the next state to search from observing a states
-    /// read snapshot and write snapshot.
-    /// - Parameters:
-    ///   - state: The state to generate this file for.
-    ///   - representation: The representation of the machine.
-    @inlinable
-    init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        guard
-            let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;"),
-            let entity = Entity(stateKripkeGeneratorFor: state, in: representation),
-            let body = AsynchronousBlock(stateKripkeGeneratorFor: state, in: representation)
-        else {
-            return nil
-        }
-        let architecture = Architecture(
-            body: body,
-            entity: entity.name,
-            head: ArchitectureHead(statements: []),
-            name: .behavioral
+    init<T>(bramFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        let entity = Entity(bramFor: state, in: representation)
+        let head = ArchitectureHead(bramFor: state)
+        let body = AsynchronousBlock(bramFor: representation)
+        self.init(
+            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            entities: [entity],
+            includes: [
+                .library(value: .ieee),
+                .include(statement: .stdLogic1164),
+                .include(statement: .numericStd),
+                .include(statement: UseStatement(
+                    rawValue: "use work.\(representation.machine.name.rawValue)Types.all;"
+                )!)
+            ]
         )
-        let includes = [
-            Include.library(value: .ieee),
-            .include(statement: .stdLogic1164),
-            .include(statement: typesInclude),
-            .include(statement: .primitiveTypes)
-        ]
-        self.init(architectures: [architecture], entities: [entity], includes: includes)
     }
 
 }

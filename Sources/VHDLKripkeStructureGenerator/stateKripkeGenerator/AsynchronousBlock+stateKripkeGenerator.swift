@@ -77,6 +77,7 @@ extension AsynchronousBlock {
         else {
             return nil
         }
+        let externals = Set(machine.externalSignals.map(\.name))
         let clock = machine.clocks[machine.drivingClock].name
         let readSnapshot = Record(readSnapshotFor: state, in: representation).types.map {
             IndexedValue(
@@ -87,7 +88,30 @@ extension AsynchronousBlock {
             )
         }
         let writeSnapshot = writeRecord.types.map {
-            IndexedValue(
+            let name = $0.name.rawValue
+            guard !name.hasPrefix(machine.name.rawValue) else {
+                let withoutPrefix = name.dropFirst(machine.name.rawValue.count + 1)
+                let newName = VariableName(rawValue: String(withoutPrefix))!
+                guard !externals.contains(newName) else {
+                    return IndexedValue(
+                        index: .index(value: .reference(variable: .variable(
+                            reference: .variable(name: $0.name)
+                        ))),
+                        value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                            record: .writeSnapshotSignal, member: .variable(name: newName)
+                        ))))
+                    )
+                }
+                return IndexedValue(
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: $0.name)
+                    ))),
+                    value: .reference(variable: .variable(reference: .member(access: MemberAccess(
+                        record: .writeSnapshotSignal, member: .variable(name: $0.name)
+                    ))))
+                )
+            }
+            return IndexedValue(
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: $0.name)))),
                 value: .reference(variable: .variable(reference: .member(access: MemberAccess(
                     record: .writeSnapshotSignal, member: .variable(name: $0.name)
@@ -127,11 +151,36 @@ extension AsynchronousBlock {
                 record: .writeSnapshotSignal, member: .variable(name: .nextState)
             ))
         ))) {
-            Expression.binary(operation: .concatenate(
+            let name = $1.name.rawValue
+            guard !name.hasPrefix(machine.name.rawValue) else {
+                let withoutPrefix = name.dropFirst(machine.name.rawValue.count + 1)
+                let newName = VariableName(rawValue: String(withoutPrefix))!
+                guard !externals.contains(newName) else {
+                    return Expression.binary(operation: .concatenate(
+                        lhs: $0,
+                        rhs: $1.type.signalType.conversion(value: .reference(variable: .variable(
+                            reference: .member(access: MemberAccess(
+                                record: .writeSnapshotSignal, member: .variable(name: newName)
+                            ))
+                        )))
+                    ))
+                }
+                return Expression.binary(operation: .concatenate(
+                    lhs: $0,
+                    rhs: $1.type.signalType.conversion(value: .reference(variable: .variable(
+                        reference: .member(access: MemberAccess(
+                            record: .writeSnapshotSignal, member: .variable(name: $1.name)
+                        ))
+                    )))
+                ))
+            }
+            return Expression.binary(operation: .concatenate(
                 lhs: $0,
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: .writeSnapshotSignal, member: .variable(name: $1.name)
-                ))))
+                rhs: $1.type.signalType.conversion(value: .reference(variable: .variable(
+                    reference: .member(access: MemberAccess(
+                        record: .writeSnapshotSignal, member: .variable(name: $1.name)
+                    ))
+                )))
             ))
         }
         let allJoined = Expression.binary(operation: .concatenate(

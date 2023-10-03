@@ -144,11 +144,13 @@ final class VHDLFileTypesTests: XCTestCase {
         type Suspended_ReadSnapshot_t is record
             M_y2: std_logic;
             M_y: std_logic;
+            M_STATE_Initial_initialX: std_logic;
             executeOnEntry: boolean;
         end record Suspended_ReadSnapshot_t;
         type Suspended_WriteSnapshot_t is record
             M_y2: std_logic;
             M_y: std_logic;
+            M_STATE_Initial_initialX: std_logic;
             nextState: std_logic_vector(0 downto 0);
             executeOnEntry: boolean;
         end record Suspended_WriteSnapshot_t;
@@ -157,6 +159,8 @@ final class VHDLFileTypesTests: XCTestCase {
             writeSnapshot: Suspended_WriteSnapshot_t;
             observed: boolean;
         end record Suspended_Ringlet_t;
+        type Initial_State_Execution_t is array (0 to 8) of std_logic_vector(0 to 17);
+        type Suspended_State_Execution_t is array (0 to 0) of std_logic_vector(0 to 15);
         constant CheckTransition: std_logic_vector(3 downto 0) := "0000";
         constant Internal: std_logic_vector(3 downto 0) := "0001";
         constant NoOnEntry: std_logic_vector(3 downto 0) := "0010";
@@ -191,7 +195,7 @@ final class VHDLFileTypesTests: XCTestCase {
     /// Test package is created correctly.
     func testPackage() {
         let result = VHDLFile(typesFor: representation)
-        XCTAssertEqual(result?.rawValue, raw)
+        XCTAssertEqual(result!.rawValue, raw)
     }
 
 }

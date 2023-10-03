@@ -92,7 +92,7 @@ extension PortBlock {
         guard snapshots.count == expectedSnapshotCount else {
             return nil
         }
-        let machineVariables: [PortSignal] = machine.machineSignals
+        var machineVariables: [PortSignal] = machine.machineSignals
             .compactMap { (signal: LocalSignal) -> [PortSignal]? in
                 guard
                     let name = VariableName(pre: label, name: signal.name),
@@ -109,6 +109,18 @@ extension PortBlock {
             .flatMap { $0 }
         guard machineVariables.count == machine.machineSignals.count * 2 else {
             return nil
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineVariables += [
+                PortSignal(
+                    type: .natural, name: VariableName(pre: label, name: .ringletCounter)!, mode: .output
+                ),
+                PortSignal(
+                    type: .natural,
+                    name: VariableName(pre: label, name: .ringletCounter, post: "In")!,
+                    mode: .input
+                )
+            ]
         }
         let stateSignals: [PortSignal] = machine.states.flatMap { (state: State) -> [PortSignal] in
             state.signals.compactMap { (signal: LocalSignal) -> [PortSignal]? in

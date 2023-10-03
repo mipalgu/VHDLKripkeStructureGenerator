@@ -195,7 +195,7 @@ extension SynchronousBlock {
                 value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
-        let machineWrites: [SynchronousBlock] = machine.machineSignals.compactMap {
+        var machineWrites: [SynchronousBlock] = machine.machineSignals.compactMap {
             guard
                 let newName = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)In")
             else {
@@ -206,7 +206,7 @@ extension SynchronousBlock {
                 value: .reference(variable: .variable(reference: .variable(name: newName)))
             ))
         }
-        let machineReads: [SynchronousBlock] = machine.machineSignals.compactMap {
+        var machineReads: [SynchronousBlock] = machine.machineSignals.compactMap {
             guard
                 let newName = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")
             else {
@@ -262,82 +262,114 @@ extension SynchronousBlock {
         else {
             return nil
         }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineWrites += [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .ringletCounter)),
+                    value: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(
+                            rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
+                        )!
+                    )))
+                ))
+            ]
+            machineReads += [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                    )!)),
+                    value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))
+                ))
+            ]
+        }
+        let ifBody: [SynchronousBlock] = [SynchronousBlock].verifiableMachineInternalMutation(for: machine) +
+            snapshotWrites + machineWrites + stateWrites
+        let elseBody: [SynchronousBlock] = [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentStateOut(for: machine))),
+                value: .reference(variable: .variable(reference: .variable(name: .currentState)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
+                value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalStateOut(for: machine))),
+                value: .reference(variable: .variable(reference: .variable(name: .internalState)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStateOut(for: machine))),
+                value: .reference(variable: .variable(reference: .variable(name: .targetState)))
+            ))
+        ] + snapshotReads + machineReads + stateReads
         return .ifStatement(block: .ifElse(
             condition: .conditional(condition: .comparison(value: .equality(
                 lhs: .reference(variable: .variable(reference: .variable(name: .setInternalSignals))),
                 rhs: .literal(value: .logic(value: .high))
             ))),
-            ifBlock: .blocks(blocks: [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentState)),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .currentStateIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .previousRinglet)),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .previousRingletIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .internalState)),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .internalStateIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .targetState)),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .targetStateIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentStateOut(for: machine))),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .currentStateIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .previousRingletIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .internalStateOut(for: machine))),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .internalStateIn(for: machine))
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .targetStateOut(for: machine))),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .targetStateIn(for: machine))
-                    ))
-                ))
-            ] + snapshotWrites + machineWrites + stateWrites),
-            elseBlock: .blocks(blocks: [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentStateOut(for: machine))),
-                    value: .reference(variable: .variable(reference: .variable(name: .currentState)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
-                    value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .internalStateOut(for: machine))),
-                    value: .reference(variable: .variable(reference: .variable(name: .internalState)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .targetStateOut(for: machine))),
-                    value: .reference(variable: .variable(reference: .variable(name: .targetState)))
-                ))
-            ] + snapshotReads + machineReads + stateReads)
+            ifBlock: .blocks(blocks: ifBody),
+            elseBlock: .blocks(blocks: elseBody)
         ))
     }
 
     // swiftlint:enable function_body_length
+
+}
+
+extension Array where Element == SynchronousBlock {
+
+    @inlinable
+    static func verifiableMachineInternalMutation(for machine: Machine) -> [SynchronousBlock] {
+        [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .currentStateIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .previousRinglet)),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .previousRingletIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .internalStateIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetState)),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .targetStateIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentStateOut(for: machine))),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .currentStateIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .previousRingletIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalStateOut(for: machine))),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .internalStateIn(for: machine))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStateOut(for: machine))),
+                value: .reference(variable: .variable(
+                    reference: .variable(name: .targetStateIn(for: machine))
+                ))
+            ))
+        ]
+    }
 
 }

@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import VHDLMachines
 import VHDLParsing
 
@@ -89,13 +90,54 @@ extension VHDLPackage {
         let unwrappedStateRecords = stateRecords.flatMap {
             $0.map { HeadStatement.definition(value: .type(value: .record(value: $0))) }
         }
+        let stateExecutionTypes = machine.states.flatMap {
+            [
+                HeadStatement.definition(
+                    value: .type(value: .array(value: $0.executionTypes(in: representation)))
+                ),
+                HeadStatement.definition(value: .type(value: .array(value: ArrayDefinition(
+                    name: VariableName(
+                        rawValue: "STATE_\($0.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
+                    )!,
+                    size: [$0.memoryStorage(for: $0, in: representation)],
+                    elementType: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 31)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))))
+                ))))
+            ]
+
+        }
         self.init(
             name: name,
             statements: [
                 .definition(value: .type(value: .record(value: readSnapshot))),
                 .definition(value: .type(value: .record(value: writeSnapshot))),
                 .definition(value: .type(value: .record(value: totalSnapshot)))
-            ] + unwrappedStateRecords + representation.allConstants
+            ] + unwrappedStateRecords + stateExecutionTypes + representation.allConstants + [
+                .definition(value: .type(value: .array(value: ArrayDefinition(
+                    name: .targetStatesType,
+                    size: [
+                        .to(
+                            lower: .literal(value: .integer(value: 0)),
+                            upper: .literal(value: .integer(value: max(0, machine.numberOfTargetStates - 1)))
+                        )
+                    ],
+                    elementType: .signal(type: machine.targetStateEncoding)
+                )))),
+                .definition(value: .type(value: .array(value: ArrayDefinition(
+                    name: .pendingStatesType,
+                    size: [
+                        .to(
+                            lower: .literal(value: .integer(value: 0)),
+                            upper: .literal(value: .integer(
+                                value: max(0, machine.numberOfPendingStates - 1)
+                            ))
+                        )
+                    ],
+                    elementType: .signal(type: machine.pendingStateEncoding)
+                ))))
+            ]
         )
     }
 

@@ -88,9 +88,20 @@ extension Entity {
                 defaultValue: defaultValue
             )
         }
-        let machineSignals = machine.machineSignals.map {
+        var machineSignals = machine.machineSignals.map {
             // swiftlint:disable:next force_unwrapping
             PortSignal(signal: $0, in: machine, mode: .input)!
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [
+                PortSignal(
+                    type: .natural,
+                    name: VariableName(
+                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                    )!,
+                    mode: .input
+                )
+            ]
         }
         let stateSignals = machine.stateVariables.flatMap { state, variables in
             let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"

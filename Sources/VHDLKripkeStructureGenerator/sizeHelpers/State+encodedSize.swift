@@ -54,24 +54,77 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import VHDLMachines
 import VHDLParsing
 
+/// Add encoding helper methods.
 extension State {
 
+    /// Calculate the number of bits required to encode a ringlet for this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The number of bits required to encode a ringlet for this state.
+    @inlinable
     func encodedSize<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
         guard let write = Record(writeSnapshotFor: self, in: representation) else {
             fatalError("Failed to get state encoding for \(self.name)!")
         }
         let read = Record(readSnapshotFor: self, in: representation)
-        return read.encodedBits + write.encodedBits + 1
+        let writeBits = write.types.filter { $0.name != .nextState }.reduce(0) {
+            $0 + $1.type.signalType.encodedBits
+        }
+        return read.encodedBits + writeBits + representation.machine.numberOfStateBits + 1
     }
 
+    /// The type to encode a ringlet of this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The type of the encoded ringlet for this state.
+    @inlinable
     func encodedType<T>(in representation: T) -> SignalType where T: MachineVHDLRepresentable {
         SignalType.ranged(type: .stdLogicVector(size: .to(
             lower: .literal(value: .integer(value: 0)),
             upper: .literal(value: .integer(value: self.encodedSize(in: representation) - 1))
         )))
+    }
+
+    /// The size of the BRAM structure that stores this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The BRAM size.
+    @inlinable
+    func memoryStorage<T>(
+        for state: State, in representation: T
+    ) -> VectorSize where T: MachineVHDLRepresentable {
+        .to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(
+                value: self.numberOfMemoryAddresses(for: state, in: representation) - 1
+            ))
+        )
+    }
+
+    /// Calculate the number of memory addresses required to store the entire state-space of this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The number of memory addresses.
+    @inlinable
+    func numberOfMemoryAddresses<T>(
+        for state: State, in representation: T
+    ) -> Int where T: MachineVHDLRepresentable {
+        let numberOfValues: Int = Record(readSnapshotFor: state, in: representation).types.reduce(1) {
+            guard case .signal(let type) = $1.type else {
+                fatalError("Cannot discern state size for \($1.rawValue)!")
+            }
+            return $0 * type.numberOfValues
+        }
+        let size = Double(self.encodedSize(in: representation))
+        let stateSize = Double(representation.machine.numberOfStateBits)
+        let availableBits = 32.0 - stateSize
+        let footprint = size / availableBits
+        guard footprint <= 1.0 else {
+            let addresses = Int(ceil((size + stateSize) / 32.0))
+            return max(1, numberOfValues * addresses)
+        }
+        let ringletsPerAddress = Int(floor(availableBits / size))
+        return max(1, numberOfValues * ringletsPerAddress)
     }
 
 }

@@ -217,8 +217,12 @@ extension IndexedVector {
             }
             return declarations
         }
+        var machineSignals = machine.machineSignals
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
+        }
         // swiftlint:disable:next closure_body_length
-        let machineVariables = machine.machineSignals.flatMap { (signal: LocalSignal) -> [IndexedValue] in
+        let machineVariables = machineSignals.flatMap { (signal: LocalSignal) -> [IndexedValue] in
             guard case .signal(let type) = signal.type else {
                 fatalError(
                     "Cannot create a verifiable entity from a machine with custom types. Failed " +

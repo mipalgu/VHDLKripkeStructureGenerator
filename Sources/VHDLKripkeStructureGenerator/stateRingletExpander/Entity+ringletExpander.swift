@@ -57,8 +57,14 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Create ringlet expander.
 extension Entity {
 
+    /// Create entity declaration for the ringlet expander.
+    /// - Parameters:
+    ///   - state: The state to create the ringlet expander for.
+    ///   - representation: The machine representation to use.
+    @inlinable
     init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         guard
             let ringlet = VariableName(pre: "\(state.name.rawValue)_", name: .ringletType),

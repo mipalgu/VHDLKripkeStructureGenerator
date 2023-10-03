@@ -138,9 +138,13 @@ extension WhenCase {
         waitForStartFor representation: T, record: VariableName = .machine, tracker: VariableName = .tracker
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
+        var machineSignals = machine.machineSignals
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
+        }
         let allOutputs: [(VariableName, VariableName)] = machine.externalSignals.filter { $0.mode == .output }
             .map { (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!, $0.name) }
-            + machine.machineSignals.map {
+            + machineSignals.map {
                 let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
                 return (name, name)
             }
@@ -177,7 +181,7 @@ extension WhenCase {
         .map {
             (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")!, $0.name)
         }
-            + machine.machineSignals.map {
+            + machineSignals.map {
                 let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
                 return (VariableName(name: name, post: "In")!, name)
             }
@@ -244,51 +248,50 @@ extension WhenCase {
                     value: .literal(value: .boolean(value: false))
                 ))
             ]),
-            elseBlock: .blocks(blocks: externalUpdate + [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .member(access: MemberAccess(
-                        record: record, member: .variable(name: .currentStateIn)
-                    ))),
-                    value: .reference(variable: .variable(reference: .variable(name: .state)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .member(access: MemberAccess(
-                        record: record, member: .variable(name: .internalStateIn)
-                    ))),
-                    value: .reference(variable: .variable(reference: .variable(name: .readSnapshot)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .member(access: MemberAccess(
-                        record: record, member: .variable(name: .targetStateIn)
-                    ))),
-                    value: .reference(variable: .variable(reference: .variable(name: .state)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .member(access: MemberAccess(
-                        record: record, member: .variable(name: .reset)
-                    ))),
-                    value: .literal(value: .bit(value: .low))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .member(access: MemberAccess(
-                        record: record, member: .variable(name: .goalInternalState)
-                    ))),
-                    value: .reference(variable: .variable(reference: .variable(name: .writeSnapshot)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .member(access: MemberAccess(
-                        record: record, member: .variable(name: .previousRingletIn)
-                    ))),
-                    value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
-                ))
-            ] + internalsUpdate)
+            elseBlock: .statement(statement: .assignment(
+                name: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: .reset)
+                ))),
+                value: .literal(value: .bit(value: .low))
+            ))
         ))
+        let trailer = externalUpdate + [
+            .statement(statement: .assignment(
+                name: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: .currentStateIn)
+                ))),
+                value: .reference(variable: .variable(reference: .variable(name: .state)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: .internalStateIn)
+                ))),
+                value: .reference(variable: .variable(reference: .variable(name: .readSnapshot)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: .targetStateIn)
+                ))),
+                value: .reference(variable: .variable(reference: .variable(name: .state)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: .goalInternalState)
+                ))),
+                value: .reference(variable: .variable(reference: .variable(name: .writeSnapshot)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .member(access: MemberAccess(
+                    record: record, member: .variable(name: .previousRingletIn)
+                ))),
+                value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
+            ))
+        ] + internalsUpdate
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
                 reference: .variable(name: .waitForStart)
             ))),
-            code: .blocks(blocks: [
-                code,
+            code: .blocks(blocks: [code] + trailer + [
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(name: .currentState)),
                     value: .reference(variable: .variable(reference: .variable(name: .state)))
@@ -316,7 +319,11 @@ extension WhenCase {
                 ))))
             )
         }
-        let machineVariables = machine.machineSignals.map {
+        var machineSignals = machine.machineSignals
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
+        }
+        let machineVariables = machineSignals.map {
             let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
             return IndexedValue(
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: name)))),
@@ -325,6 +332,7 @@ extension WhenCase {
                 ))))
             )
         }
+
         let stateVariables = machine.stateVariables.flatMap { state, variables in
             let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
             return variables.map {

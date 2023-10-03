@@ -80,6 +80,8 @@ final class VHDLFileTests: XCTestCase {
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
+    // swiftlint:disable function_body_length
+
     /// Test the `PrimitiveTypes` file is generated correctly.
     func testPrimitiveTypes() {
         // swiftlint:disable line_length
@@ -90,6 +92,10 @@ final class VHDLFileTests: XCTestCase {
         package PrimitiveTypes is
             type stdLogicTypes_t is array (0 to 8) of std_logic;
             constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
+            type BitTypes_t is array (0 to 1) of bit;
+            constant bitTypes: BitTypes_t := (0 => '0', 1 => '1');
+            type BooleanTypes_t is array (0 to 1) of boolean;
+            constant booleanTypes: BooleanTypes_t := (0 => false, 1 => true);
             function boolToStdLogic(value: boolean) return std_logic;
             function stdLogicToBool(value: std_logic) return boolean;
             function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0);
@@ -135,6 +141,8 @@ final class VHDLFileTests: XCTestCase {
         // swiftlint:enable line_length
         XCTAssertEqual(VHDLFile.primitiveTypes.rawValue, expected)
     }
+
+    // swiftlint:enable function_body_length
 
     /// Test verifiable init returns nil for invalid Port and body.
     func testVerifiableInitReturnsNilForInvalidPortAndBody() {

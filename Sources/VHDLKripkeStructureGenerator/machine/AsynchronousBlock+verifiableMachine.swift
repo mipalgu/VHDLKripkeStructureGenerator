@@ -110,7 +110,7 @@ extension AsynchronousBlock {
                 return nil
             }
             self = .blocks(blocks: assignments + [.process(block: newProcess)])
-        case .component, .statement, .function:
+        case .component, .statement, .function, .generate:
             return nil
         }
     }

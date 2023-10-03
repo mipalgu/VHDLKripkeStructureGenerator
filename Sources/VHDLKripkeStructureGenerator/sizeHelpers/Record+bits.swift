@@ -56,9 +56,11 @@
 
 import VHDLParsing
 
+/// Add bit claculation helpers.
 extension Record {
 
-    var bits: Int {
+    /// The minimum number of bits required to represent the entire record.
+    @inlinable var bits: Int {
         self.types.reduce(0) {
             guard case .signal(let type) = $1.type else {
                 fatalError("Failed to find size of type \($1.type)!")
@@ -67,13 +69,40 @@ extension Record {
         }
     }
 
-    var encodedBits: Int {
-        self.types.reduce(0) {
-            guard case .signal(let type) = $1.type else {
-                fatalError("Failed to find size of type \($1.type)!")
+    /// The minimum number of bits required to represent the entire encoded version of the record.
+    @inlinable var encodedBits: Int {
+        self.types.reduce(0) { $0 + $1.type.signalType.encodedBits }
+    }
+
+    func bitsIndex(for name: VariableName, isDownto: Bool = false, adding value: Int = 0) -> VectorIndex? {
+        var startIndex = (isDownto ? max(0, self.bits - 1) : 0) + value
+        return self.types.compactMap {
+            let numberOfBits = $0.type.bits
+            defer {
+                if isDownto {
+                    startIndex -= numberOfBits
+                } else {
+                    startIndex += numberOfBits
+                }
             }
-            return $0 + type.encodedBits
+            guard $0.name == name else {
+                return nil
+            }
+            guard numberOfBits <= 1 else {
+                guard !isDownto else {
+                    return VectorIndex.range(value: .downto(
+                        upper: .literal(value: .integer(value: startIndex)),
+                        lower: .literal(value: .integer(value: startIndex - numberOfBits + 1))
+                    ))
+                }
+                return VectorIndex.range(value: .to(
+                    lower: .literal(value: .integer(value: startIndex)),
+                    upper: .literal(value: .integer(value: startIndex + numberOfBits - 1))
+                ))
+            }
+            return .index(value: .literal(value: .integer(value: startIndex)))
         }
+        .first
     }
 
 }

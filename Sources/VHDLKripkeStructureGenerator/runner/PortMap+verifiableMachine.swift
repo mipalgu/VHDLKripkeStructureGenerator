@@ -65,13 +65,20 @@ extension PortMap {
     /// - Parameter representation: The representation to instantitate in the runner.
     @inlinable
     init?<T>(runnerMachineInst representation: T) where T: MachineVHDLRepresentable {
-        let machineName = representation.machine.name
-        let machineVariables: [VariableMap] = representation.machine.machineSignals.compactMap {
+        let machine = representation.machine
+        let machineName = machine.name
+        var machineVariables: [VariableMap] = representation.machine.machineSignals.compactMap {
             [VariableMap](machineName: machineName, variable: $0.name)
         }
         .flatMap { $0 }
         guard machineVariables.count == representation.machine.machineSignals.count * 2 else {
             return nil
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            guard let counter = [VariableMap](machineName: machineName, variable: .ringletCounter) else {
+                return nil
+            }
+            machineVariables += counter
         }
         let stateVariables: [VariableMap] = representation.machine.states.flatMap { state in
             let variables = state.signals.map(\.name)
@@ -94,8 +101,8 @@ extension PortMap {
             [VariableMap](machineName: machineName, snapshot: $0)
         }
         .flatMap { $0 }
-        let inputExternals = representation.machine.externalSignals.filter { $0.mode != .output }
-        guard snapshots.count == (externals.count + inputExternals.count) else {
+        let outputExternals = representation.machine.externalSignals.filter { $0.mode != .input }
+        guard snapshots.count == (externals.count + outputExternals.count) else {
             return nil
         }
         let clkMap = VariableMap(

@@ -81,9 +81,16 @@ extension Record {
         let machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
         }
-        let statePreamble = "\(preamble)STATE_\(state.name.rawValue)_"
-        let stateSignals = state.signals.map {
-            RecordTypeDeclaration(name: VariableName(pre: statePreamble, name: $0.name)!, type: $0.type)
+        var stateSignals = machine.states.flatMap {
+            let statePreamble = "\(preamble)STATE_\($0.name.rawValue)_"
+            return $0.signals.map {
+                RecordTypeDeclaration(name: VariableName(pre: statePreamble, name: $0.name)!, type: $0.type)
+            }
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            stateSignals.append(RecordTypeDeclaration(
+                name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+            ))
         }
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .readSnapshotType)!
         self.init(
@@ -115,9 +122,16 @@ extension Record {
         let machineSignals = machine.machineSignals.map {
             RecordTypeDeclaration(name: VariableName(pre: preamble, name: $0.name)!, type: $0.type)
         }
-        let statePreamble = "\(preamble)STATE_\(state.name.rawValue)_"
-        let stateSignals = state.signals.map {
-            RecordTypeDeclaration(name: VariableName(pre: statePreamble, name: $0.name)!, type: $0.type)
+        var stateSignals = machine.states.flatMap {
+            let statePreamble = "\(preamble)STATE_\($0.name.rawValue)_"
+            return $0.signals.map {
+                RecordTypeDeclaration(name: VariableName(pre: statePreamble, name: $0.name)!, type: $0.type)
+            }
+        }
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            stateSignals.append(RecordTypeDeclaration(
+                name: VariableName(pre: preamble, name: .ringletCounter)!, type: .signal(type: .natural)
+            ))
         }
         let typeName = VariableName(pre: "\(state.name.rawValue)_", name: .writeSnapshotType)!
         self.init(

@@ -95,7 +95,7 @@ extension SynchronousBlock {
                             )),
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .finished)),
-                                value: .literal(value: .boolean(value: true))
+                                value: .literal(value: .boolean(value: false))
                             ))
                         ])
                     ))

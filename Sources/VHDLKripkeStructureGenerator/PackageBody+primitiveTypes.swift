@@ -74,6 +74,82 @@ extension PackageBody {
                 ))
             )),
             .fnImplementation(value: FunctionImplementation(
+                definition: FunctionDefinition(
+                    name: .encodedToStdLogic,
+                    arguments: [
+                        ArgumentDefinition(
+                            name: .value,
+                            type: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                                upper: .literal(value: .integer(value: 1)),
+                                lower: .literal(value: .integer(value: 0))
+                            ))))
+                        )
+                    ],
+                    returnType: .signal(type: .stdLogic)
+                ),
+                body: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .value))),
+                    cases: [
+                        WhenCase(
+                            condition: .expression(expression: .literal(value: .vector(value: .bits(
+                                value: BitVector(values: [.low, .high])
+                            )))),
+                            code: .statement(statement: .returns(value: .literal(value: .bit(value: .high))))
+                        ),
+                        WhenCase(
+                            condition: .expression(expression: .literal(value: .vector(value: .bits(
+                                value: BitVector(values: [.high, .high])
+                            )))),
+                            code: .statement(statement: .returns(value: .literal(
+                                value: .logic(value: .highImpedance)
+                            )))
+                        ),
+                        WhenCase(
+                            condition: .others,
+                            code: .statement(statement: .returns(value: .literal(value: .bit(value: .low))))
+                        )
+                    ]
+                ))
+            )),
+            .fnImplementation(value: FunctionImplementation(
+                definition: FunctionDefinition(
+                    name: .encodedToStdULogic,
+                    arguments: [
+                        ArgumentDefinition(
+                            name: .value,
+                            type: .signal(type: .ranged(type: .stdLogicVector(size: .downto(
+                                upper: .literal(value: .integer(value: 1)),
+                                lower: .literal(value: .integer(value: 0))
+                            ))))
+                        )
+                    ],
+                    returnType: .signal(type: .stdULogic)
+                ),
+                body: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .value))),
+                    cases: [
+                        WhenCase(
+                            condition: .expression(expression: .literal(value: .vector(value: .bits(
+                                value: BitVector(values: [.low, .high])
+                            )))),
+                            code: .statement(statement: .returns(value: .literal(value: .bit(value: .high))))
+                        ),
+                        WhenCase(
+                            condition: .expression(expression: .literal(value: .vector(value: .bits(
+                                value: BitVector(values: [.high, .high])
+                            )))),
+                            code: .statement(statement: .returns(value: .literal(
+                                value: .logic(value: .highImpedance)
+                            )))
+                        ),
+                        WhenCase(
+                            condition: .others,
+                            code: .statement(statement: .returns(value: .literal(value: .bit(value: .low))))
+                        )
+                    ]
+                ))
+            )),
+            .fnImplementation(value: FunctionImplementation(
                 name: .stdLogicToBool,
                 arguments: [ArgumentDefinition(name: .value, type: .signal(type: .stdLogic))],
                 returnType: .signal(type: .boolean),

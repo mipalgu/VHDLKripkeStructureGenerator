@@ -59,6 +59,21 @@ import VHDLMachines
 import VHDLParsing
 
 /// Add bits.
+extension Type {
+
+    /// The number of bits required to represent this type.
+    @inlinable var bits: Int {
+        switch self {
+        case .signal(let type):
+            return type.bits
+        default:
+            fatalError("Cannot discern bits for \(self) type.")
+        }
+    }
+
+}
+
+/// Add bits.
 extension SignalType {
 
     /// Calculate the number of bits required to represent this type.
@@ -82,7 +97,7 @@ extension SignalType {
         case .stdLogic, .stdULogic:
             return 2
         case .ranged(let type):
-            return type.bits
+            return type.encodedBits
         }
     }
 
@@ -138,17 +153,24 @@ extension Int {
     /// Calculate the number of bits required to represent self. This is the minimum reqired bits to contain
     /// the value using an extra sign bit for negative numbers.
     @inlinable var bits: Int {
-        let calculation = log2(abs(Double(self)))
-        if ceil(calculation) == calculation {
-            if self < 0 {
-                return Int(calculation) + 2
-            }
-            return Int(calculation) + 1
+        // let calculation = log2(abs(Double(self)))
+        // if ceil(calculation) == calculation {
+        //     if self < 0 {
+        //         return Int(calculation) + 2
+        //     }
+        //     return Int(calculation) + 1
+        // }
+        // if self < 0 {
+        //     return Int(ceil(calculation)) + 1
+        // }
+        // return Int(ceil(calculation))
+        if self == 0 {
+            return 1
         }
-        if self < 0 {
-            return Int(ceil(calculation)) + 1
+        guard let bits = BitLiteral.bitsRequired(for: self) else {
+            fatalError("Cannot calculate bits required for \(self)!")
         }
-        return Int(ceil(calculation))
+        return bits
     }
 
     /// Return the maximum of self and other.
