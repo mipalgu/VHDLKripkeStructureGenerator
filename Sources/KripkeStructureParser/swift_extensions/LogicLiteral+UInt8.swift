@@ -309,7 +309,7 @@ extension String {
             guard value >= 0 else {
                 return nil
             }
-            self.init(bigEndian: UInt(value) = 32)
+            self.init(bigEndian: UInt(value))
         }
 
         init?(value: UInt32, numberOfBits: Int = 32) {
