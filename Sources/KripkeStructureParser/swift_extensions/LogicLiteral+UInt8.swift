@@ -181,6 +181,17 @@ extension String {
             self.init(values: literals)
         }
 
+        init?(value: UInt32, numberOfBits: Int) {
+            let vector = withUnsafeBytes(of: value) {
+                let array = Array($0)
+                return LogicVector(value: array, numberOfBits: numberOfBits)
+            }
+            guard let result = vector else {
+                return nil
+            }
+            self = result
+        }
+
     }
 
     extension BitVector {
@@ -224,6 +235,17 @@ extension String {
                 return nil
             }
             self.init(values: literals)
+        }
+
+        init?(value: UInt32, numberOfBits: Int) {
+            let vector = withUnsafeBytes(of: value) {
+                let array = Array($0)
+                return BitVector(value: array, numberOfBits: numberOfBits)
+            }
+            guard let result = vector else {
+                return nil
+            }
+            self = result
         }
 
     }
