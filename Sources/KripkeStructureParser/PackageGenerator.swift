@@ -68,17 +68,25 @@ public struct PackageGenerator {
     public func swiftPackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let name = machine.name.rawValue
-        let cFileRawData = (["#include \"include/\(name)/\(name).h\""] + machine.states.map {
-            VariableParser(state: $0, in: representation).functions.values.joined(separator: "\n\n")
+        let cFileRawData = (["#include \"include/\(name)/\(name).h\""] +
+        [String(isValidImplementationFor: representation)] + machine.states.flatMap {
+            [
+                VariableParser(state: $0, in: representation).functions.values.joined(separator: "\n\n"),
+                String(isValidStateImplementationFor: $0, in: representation)
+            ]
         })
         .joined(separator: "\n\n")
         let cHeaderRawData = (
             [
                 "#include <stdint.h>\n#include <stdbool.h>\n#ifndef \(name)_H\n#define \(name)_H\n" +
                 "#ifdef __cplusplus\nextern \"C\" {\n#endif"
-            ] +
-            machine.states.map {
-                VariableParser(state: $0, in: representation).definitions.values.joined(separator: "\n\n")
+            ] + [String(isValidDefinitionFor: representation)] +
+            machine.states.flatMap {
+                [
+                    VariableParser(state: $0, in: representation)
+                        .definitions.values.joined(separator: "\n\n"),
+                    String(isValidStateDefinitionFor: $0, in: representation)
+                ]
             } + ["#ifdef __cplusplus\n}\n#endif\n#endif // \(name)_H"]
         )
         .joined(separator: "\n\n")
