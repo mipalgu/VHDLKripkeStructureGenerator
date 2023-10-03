@@ -63,6 +63,8 @@ import VHDLParsing
 
 public struct PackageGenerator {
 
+    public init() {}
+
     public func swiftPackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let name = machine.name.rawValue

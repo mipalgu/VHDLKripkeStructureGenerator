@@ -62,8 +62,8 @@ import VHDLParsing
 public protocol KripkeStructureGenerator {
 
     /// Create the Kripke Structure Generator program in `VHDL`.
-    /// - Parameter machine: The machine to generate the Kripke structure for.
-    /// - Returns: The `VHDL` files that will generate the Kripke structure for `machine`.
-    func generate(machine: Machine) -> [VHDLFile]
+    /// - Parameter representation: The machine to generate the Kripke structure for.
+    /// - Returns: The `VHDL` files that will generate the Kripke structure for `representation`.
+    func generate<T>(representation: T) -> [VHDLFile] where T: MachineVHDLRepresentable
 
 }
