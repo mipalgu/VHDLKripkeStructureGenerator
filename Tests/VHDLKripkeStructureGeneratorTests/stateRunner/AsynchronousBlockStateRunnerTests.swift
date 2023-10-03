@@ -114,7 +114,7 @@ final class AsynchronousBlockStateRunnerTests: XCTestCase {
     /// Test logic is correct.
     func testLogic() {
         let result = AsynchronousBlock(stateRunnerFor: machine.states[0], in: representation)
-        print(result!.rawValue)
+        // print(result!.rawValue)
     }
 
 }
