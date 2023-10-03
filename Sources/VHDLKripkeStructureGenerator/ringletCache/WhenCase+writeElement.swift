@@ -333,6 +333,7 @@ extension WhenCase {
                 "\(encodedSize) encoded size, \(dataBits) available data size, and \(stateSize) stateSize."
             )
         }
+        let remainingBits = 32 - stateSize - 1 - nullBits
         let nullBitsEncoded = BitVector(values: [BitLiteral](repeating: .low, count: nullBits))
         let stateEncoding = state.representation(in: representation)
         let delimiter = Expression.binary(operation: .concatenate(
@@ -357,9 +358,7 @@ extension WhenCase {
                         )),
                         index: .range(value: .to(
                             lower: .literal(value: .integer(value: 0)),
-                            upper: .reference(variable: .variable(
-                                reference: .variable(name: .topIndex)
-                            ))
+                            upper: .literal(value: .integer(value: remainingBits - 1))
                         ))
                     )),
                     rhs: delimiter
