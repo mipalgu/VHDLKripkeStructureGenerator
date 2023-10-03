@@ -79,7 +79,7 @@ public struct PackageGenerator {
             ] +
             machine.states.map {
                 VariableParser(state: $0, in: representation).definitions.values.joined(separator: "\n\n")
-            } + ["#ifdef __cplusplus\n}#endif\n#endif // \(name)_H"]
+            } + ["#ifdef __cplusplus\n}\n#endif\n#endif // \(name)_H"]
         )
         .joined(separator: "\n\n")
         guard
