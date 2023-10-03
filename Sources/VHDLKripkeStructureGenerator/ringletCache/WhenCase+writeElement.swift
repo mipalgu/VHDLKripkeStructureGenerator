@@ -395,26 +395,29 @@ extension WhenCase {
                 ifBlock: .blocks(blocks: [
                     .statement(statement: .assignment(
                         name: .variable(reference: .variable(name: .di)),
-                        value: .reference(variable: .indexed(
-                            name: .reference(variable: .indexed(
-                                name: .reference(variable: .variable(
-                                    reference: .variable(name: .workingRinglets)
-                                )),
-                                index: .index(value: .reference(variable: .variable(
-                                    reference: .variable(name: .ringletIndex)
-                                )))
-                            )),
-                            index: .range(value: .to(
-                                lower: .binary(operation: .subtraction(
-                                    lhs: .reference(variable: .variable(
-                                        reference: .variable(name: .topIndex)
+                        value: .binary(operation: .concatenate(
+                            lhs: .reference(variable: .indexed(
+                                name: .reference(variable: .indexed(
+                                    name: .reference(variable: .variable(
+                                        reference: .variable(name: .workingRinglets)
                                     )),
-                                    rhs: .literal(value: .integer(value: 31))
+                                    index: .index(value: .reference(variable: .variable(
+                                        reference: .variable(name: .ringletIndex)
+                                    )))
                                 )),
-                                upper: .reference(variable: .variable(
-                                    reference: .variable(name: .topIndex)
+                                index: .range(value: .to(
+                                    lower: .binary(operation: .subtraction(
+                                        lhs: .reference(variable: .variable(
+                                            reference: .variable(name: .topIndex)
+                                        )),
+                                        rhs: .literal(value: .integer(value: dataBits - 1))
+                                    )),
+                                    upper: .reference(variable: .variable(
+                                        reference: .variable(name: .topIndex)
+                                    ))
                                 ))
-                            ))
+                            )),
+                            rhs: .literal(value: stateEncoding)
                         ))
                     )),
                     .statement(statement: .assignment(
@@ -423,7 +426,7 @@ extension WhenCase {
                             lhs: .reference(variable: .variable(
                                 reference: .variable(name: .topIndex)
                             )),
-                            rhs: .literal(value: .integer(value: 32))
+                            rhs: .literal(value: .integer(value: dataBits))
                         ))
                     ))
                 ]),
