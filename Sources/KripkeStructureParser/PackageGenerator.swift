@@ -90,7 +90,23 @@ public struct PackageGenerator {
             } + ["#ifdef __cplusplus\n}\n#endif\n#endif // \(name)_H"]
         )
         .joined(separator: "\n\n")
+        let stateFilesRaw = machine.states.flatMap {
+            [
+                ("\($0.name.rawValue)Read.swift", String(readStateFor: $0, in: representation)),
+                ("\($0.name.rawValue)Write.swift", String(writeStateFor: $0, in: representation)),
+                ("\($0.name.rawValue)Ringlet.swift", String(kripkeNodeFor: $0, in: representation))
+            ]
+        }
+        let stateFiles: [(String, FileWrapper)] = stateFilesRaw.compactMap {
+            guard let fileData = $0.1.data(using: .utf8) else {
+                return nil
+            }
+            let fileWrapper = FileWrapper(regularFileWithContents: fileData)
+            fileWrapper.preferredFilename = $0.0
+            return ($0.0, fileWrapper)
+        }
         guard
+            stateFiles.count == stateFilesRaw.count,
             let cFileData = cFileRawData.data(using: .utf8),
             let cHeaderData = cHeaderRawData.data(using: .utf8),
             let packageData = String(machinePackage: representation).data(using: .utf8),
@@ -115,7 +131,9 @@ public struct PackageGenerator {
         )
         cTargetFolder.preferredFilename = "C\(name)"
         let swiftTargetFolder = FileWrapper(
-            directoryWithFileWrappers: ["VHDLParsingExtensions.swift": swiftExtensions]
+            directoryWithFileWrappers: Dictionary(
+                uniqueKeysWithValues: [("VHDLParsingExtensions.swift", swiftExtensions)] + stateFiles
+            )
         )
         swiftTargetFolder.preferredFilename = "\(name)"
         let sourcesFolder = FileWrapper(
