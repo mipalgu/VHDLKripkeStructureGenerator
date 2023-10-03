@@ -60,6 +60,8 @@ import VHDLParsing
 
 struct VariableParser {
 
+    let definitions: [NodeVariable: String]
+
     let functions: [NodeVariable: String]
 
     init<T>(state: State, in representation: T) where T: MachineVHDLRepresentable {
@@ -81,10 +83,27 @@ struct VariableParser {
             )
             return (variable, functionBody)
         }
-        self.init(functions: Dictionary(uniqueKeysWithValues: functions))
+        let definitions = readIndexes.map {
+            let variable = NodeVariable(data: $0.0, type: .read)
+            let definition = String(
+                stateVariableAccessDefinitionsFor: state, in: representation, variable: variable
+            )
+            return (variable, definition)
+        } + writeIndexes.map {
+            let variable = NodeVariable(data: $0.0, type: .write)
+            let definition = String(
+                stateVariableAccessDefinitionsFor: state, in: representation, variable: variable
+            )
+            return (variable, definition)
+        }
+        self.init(
+            definitions: Dictionary(uniqueKeysWithValues: definitions),
+            functions: Dictionary(uniqueKeysWithValues: functions)
+        )
     }
 
-    init(functions: [NodeVariable: String]) {
+    init(definitions: [NodeVariable: String], functions: [NodeVariable: String]) {
+        self.definitions = definitions
         self.functions = functions
     }
 
@@ -182,6 +201,20 @@ extension String {
     }
 
     init<T>(
+        stateVariableAccessDefinitionsFor state: State,
+        in representation: T,
+        variable: NodeVariable
+    ) where T: MachineVHDLRepresentable {
+        let functionName = String(
+            stateVariableAccessNameFor: state, in: representation, variable: variable
+        )
+        let parameters = String(stateVariableAccessParametersFor: state, in: representation)
+        let returnTypeTuple = variable.data.type.signalType.ctype
+        let returnType = returnTypeTuple.1 > 1 ? "\(returnTypeTuple.0)*" : returnTypeTuple.0.rawValue
+        self = "\(returnType) \(functionName)(\(parameters));"
+    }
+
+    init<T>(
         stateVariableAccessBodyFor state: State,
         in representation: T,
         index: VectorIndex,
@@ -195,8 +228,8 @@ extension String {
             let mask = String(maskFor: size, arraySize: 1)
             let shiftAmount = 32 - 1 - size.max.integer
             let ctype = variable.data.type.signalType.ctype
-            let operation = "(data & \(mask)) >> \(shiftAmount)"
-            self = "return (\(ctype.0))(\(operation));"
+            let operation = "(data & 0b\(mask)) >> \(shiftAmount)"
+            self = "return (\(ctype.0.rawValue))(\(operation));"
             return
         }
         let mask = String(maskFor: size, arraySize: 1)
