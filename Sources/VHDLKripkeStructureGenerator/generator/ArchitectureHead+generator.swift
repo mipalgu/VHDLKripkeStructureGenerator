@@ -70,7 +70,8 @@ extension ArchitectureHead {
             .checkIfFinished,
             .verifyFinished,
             .hasFinished,
-            .chooseNextInsertion
+            .chooseNextInsertion,
+            .hasError
         ].enumerated().map {
             HeadStatement.definition(value: .constant(value: ConstantSignal(
                 name: $1,

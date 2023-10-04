@@ -85,36 +85,57 @@ extension WhenCase {
                 ])
             ))
         }
-        let trailer = SynchronousBlock.blocks(blocks: [
-            .forLoop(loop: ForLoop(
-                iterator: .i,
-                range: range,
-                body: .ifStatement(block: .ifStatement(
-                    condition: .conditional(condition: .comparison(value: .equality(
-                        lhs: .reference(variable: .indexed(
-                            name: .reference(variable: .indexed(
-                                name: .reference(variable: .variable(
-                                    reference: .variable(name: .pendingStates)
-                                )),
-                                index: .index(value: .reference(variable: .variable(
-                                    reference: .variable(name: .i)
-                                )))
-                            )),
-                            index: .index(value: .literal(value: .integer(value: 0)))
-                        )),
-                        rhs: .literal(value: .bit(value: .high))
-                    ))),
-                    ifBlock: .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: .isFinished)),
-                        value: .literal(value: .boolean(value: false))
+        let currentPendingState = Expression.reference(variable: .variable(reference: .variable(
+            name: .currentPendingState
+        )))
+        let pendingSearchIndex = Expression.reference(variable: .variable(reference: .variable(
+            name: .pendingSearchIndex
+        )))
+        let trailer = SynchronousBlock.ifStatement(block: .ifElse(
+            condition: .conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .indexed(
+                    name: currentPendingState, index: .index(value: .literal(value: .integer(value: 0)))
+                )),
+                rhs: .literal(value: .bit(value: .high))
+            ))),
+            ifBlock: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .isFinished)),
+                    value: .literal(value: .boolean(value: false))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .pendingSearchIndex)),
+                    value: .literal(value: .integer(value: 0))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .verifyFinished)))
+                ))
+            ]),
+            elseBlock: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: pendingSearchIndex,
+                    rhs: .literal(value: .integer(value: (maxIndex + 1) * 2 - 1))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .verifyFinished)))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .pendingSearchIndex)),
+                        value: .literal(value: .integer(value: 0))
+                    ))
+                ]),
+                elseBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .pendingSearchIndex)),
+                    value: .binary(operation: .addition(
+                        lhs: pendingSearchIndex,
+                        rhs: .literal(value: .integer(value: 1))
                     ))
                 ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentState)),
-                value: .reference(variable: .variable(reference: .variable(name: .verifyFinished)))
             ))
-        ])
+        ))
         let combined = (stateBlocks + [trailer]).reversed().joined {
             guard
                 case .ifStatement(let block) = $1, case . ifStatement(let condition, let code) = block

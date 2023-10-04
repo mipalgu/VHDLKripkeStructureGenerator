@@ -105,84 +105,68 @@ extension WhenCase {
                 value: .literal(value: .boolean(value: false))
             ))
         }
+        let defaultAssignments: [SynchronousBlock] = [
+            .statement(statement: .assignment(
+                name: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
+                    index: .index(value: .literal(value: .integer(value: 0)))
+                ),
+                value: .literal(value: .vector(value: .logics(value: LogicVector(values: literals))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .finished)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .pendingStateIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .observedIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .nextState)),
+                value: .reference(variable: .variable(reference: .variable(name: .initial)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .isDuplicate)),
+                value: .literal(value: .boolean(value: false))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .isFinished)),
+                value: .literal(value: .boolean(value: false))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .pendingInsertIndex)),
+                value: .literal(value: .integer(value: 1))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .maxInsertIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .fromState)),
+                value: .reference(variable: .variable(reference: .variable(name: .setJob)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(reference: .variable(name: .setJob)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .observedSearchIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .pendingSearchIndex)),
+                value: .literal(value: .integer(value: 0))
+            ))
+        ]
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
                 reference: .variable(name: .initial)
             ))),
-            code: .blocks(blocks: [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .observedStates)),
-                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                        values: [
-                            IndexedValue(
-                                index: .others,
-                                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                                ))))
-                            )
-                        ]
-                    ))))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .pendingStates)),
-                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                        values: [
-                            IndexedValue(
-                                index: .index(value: .literal(value: .integer(value: 0))),
-                                value: .vector(value: .logics(value: LogicVector(values: literals)))
-                            ),
-                            IndexedValue(
-                                index: .others,
-                                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                                ))))
-                            )
-                        ]
-                    ))))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .finished)),
-                    value: .literal(value: .bit(value: .low))
-                ))
-            ] + stateSignals + [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .pendingStateIndex)),
-                    value: .literal(value: .integer(value: 0))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .observedIndex)),
-                    value: .literal(value: .integer(value: 0))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .nextState)),
-                    value: .reference(variable: .variable(reference: .variable(name: .initial)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .isDuplicate)),
-                    value: .literal(value: .boolean(value: false))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .isFinished)),
-                    value: .literal(value: .boolean(value: false))
-                ))
-            ] + stateWorking + [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .pendingInsertIndex)),
-                    value: .literal(value: .integer(value: 1))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .maxInsertIndex)),
-                    value: .literal(value: .integer(value: 0))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .fromState)),
-                    value: .reference(variable: .variable(reference: .variable(name: .setJob)))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentState)),
-                    value: .reference(variable: .variable(reference: .variable(name: .setJob)))
-                ))
-            ])
+            code: .blocks(blocks: defaultAssignments + stateSignals + stateWorking)
         )
     }
 

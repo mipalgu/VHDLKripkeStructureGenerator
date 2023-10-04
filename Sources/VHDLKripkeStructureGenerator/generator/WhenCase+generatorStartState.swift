@@ -63,15 +63,13 @@ extension WhenCase {
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         let name = state.name.rawValue
         let types = writeSnapshot.types.filter { $0.name != .nextState }
+        let currentWorkingPendingState = Expression.reference(variable: .variable(reference: .variable(
+            name: .currentWorkingPendingState
+        )))
         let statements = types.map {
             let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true, adding: 1)!
             let value = Expression.reference(variable: .indexed(
-                name: .reference(variable: .indexed(
-                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
-                    index: .index(value: .reference(variable: .variable(
-                        reference: .variable(name: .pendingStateIndex)
-                    )))
-                )),
+                name: currentWorkingPendingState,
                 index: indexes
             ))
             let bits = $0.type.bits

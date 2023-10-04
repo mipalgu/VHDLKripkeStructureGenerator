@@ -81,6 +81,9 @@ extension VariableName {
     /// The `fromState` signal.
     @usableFromInline static let fromState = VariableName(rawValue: "fromState")!
 
+    /// The `HasError` constant.
+    @usableFromInline static let hasError = VariableName(rawValue: "HasError")!
+
     /// The `HasFinished` signal.
     @usableFromInline static let hasFinished = VariableName(rawValue: "HasFinished")!
 

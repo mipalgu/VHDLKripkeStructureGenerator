@@ -67,17 +67,15 @@ extension WhenCase {
             upper: .literal(value: .integer(value: numberOfStateBits + 1)),
             lower: .literal(value: .integer(value: 2))
         ))
+        let currentWorkingPendingState = Expression.reference(variable: .variable(reference: .variable(
+            name: .currentWorkingPendingState
+        )))
         let stateLogics = machine.states.map {
             let name = $0.name.rawValue
             return SynchronousBlock.ifStatement(block: .ifStatement(
                 condition: .conditional(condition: .comparison(value: .equality(
                     lhs: .reference(variable: .indexed(
-                        name: .reference(variable: .indexed(
-                            name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
-                            index: .index(value: .reference(variable: .variable(
-                                reference: .variable(name: .pendingStateIndex)
-                            )))
-                        )),
+                        name: currentWorkingPendingState,
                         index: stateIndex
                     )),
                     rhs: .reference(variable: .variable(reference: .variable(
@@ -203,14 +201,7 @@ extension WhenCase {
                     elseBlock: .ifStatement(block: .ifElse(
                         condition: .conditional(condition: .comparison(value: .equality(
                             lhs: .reference(variable: .indexed(
-                                name: .reference(variable: .indexed(
-                                    name: .reference(variable: .variable(
-                                        reference: .variable(name: .pendingStates)
-                                    )),
-                                    index: .index(value: .reference(variable: .variable(
-                                        reference: .variable(name: .pendingStateIndex)
-                                    )))
-                                )),
+                                name: currentWorkingPendingState,
                                 index: .index(value: .literal(value: .integer(value: 0)))
                             )),
                             rhs: .literal(value: .bit(value: .high))

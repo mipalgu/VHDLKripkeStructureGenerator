@@ -61,6 +61,9 @@ extension WhenCase {
 
     init(generatorResetStateReadyFor state: State) {
         let name = state.name.rawValue
+        let currentWorkingPendingState = Expression.reference(variable: .variable(reference: .variable(
+            name: .currentWorkingPendingState
+        )))
         self.init(
             condition: .expression(expression: .reference(variable: .variable(reference: .variable(
                 name: VariableName(rawValue: "Reset\(name)Ready")!
@@ -100,12 +103,7 @@ extension WhenCase {
                                 reference: .variable(name: .observedIndex)
                             )))
                         ),
-                        value: .reference(variable: .indexed(
-                            name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
-                            index: .index(value: .reference(variable: .variable(
-                                reference: .variable(name: .pendingStateIndex)
-                            )))
-                        ))
+                        value: currentWorkingPendingState
                     )),
                     .statement(statement: .assignment(
                         name: .variable(reference: .variable(name: .observedIndex)),
