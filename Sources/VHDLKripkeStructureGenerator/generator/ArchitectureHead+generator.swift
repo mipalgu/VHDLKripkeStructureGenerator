@@ -160,10 +160,26 @@ extension ArchitectureHead {
         }
         let indexVariables: [HeadStatement] = [
             .definition(value: .signal(value: LocalSignal(
-                type: .alias(name: .pendingStatesType), name: .pendingStates
+                type: .alias(name: .pendingStatesType),
+                name: .pendingStates,
+                defaultValue: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(index: .others, value: .literal(value: .vector(value: .indexed(
+                        values: IndexedVector(values: [
+                            IndexedValue(index: .others, value: .bit(value: .low))
+                        ])
+                    ))))
+                ]))))
             ))),
             .definition(value: .signal(value: LocalSignal(
-                type: .alias(name: .targetStatesType), name: .observedStates
+                type: .alias(name: .targetStatesType),
+                name: .observedStates,
+                defaultValue: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(index: .others, value: .literal(value: .vector(value: .indexed(
+                        values: IndexedVector(values: [
+                            IndexedValue(index: .others, value: .bit(value: .low))
+                        ])
+                    ))))
+                ]))))
             ))),
             .definition(value: .signal(value: LocalSignal(
                 type: .ranged(type: .integer(size: pendingIndexSize)),
