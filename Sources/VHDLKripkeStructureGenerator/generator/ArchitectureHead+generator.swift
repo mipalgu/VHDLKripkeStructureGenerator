@@ -144,6 +144,10 @@ extension ArchitectureHead {
                 LocalSignal(
                     type: .ranged(type: .integer(size: targetIndexSize)),
                     name: VariableName(rawValue: "\(name)Index")!
+                ),
+                LocalSignal(
+                    type: machine.targetStateEncoding,
+                    name: VariableName(rawValue: "current\(name)TargetState")!
                 )
             ]
         }

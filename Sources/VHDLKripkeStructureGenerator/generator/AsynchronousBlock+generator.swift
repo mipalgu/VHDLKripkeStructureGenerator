@@ -163,25 +163,40 @@ extension AsynchronousBlock {
                 )))
             ))
         ]
-        let stateAssignments = machine.states.map {
+        let stateAssignments = machine.states.flatMap {
             let name = $0.name.rawValue
-            return AsynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(
-                    name: VariableName(rawValue: "gen\(name)Ready")!
+            return [
+                AsynchronousBlock.statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(rawValue: "gen\(name)Ready")!
+                    )),
+                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                        value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)ReadReady")!
+                        ))),
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .currentState))),
+                            rhs: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
+                        ))),
+                        elseBlock: .expression(value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)Ready")!
+                        ))))
+                    )))
                 )),
-                value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
-                    value: .reference(variable: .variable(reference: .variable(
-                        name: VariableName(rawValue: "\(name)ReadReady")!
-                    ))),
-                    condition: .conditional(condition: .comparison(value: .equality(
-                        lhs: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                        rhs: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
-                    ))),
-                    elseBlock: .expression(value: .reference(variable: .variable(reference: .variable(
-                        name: VariableName(rawValue: "\(name)Ready")!
-                    ))))
-                )))
-            ))
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(rawValue: "current\(name)TargetState")!
+                    )),
+                    value: .expression(value: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)TargetStates")!
+                        ))),
+                        index: .index(value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)Index")!
+                        ))))
+                    )))
+                ))
+            ]
         }
         self = .blocks(
             blocks: targetAssignments + generatorInvocations + stateAssignments + [.process(block: block)]

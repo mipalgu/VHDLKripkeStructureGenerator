@@ -65,10 +65,10 @@ extension WhenCase {
         let machine = representation.machine
         let maxIndex = machine.numberOfTargetStates
         let name = state.name.rawValue
-        let targetStates = VariableName(rawValue: "\(name)TargetStates")!
         let index = VariableName(rawValue: "\(name)Index")!
         let pendingStates = VariableName(rawValue: "Update\(name)PendingStates")!
         let working = VariableName(rawValue: "\(name)Working")!
+        let currentTargetState = VariableName(rawValue: "current\(name)TargetState")!
         self.init(
             condition: .expression(expression: .reference(variable: .variable(
                 reference: .variable(name: pendingStates)
@@ -86,13 +86,8 @@ extension WhenCase {
                     elseBlock: .ifStatement(block: .ifElse(
                         condition: .conditional(condition: .comparison(value: .equality(
                             lhs: .reference(variable: .indexed(
-                                name: .reference(variable: .indexed(
-                                    name: .reference(variable: .variable(reference: .variable(
-                                        name: targetStates
-                                    ))),
-                                    index: .index(value: .reference(variable: .variable(reference: .variable(
-                                        name: index
-                                    ))))
+                                name: .reference(variable: .variable(
+                                    reference: .variable(name: currentTargetState)
                                 )),
                                 index: .index(value: .literal(value: .integer(value: 0)))
                             )),
@@ -108,13 +103,8 @@ extension WhenCase {
                                         reference: .variable(name: .pendingInsertIndex)
                                     )))
                                 ),
-                                value: .reference(variable: .indexed(
-                                    name: .reference(variable: .variable(reference: .variable(
-                                        name: targetStates
-                                    ))),
-                                    index: .index(value: .reference(variable: .variable(
-                                        reference: .variable(name: index)
-                                    )))
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: currentTargetState)
                                 ))
                             )),
                             .statement(statement: .assignment(
