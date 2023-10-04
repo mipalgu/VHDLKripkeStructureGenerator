@@ -134,6 +134,35 @@ extension AsynchronousBlock {
                 ])
             ))
         }
+        let targetAssignments: [AsynchronousBlock] = [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentObservedState)),
+                value: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .observedStates))),
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: .observedSearchIndex)
+                    )))
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentPendingState)),
+                value: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: .pendingSearchIndex)
+                    )))
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentWorkingPendingState)),
+                value: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: .pendingStateIndex)
+                    )))
+                )))
+            ))
+        ]
         let stateAssignments = machine.states.map {
             let name = $0.name.rawValue
             return AsynchronousBlock.statement(statement: .assignment(
@@ -154,7 +183,9 @@ extension AsynchronousBlock {
                 )))
             ))
         }
-        self = .blocks(blocks: generatorInvocations + stateAssignments + [.process(block: block)])
+        self = .blocks(
+            blocks: targetAssignments + generatorInvocations + stateAssignments + [.process(block: block)]
+        )
     }
 
 }
