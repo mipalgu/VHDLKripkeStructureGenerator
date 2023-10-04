@@ -78,7 +78,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         else {
             return []
         }
-        let primitiveTypes = VHDLFile.primitiveTypes
+        // let primitiveTypes = VHDLFile.primitiveTypes
         let states = machine.states
         let bramInterface = VHDLFile(bramInterfaceFor: representation)
         let stateFiles: [[VHDLFile]] = states.compactMap {
@@ -99,7 +99,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         guard stateFiles.count == states.count else {
             return []
         }
-        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes, generator, bramInterface] +
+        return [verifiedMachine, runner, ringletRunner, types, generator, bramInterface] +
             stateFiles.flatMap { $0 }
     }
 
@@ -129,12 +129,17 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         let name = representation.machine.name.rawValue
         guard
             vhdlData.count == vhdlFiles.count,
-            let package = self.generatePackage(representation: representation)
+            let package = self.generatePackage(representation: representation),
+            let primitiveTypesData = String.primitiveTypes.data(using: .utf8)
         else {
             return nil
         }
+        let primitiveTypes = FileWrapper(regularFileWithContents: primitiveTypesData)
+        primitiveTypes.preferredFilename = "PrimitiveTypes.vhd"
         let vhdlFolder = FileWrapper(
-            directoryWithFileWrappers: Dictionary(uniqueKeysWithValues: vhdlData)
+            directoryWithFileWrappers: Dictionary(
+                uniqueKeysWithValues: vhdlData + [("PrimitiveTypes.vhd", primitiveTypes)]
+            )
         )
         vhdlFolder.preferredFilename = "vhdl"
         let packageFolder = FileWrapper(directoryWithFileWrappers: ["\(name)": package])
