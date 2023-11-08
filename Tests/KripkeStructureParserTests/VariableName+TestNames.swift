@@ -1,4 +1,4 @@
-// Type+encodedType.swift
+// TestNames.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,59 +56,41 @@
 
 import VHDLParsing
 
-extension Type {
+/// Adds common test variable names.
+extension VariableName {
 
-    init?(encodedType: Type) {
-        guard case .signal(let type) = encodedType else {
-            return nil
-        }
-        self = .signal(type: SignalType(encodedType: type))
-    }
+    // swiftlint:disable force_unwrapping
 
-}
+    /// The `Behavioral` name for an architecture.
+    static let behavioral = VariableName(rawValue: "Behavioral")!
 
-extension SignalType {
+    /// A variable `initialX`.
+    static let initialX = VariableName(rawValue: "initialX")!
 
-    @usableFromInline static let logicVector2 = SignalType.ranged(type: .stdLogicVector(
-        size: .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
-    ))
+    /// A variable `initialY`.
+    static let initialY = VariableName(rawValue: "initialY")!
 
-    init(encodedType: SignalType) {
-        switch encodedType {
-        case .bit, .boolean:
-            self = .stdLogic
-        case .integer, .natural, .positive, .real:
-            self = SignalType.logicVector32
-        case .stdLogic, .stdULogic:
-            self = .logicVector2
-        case .ranged(let type):
-            self = .ranged(type: RangedType(encodedType: type))
-        }
-    }
+    /// The name of `Machine1`.
+    static let machine1 = VariableName(rawValue: "Machine1")!
 
-}
+    /// A variable name `NullRepresentation`.
+    static let nullRepresentation = VariableName(rawValue: "NullRepresentation")!
 
-extension RangedType {
+    /// A variable `S0`.
+    static let s0 = VariableName(rawValue: "S0")!
 
-    init(encodedType: RangedType) {
-        switch encodedType {
-        case .bitVector(let size), .signed(let size), .unsigned(let size):
-            self = .stdLogicVector(size: size)
-        case .integer:
-            self = .stdLogicVector(
-                size: .downto(
-                    upper: .literal(value: .integer(value: max(0, encodedType.bits - 1))),
-                    lower: .literal(value: .integer(value: 0))
-                )
-            )
-        case .stdLogicVector(let size), .stdULogicVector(let size):
-            self = .stdLogicVector(
-                size: .downto(
-                    upper: .literal(value: .integer(value: max(0, size.size! * 2 - 1))),
-                    lower: .literal(value: .integer(value: 0))
-                )
-            )
-        }
-    }
+    /// A variable `suspendedX`.
+    static let suspendedX = VariableName(rawValue: "suspendedX")!
+
+    /// A variable `x`.
+    static let x = VariableName(rawValue: "x")!
+
+    /// A variable `y`
+    static let y = VariableName(rawValue: "y")!
+
+    /// A variable `y2`
+    static let y2 = VariableName(rawValue: "y2")!
+
+    // swiftlint:enable force_unwrapping
 
 }

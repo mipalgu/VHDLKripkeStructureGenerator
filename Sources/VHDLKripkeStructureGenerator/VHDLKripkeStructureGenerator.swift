@@ -54,6 +54,11 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
+#if os(Linux)
+import IO
+#endif
+import KripkeStructureParser
 import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
 import VHDLParsing
@@ -62,9 +67,9 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
 
     public init() {}
 
-    public func generate(machine: Machine) -> [VHDLFile] {
+    public func generate<T>(representation: T) -> [VHDLFile] where T: MachineVHDLRepresentable {
+        let machine = representation.machine
         guard
-            let representation = MachineRepresentation(machine: machine),
             let verifiedMachine = VHDLFile(verifiable: representation),
             let runner = VHDLFile(runnerFor: representation),
             let ringletRunner = VHDLFile(ringletRunnerFor: representation),
@@ -73,7 +78,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         else {
             return []
         }
-        let primitiveTypes = VHDLFile.primitiveTypes
+        // let primitiveTypes = VHDLFile.primitiveTypes
         let states = machine.states
         let bramInterface = VHDLFile(bramInterfaceFor: representation)
         let stateFiles: [[VHDLFile]] = states.compactMap {
@@ -94,8 +99,55 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         guard stateFiles.count == states.count else {
             return []
         }
-        return [verifiedMachine, runner, ringletRunner, types, primitiveTypes, generator, bramInterface] +
+        return [verifiedMachine, runner, ringletRunner, types, generator, bramInterface] +
             stateFiles.flatMap { $0 }
+    }
+
+    public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
+        let generator = PackageGenerator()
+        return generator.swiftPackage(representation: representation)
+    }
+
+    public func generateAll<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
+        let vhdlFiles = self.generate(representation: representation)
+        let vhdlData: [(String, FileWrapper)] = vhdlFiles.compactMap { file in
+            guard let data = file.rawValue.data(using: .utf8) else {
+                return nil
+            }
+            let name: String
+            if let entity = file.entities.first {
+                name = entity.name.rawValue
+            } else if let package = file.packages.first {
+                name = package.name.rawValue
+            } else {
+                return nil
+            }
+            let wrapper = FileWrapper(regularFileWithContents: data)
+            wrapper.preferredFilename = "\(name).vhd"
+            return ("\(name).vhd", wrapper)
+        }
+        let name = representation.machine.name.rawValue
+        guard
+            vhdlData.count == vhdlFiles.count,
+            let package = self.generatePackage(representation: representation),
+            let primitiveTypesData = String.primitiveTypes.data(using: .utf8)
+        else {
+            return nil
+        }
+        let primitiveTypes = FileWrapper(regularFileWithContents: primitiveTypesData)
+        primitiveTypes.preferredFilename = "PrimitiveTypes.vhd"
+        let vhdlFolder = FileWrapper(
+            directoryWithFileWrappers: Dictionary(
+                uniqueKeysWithValues: vhdlData + [("PrimitiveTypes.vhd", primitiveTypes)]
+            )
+        )
+        vhdlFolder.preferredFilename = "vhdl"
+        let packageFolder = FileWrapper(directoryWithFileWrappers: ["\(name)": package])
+        packageFolder.preferredFilename = "\(name)"
+        let parent = FileWrapper(
+            directoryWithFileWrappers: ["vhdl": vhdlFolder, "\(name)": packageFolder]
+        )
+        return parent
     }
 
 }

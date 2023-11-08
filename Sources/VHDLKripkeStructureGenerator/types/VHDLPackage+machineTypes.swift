@@ -55,6 +55,7 @@
 // 
 
 import Foundation
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -139,20 +140,6 @@ extension VHDLPackage {
                 ))))
             ]
         )
-    }
-
-}
-
-extension MachineVHDLRepresentable {
-
-    /// Find all constants in the architecture head.
-    @inlinable var allConstants: [HeadStatement] {
-        self.architectureHead.statements.filter {
-            guard case .definition(let def) = $0, case .constant = def else {
-                return false
-            }
-            return true
-        }
     }
 
 }

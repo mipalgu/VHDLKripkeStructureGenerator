@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -69,7 +70,8 @@ extension ArchitectureHead {
             .checkIfFinished,
             .verifyFinished,
             .hasFinished,
-            .chooseNextInsertion
+            .chooseNextInsertion,
+            .hasError
         ].enumerated().map {
             HeadStatement.definition(value: .constant(value: ConstantSignal(
                 name: $1,
@@ -114,13 +116,15 @@ extension ArchitectureHead {
             startIndex += internals.count
             return internals
         }
+        let numberOfPendingStates = machine.numberOfPendingStates
+        let numberOfTargetStates = machine.numberOfTargetStates
         let pendingIndexSize = VectorSize.to(
             lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: machine.numberOfPendingStates))
+            upper: .literal(value: .integer(value: numberOfPendingStates))
         )
         let targetIndexSize = VectorSize.to(
             lower: .literal(value: .integer(value: 0)),
-            upper: .literal(value: .integer(value: machine.numberOfTargetStates))
+            upper: .literal(value: .integer(value: numberOfTargetStates))
         )
         let stateSignals = machine.states.flatMap {
             let name = $0.name.rawValue
@@ -140,6 +144,10 @@ extension ArchitectureHead {
                 LocalSignal(
                     type: .ranged(type: .integer(size: targetIndexSize)),
                     name: VariableName(rawValue: "\(name)Index")!
+                ),
+                LocalSignal(
+                    type: machine.targetStateEncoding,
+                    name: VariableName(rawValue: "current\(name)TargetState")!
                 )
             ]
         }
@@ -155,44 +163,90 @@ extension ArchitectureHead {
             let entity = Entity(stateGeneratorFor: $0, in: representation)!
             return HeadStatement.definition(value: .component(value: ComponentDefinition(entity: entity)))
         }
-        self.init(
-            statements: [
-                .definition(value: .signal(value: LocalSignal(type: .logicVector8, name: .fromState))),
-                .definition(value: .signal(value: LocalSignal(type: .logicVector8, name: .nextState))),
-                .definition(value: .signal(value: LocalSignal(
-                    type: .logicVector8,
-                    name: .currentState,
-                    defaultValue: .literal(value: .vector(value: .bits(value: BitVector(
-                        values: [BitLiteral](repeating: .low, count: 8)
+        let indexVariables: [HeadStatement] = [
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: .pendingStatesType),
+                name: .pendingStates,
+                defaultValue: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(index: .others, value: .literal(value: .vector(value: .indexed(
+                        values: IndexedVector(values: [
+                            IndexedValue(index: .others, value: .bit(value: .low))
+                        ])
                     ))))
-                )))
-            ] + constants + stateInternals + [
-                .definition(value: .signal(value: LocalSignal(
-                    type: .alias(name: .pendingStatesType), name: .pendingStates
+                ]))))
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: .targetStatesType),
+                name: .observedStates,
+                defaultValue: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                    IndexedValue(index: .others, value: .literal(value: .vector(value: .indexed(
+                        values: IndexedVector(values: [
+                            IndexedValue(index: .others, value: .bit(value: .low))
+                        ])
+                    ))))
+                ]))))
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: pendingIndexSize)),
+                name: .pendingStateIndex
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: targetIndexSize)),
+                name: .observedIndex
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: max(0, numberOfPendingStates - 1)))
                 ))),
-                .definition(value: .signal(value: LocalSignal(
-                    type: .alias(name: .targetStatesType), name: .observedStates
+                name: .pendingSearchIndex
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: max(0, numberOfTargetStates - 1)))
                 ))),
-                .definition(value: .signal(value: LocalSignal(
-                    type: .ranged(type: .integer(size: pendingIndexSize)),
-                    name: .pendingStateIndex
-                ))),
-                .definition(value: .signal(value: LocalSignal(
-                    type: .ranged(type: .integer(size: targetIndexSize)),
-                    name: .observedIndex
-                ))),
-                .definition(value: .signal(value: LocalSignal(
-                    type: .ranged(type: .integer(size: pendingIndexSize)),
-                    name: .pendingInsertIndex
-                ))),
-                .definition(value: .signal(value: LocalSignal(
-                    type: .ranged(type: .integer(size: pendingIndexSize)),
-                    name: .maxInsertIndex
-                )))
-            ] + stateSignals + [
-                .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isDuplicate))),
-                .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isFinished)))
-            ] + genSignals + generators
+                name: .observedSearchIndex
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: pendingIndexSize)),
+                name: .pendingInsertIndex
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: pendingIndexSize)),
+                name: .maxInsertIndex
+            )))
+        ]
+        let stateTrackers: [HeadStatement] = [
+            .definition(value: .signal(value: LocalSignal(type: .logicVector8, name: .fromState))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector8, name: .nextState))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .logicVector8,
+                name: .currentState,
+                defaultValue: .literal(value: .vector(value: .bits(value: BitVector(
+                    values: [BitLiteral](repeating: .low, count: 8)
+                ))))
+            )))
+        ]
+        let targetValues: [HeadStatement] = [
+            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isDuplicate))),
+            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .isFinished))),
+            .definition(value: .signal(value: LocalSignal(
+                type: machine.targetStateEncoding,
+                name: .currentObservedState
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: machine.targetStateEncoding,
+                name: .currentPendingState
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: machine.targetStateEncoding,
+                name: .currentWorkingPendingState
+            )))
+        ]
+        self.init(
+            statements: stateTrackers + constants + stateInternals + indexVariables + stateSignals
+                + targetValues + genSignals + generators
         )
     }
 

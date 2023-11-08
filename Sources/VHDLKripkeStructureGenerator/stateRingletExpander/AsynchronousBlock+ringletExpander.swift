@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -296,31 +297,5 @@ extension Expression {
     }
 
     // swiftlint:enable function_body_length
-
-}
-
-/// Add concatenated helper property.
-extension Array where Element == Expression {
-
-    /// Concatenate expressions together.
-    @inlinable var concatenated: Expression {
-        self.joined { .binary(operation: .concatenate(lhs: $0, rhs: $1)) }
-    }
-
-}
-
-/// Create joined method.
-extension Array {
-
-    /// Join elements of an array together using a reducing function.
-    /// - Parameter fn: The function that reduces two elements into 1.
-    /// - Returns: The joined element.
-    @inlinable
-    func joined(fn: (Element, Element) -> Element) -> Element {
-        guard let first = self.first else {
-            fatalError("Failed to join empty array!")
-        }
-        return self.dropFirst().reduce(first) { fn($0, $1) }
-    }
 
 }

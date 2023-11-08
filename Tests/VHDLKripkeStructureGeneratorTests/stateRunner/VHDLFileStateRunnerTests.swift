@@ -107,7 +107,7 @@ final class VHDLFileStateRunnerTests: XCTestCase {
     /// Test runner is generated correctly.
     func testStateRunner() {
         let result = VHDLFile(stateRunnerFor: machine.states[0], in: representation)
-        print(result!.rawValue)
+        // print(result!.rawValue)
     }
 
 }

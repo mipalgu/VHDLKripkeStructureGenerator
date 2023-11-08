@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -155,46 +156,5 @@ extension Entity {
     }
 
     // swiftlint:enable function_body_length
-
-}
-
-/// Add state type property.
-extension MachineVHDLRepresentable {
-
-    /// Get type of state array.
-    @inlinable var stateType: SignalType? {
-        let currentStateSignal: LocalSignal? = self.architectureHead.statements.lazy
-            .compactMap { (statement: HeadStatement) -> LocalSignal? in
-                guard
-                    case .definition(let def) = statement,
-                    case .signal(let signal) = def
-                else {
-                    return nil
-                }
-                return signal
-            }
-            .first { $0.name == .currentState }
-        guard case .signal(let type) = currentStateSignal?.type else {
-            return nil
-        }
-        return type
-    }
-
-    /// The number of bits in the state encoding.
-    @inlinable var numberOfStateBits: Int? {
-        self.architectureHead.statements.lazy.compactMap {
-            guard
-                case .definition(let def) = $0,
-                case .signal(let signal) = def,
-                signal.name == .currentState,
-                case .signal(let type) = signal.type,
-                case .ranged(let vec) = type
-            else {
-                return nil
-            }
-            return vec.size.size
-        }
-        .first
-    }
 
 }

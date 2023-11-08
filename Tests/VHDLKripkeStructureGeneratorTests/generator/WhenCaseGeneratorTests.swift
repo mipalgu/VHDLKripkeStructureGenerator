@@ -88,7 +88,7 @@ final class WhenCaseGeneratorTests: XCTestCase {
     /// Test set job has correct format.
     func testSetJob() {
         let result = WhenCase(generatorSetJobFor: representation)!
-        print(result.rawValue)
+        // print(result.rawValue)
     }
 
 }

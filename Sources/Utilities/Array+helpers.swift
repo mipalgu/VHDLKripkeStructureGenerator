@@ -1,4 +1,4 @@
-// Record+encodedTypes.swift
+// Array+helpers.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,31 +54,30 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-extension Record {
+/// Add concatenated helper property.
+public extension Array where Element == Expression {
 
-    var encodedTypes: [(RecordTypeDeclaration, Type)] {
-        self.types.map { ($0, Type(encodedType: $0.type)!)}
+    /// Concatenate expressions together.
+    @inlinable var concatenated: Expression {
+        self.joined { .binary(operation: .concatenate(lhs: $0, rhs: $1)) }
     }
 
-    var encodedIndexes: [(RecordTypeDeclaration, VectorIndex)] {
-        var currentIndex = 0
-        return self.types.map {
-            let numberOfBits = $0.type.signalType.encodedBits
-            let index: VectorIndex
-            if numberOfBits == 1 {
-                index = VectorIndex.index(value: .literal(value: .integer(value: currentIndex)))
-            } else {
-                index = VectorIndex.range(value: .to(
-                    lower: .literal(value: .integer(value: currentIndex)),
-                    upper: .literal(value: .integer(value: currentIndex + numberOfBits - 1))
-                ))
-            }
-            currentIndex += numberOfBits
-            return ($0, index)
+}
+
+/// Create joined method.
+public extension Array {
+
+    /// Join elements of an array together using a reducing function.
+    /// - Parameter fn: The function that reduces two elements into 1.
+    /// - Returns: The joined element.
+    @inlinable
+    func joined(fn: (Element, Element) -> Element) -> Element {
+        guard let first = self.first else {
+            fatalError("Failed to join empty array!")
         }
+        return self.dropFirst().reduce(first) { fn($0, $1) }
     }
 
 }

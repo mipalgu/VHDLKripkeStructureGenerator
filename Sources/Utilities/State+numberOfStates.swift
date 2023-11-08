@@ -58,7 +58,7 @@ import VHDLMachines
 import VHDLParsing
 
 /// Add helpers for calculating state explosion.
-extension State {
+public extension State {
 
     /// Calculate the maxmimum state-space of this state.
     /// - Parameter representation: The machine representation to use.

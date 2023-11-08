@@ -55,6 +55,7 @@
 // 
 
 import Foundation
+import Utilities
 import VHDLMachines
 import VHDLParsing
 

@@ -66,69 +66,86 @@ extension WhenCase {
         let targetStateIndex = VectorIndex.range(value: .downto(
             upper: targetStateSize.max, lower: .literal(value: .integer(value: 1))
         ))
-        self.init(
-            condition: .expression(expression: .reference(variable: .variable(
-                reference: .variable(name: .checkForDuplicate)
+        let currentWorkingPendingState = Expression.reference(variable: .variable(reference: .variable(
+            name: .currentWorkingPendingState
+        )))
+        let currentObservedState = Expression.reference(variable: .variable(reference: .variable(
+            name: .currentObservedState
+        )))
+        let code = SynchronousBlock.ifStatement(block: .ifElse(
+            condition: .conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .indexed(
+                    name: currentObservedState, index: .index(value: .literal(value: .integer(value: 0)))
+                )),
+                rhs: .literal(value: .bit(value: .high))
             ))),
-            code: .blocks(blocks: [
-                .forLoop(loop: ForLoop(
-                    iterator: .i,
-                    range: .to(
-                        lower: .literal(value: .integer(value: 0)),
-                        upper: .literal(value: .integer(value: maxIndex))
-                    ),
-                    body: .ifStatement(block: .ifStatement(
-                        condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .indexed(
-                                name: .reference(variable: .indexed(
-                                    name: .reference(variable: .variable(
-                                        reference: .variable(name: .observedStates)
-                                    )),
-                                    index: .index(value: .reference(variable: .variable(
-                                        reference: .variable(name: .i)
-                                    )))
-                                )),
-                                index: .index(value: .literal(value: .integer(value: 0)))
-                            )),
-                            rhs: .literal(value: .bit(value: .high))
+            ifBlock: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .indexed(
+                        name: currentWorkingPendingState, index: targetStateIndex
+                    )),
+                    rhs: .reference(variable: .indexed(name: currentObservedState, index: targetStateIndex))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .isDuplicate)),
+                        value: .literal(value: .boolean(value: true))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .verifyDuplicate)))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .observedSearchIndex)),
+                        value: .literal(value: .integer(value: 0))
+                    ))
+                ]),
+                elseBlock: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(
+                            name: .observedSearchIndex
                         ))),
-                        ifBlock: .ifStatement(block: .ifStatement(
-                            condition: .conditional(condition: .comparison(value: .equality(
-                                lhs: .reference(variable: .indexed(
-                                    name: .reference(variable: .indexed(
-                                        name: .reference(variable: .variable(
-                                            reference: .variable(name: .pendingStates)
-                                        )),
-                                        index: .index(value: .reference(variable: .variable(
-                                            reference: .variable(name: .pendingStateIndex)
-                                        )))
-                                    )),
-                                    index: targetStateIndex
-                                )),
-                                rhs: .reference(variable: .indexed(
-                                    name: .reference(variable: .indexed(
-                                        name: .reference(variable: .variable(
-                                            reference: .variable(name: .observedStates)
-                                        )),
-                                        index: .index(value: .reference(variable: .variable(
-                                            reference: .variable(name: .i)
-                                        )))
-                                    )),
-                                    index: targetStateIndex
-                                ))
+                        rhs: .literal(value: .integer(value: maxIndex))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(reference: .variable(
+                                name: .verifyDuplicate
+                            )))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .observedSearchIndex)),
+                            value: .literal(value: .integer(value: 0))
+                        ))
+                    ]),
+                    elseBlock: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .observedSearchIndex)),
+                        value: .binary(operation: .addition(
+                            lhs: .reference(variable: .variable(reference: .variable(
+                                name: .observedSearchIndex
                             ))),
-                            ifBlock: .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .isDuplicate)),
-                                value: .literal(value: .boolean(value: true))
-                            ))
+                            rhs: .literal(value: .integer(value: 1))
                         ))
                     ))
+                ))
+            )),
+            elseBlock: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .observedSearchIndex)),
+                    value: .literal(value: .integer(value: 0))
                 )),
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(name: .currentState)),
                     value: .reference(variable: .variable(reference: .variable(name: .verifyDuplicate)))
                 ))
             ])
+        ))
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .checkForDuplicate)
+            ))),
+            code: code
         )
     }
 

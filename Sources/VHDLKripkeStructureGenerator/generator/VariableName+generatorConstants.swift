@@ -67,8 +67,22 @@ extension VariableName {
     /// The `ChooseNextInsertion` constant.
     @usableFromInline static let chooseNextInsertion = VariableName(rawValue: "ChooseNextInsertion")!
 
+    /// The `currentObservedState` signal.
+    @usableFromInline static let currentObservedState = VariableName(rawValue: "currentObservedState")!
+
+    /// The `currentPendingState` signal.
+    @usableFromInline static let currentPendingState = VariableName(rawValue: "currentPendingState")!
+
+    /// The `currentWorkingPendingState` signal.
+    @usableFromInline static let currentWorkingPendingState = VariableName(
+        rawValue: "currentWorkingPendingState"
+    )!
+
     /// The `fromState` signal.
     @usableFromInline static let fromState = VariableName(rawValue: "fromState")!
+
+    /// The `HasError` constant.
+    @usableFromInline static let hasError = VariableName(rawValue: "HasError")!
 
     /// The `HasFinished` signal.
     @usableFromInline static let hasFinished = VariableName(rawValue: "HasFinished")!
@@ -82,11 +96,17 @@ extension VariableName {
     /// The `observedIndex` signal.
     @usableFromInline static let observedIndex = VariableName(rawValue: "observedIndex")!
 
+    /// The `observedSearchIndex` signal.
+    @usableFromInline static let observedSearchIndex = VariableName(rawValue: "observedSearchIndex")!
+
     /// The `observedStates` signal.
     @usableFromInline static let observedStates = VariableName(rawValue: "observedStates")!
 
     /// The `pendingInsertIndex` signal.
     @usableFromInline static let pendingInsertIndex = VariableName(rawValue: "pendingInsertIndex")!
+
+    /// The `pendingSearchIndex` signal.
+    @usableFromInline static let pendingSearchIndex = VariableName(rawValue: "pendingSearchIndex")!
 
     /// The `pendingStateIndex` signal.
     @usableFromInline static let pendingStateIndex = VariableName(rawValue: "pendingStateIndex")!

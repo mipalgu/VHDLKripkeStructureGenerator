@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -94,7 +95,7 @@ extension PortMap {
         let externals = representation.machine.externalSignals.map {
             VariableMap(
                 lhs: .variable(reference: .variable(name: .name(for: $0))),
-                rhs: .reference(variable: .variable(reference: .variable(name: $0.name)))
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: $0.name))))
             )
         }
         let snapshots: [VariableMap] = representation.machine.externalSignals.compactMap {
@@ -107,7 +108,7 @@ extension PortMap {
         }
         let clkMap = VariableMap(
             lhs: .variable(reference: .variable(name: .clk)),
-            rhs: .reference(variable: .variable(reference: .variable(name: .clk)))
+            rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .clk))))
         )
         let constants = [VariableMap](runner: representation)
         self.init(variables: [clkMap] + externals + snapshots + machineVariables + stateVariables + constants)
@@ -126,43 +127,63 @@ extension Array where Element == VariableMap {
         self = [
             VariableMap(
                 lhs: .variable(reference: .variable(name: .currentStateIn(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .currentStateIn)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .currentStateIn)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .previousRingletIn(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .previousRingletIn)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .previousRingletIn)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .internalStateIn(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .internalStateIn)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .internalStateIn)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .targetStateIn(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .targetStateIn)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .targetStateIn)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .currentStateOut(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .currentStateOut)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .currentStateOut)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .previousRingletOut)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .previousRingletOut)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .internalStateOut(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .internalState)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .internalState)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .targetStateOut(for: machine))),
-                rhs: .reference(variable: .variable(reference: .variable(name: .targetStateOut)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .targetStateOut)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .setInternalSignals)),
-                rhs: .reference(variable: .variable(reference: .variable(name: .setInternalSignals)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .setInternalSignals)))
+                )
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .reset)),
-                rhs: .reference(variable: .variable(reference: .variable(name: .rst)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: .rst)))
+                )
             )
         ]
     }
@@ -225,7 +246,7 @@ extension Array where Element == VariableMap {
         self = [
             VariableMap(
                 lhs: .variable(reference: .variable(name: name)),
-                rhs: .reference(variable: .variable(reference: .variable(name: name)))
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: name))))
             )
         ]
     }
@@ -235,11 +256,13 @@ extension Array where Element == VariableMap {
         self = [
             VariableMap(
                 lhs: .variable(reference: .variable(name: name)),
-                rhs: .reference(variable: .variable(reference: .variable(name: name)))
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: name))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: inputName)),
-                rhs: .reference(variable: .variable(reference: .variable(name: inputName)))
+                rhs: .expression(
+                    value: .reference(variable: .variable(reference: .variable(name: inputName)))
+                )
             )
         ]
     }

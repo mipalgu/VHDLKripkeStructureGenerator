@@ -1,4 +1,4 @@
-// State+representation.swift
+// NodeVariable.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,25 +54,12 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
 import VHDLParsing
 
-/// Add state representation.
-extension State {
+struct NodeVariable: Equatable, Hashable, Sendable, Codable {
 
-    /// The encoded representation of this state.
-    /// - Parameter representation: The machine representation to use.
-    /// - Returns: The encoded value representing this state.
-    @inlinable
-    func representation<T>(in representation: T) -> SignalLiteral where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        guard let stateIndex = machine.states.firstIndex(of: self) else {
-            fatalError("Cannot find state \(self) in machine \(machine.name.rawValue)!")
-        }
-        let bitRepresentation = BitLiteral.bitVersion(
-            of: stateIndex, bitsRequired: machine.numberOfStateBits
-        )
-        return .vector(value: .bits(value: BitVector(values: bitRepresentation)))
-    }
+    let data: RecordTypeDeclaration
+
+    let type: NodeType
 
 }

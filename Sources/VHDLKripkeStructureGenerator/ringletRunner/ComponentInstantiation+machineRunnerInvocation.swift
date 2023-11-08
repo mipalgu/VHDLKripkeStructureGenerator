@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -137,8 +138,8 @@ extension ComponentInstantiation {
         let recordMapping = allVariables.map {
             VariableMap(
                 lhs: .variable(reference: .variable(name: $0)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: $0)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: $0))
                 ))))
             )
         }
@@ -159,54 +160,54 @@ extension Array where Element == VariableMap {
         self.init([
             VariableMap(
                 lhs: .variable(reference: .variable(name: .clk)),
-                rhs: .reference(variable: .variable(reference: .variable(name: .clk)))
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .clk))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .internalStateIn)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .internalStateIn)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .internalStateIn))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .internalStateOut)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .internalStateOut)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .internalStateOut))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .currentStateIn)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .currentStateIn)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .currentStateIn))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .currentStateOut)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .currentStateOut)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .currentStateOut))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .previousRingletIn)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .previousRingletIn)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .previousRingletIn))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .previousRingletOut)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .previousRingletOut)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .previousRingletOut))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .targetStateIn)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .targetStateIn)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .targetStateIn))
                 ))))
             ),
             VariableMap(
                 lhs: .variable(reference: .variable(name: .targetStateOut)),
-                rhs: .reference(variable: .variable(reference: .member(access: MemberAccess(
-                    record: name, member: .variable(name: .targetStateOut)
+                rhs: .expression(value: .reference(variable: .variable(reference: .member(
+                    access: MemberAccess(record: name, member: .variable(name: .targetStateOut))
                 ))))
             )
         ])

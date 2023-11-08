@@ -61,46 +61,51 @@ extension WhenCase {
 
     init<T>(generatorChooseNextInsertionFor representation: T) where T: MachineVHDLRepresentable {
         let maxIndex = max(0, representation.machine.numberOfTargetStates - 1)
-        self.init(
-            condition: .expression(expression: .reference(variable: .variable(
-                reference: .variable(name: .chooseNextInsertion)
+        let code: SynchronousBlock = .ifStatement(block: .ifElse(
+            condition: .conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .currentPendingState))),
+                    index: .index(value: .literal(value: .integer(value: 0)))
+                )),
+                rhs: .literal(value: .bit(value: .low))
             ))),
-            code: .blocks(blocks: [
-                .forLoop(loop: ForLoop(
-                    iterator: .i,
-                    range: .to(
-                        lower: .literal(value: .integer(value: 0)),
-                        upper: .literal(value: .integer(value: maxIndex))
-                    ),
-                    body: .ifStatement(block: .ifStatement(
-                        condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .indexed(
-                                name: .reference(variable: .indexed(
-                                    name: .reference(variable: .variable(
-                                        reference: .variable(name: .pendingStates)
-                                    )),
-                                    index: .index(value: .reference(variable: .variable(
-                                        reference: .variable(name: .i)
-                                    )))
-                                )),
-                                index: .index(value: .literal(value: .integer(value: 0)))
-                            )),
-                            rhs: .literal(value: .bit(value: .low))
-                        ))),
-                        ifBlock: .blocks(blocks: [
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .pendingInsertIndex)),
-                                value: .reference(variable: .variable(reference: .variable(name: .i)))
-                            )),
-                            .statement(statement: .exit)
-                        ])
-                    ))
+            ifBlock: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .pendingInsertIndex)),
+                    value: .reference(variable: .variable(reference: .variable(name: .pendingSearchIndex)))
                 )),
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(name: .currentState)),
                     value: .reference(variable: .variable(reference: .variable(name: .fromState)))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .pendingSearchIndex)),
+                    value: .literal(value: .integer(value: 0))
                 ))
-            ])
+            ]),
+            elseBlock: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .pendingSearchIndex))),
+                    rhs: .literal(value: .integer(value: (maxIndex + 1) * 2 - 1))
+                ))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .hasError)))
+                )),
+                elseBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .pendingSearchIndex)),
+                    value: .binary(operation: .addition(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .pendingSearchIndex))),
+                        rhs: .literal(value: .integer(value: 1))
+                    ))
+                ))
+            ))
+        ))
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .chooseNextInsertion)
+            ))),
+            code: code
         )
     }
 

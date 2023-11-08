@@ -55,6 +55,7 @@
 // 
 
 import Foundation
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -385,13 +386,6 @@ extension VectorSize {
 }
 
 extension Type {
-
-    @inlinable var signalType: SignalType {
-        guard case .signal(let type) = self else {
-            fatalError("Cannot discern signal type of \(self)!")
-        }
-        return type
-    }
 
     @inlinable var lowerTypeIndex: [Int] {
         signalType.lowerTypeIndex

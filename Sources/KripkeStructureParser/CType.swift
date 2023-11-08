@@ -1,4 +1,4 @@
-// Machine+stateEncoding.swift
+// CType.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,27 +54,35 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
-import VHDLParsing
+enum CType: String, Equatable, Hashable, Sendable, Codable {
 
-/// Add state encoding helpers.
-extension Machine {
+    case uint8 = "uint8_t"
 
-    /// The number of bits required to represent every state in this machine.
-    @inlinable var numberOfStateBits: Int {
-        let numberOfStates = max(self.states.count, 2)
-        guard let numberOfBits = BitLiteral.bitsRequired(for: numberOfStates - 1) else {
-            fatalError("Incorrect number of states \(self.states.count)")
+    case uint16 = "uint16_t"
+
+    case uint32 = "uint32_t"
+
+    case int8 = "int8_t"
+
+    case int16 = "int16_t"
+
+    case int32 = "int32_t"
+
+    case bool = "bool"
+
+    case float = "float"
+
+    init(signedVersion: CType) {
+        switch signedVersion {
+        case .int8, .int16, .int32, .bool, .float:
+            self = signedVersion
+        case .uint8:
+            self = .int8
+        case .uint16:
+            self = .int16
+        case .uint32:
+            self = .int32
         }
-        return numberOfBits
-    }
-
-    /// The type for representing a state.
-    @inlinable var statesEncoding: SignalType {
-        .ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: numberOfStateBits - 1)),
-            lower: .literal(value: .integer(value: 0))
-        )))
     }
 
 }

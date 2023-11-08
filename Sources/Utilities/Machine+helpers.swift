@@ -1,4 +1,4 @@
-// SignalType+numberOfValues.swift
+// Machine+helpers.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,69 +54,30 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+import VHDLMachines
 import VHDLParsing
 
-/// Add state calculations.
-extension SignalType {
+/// Add helpers to machine.
+public extension Machine {
 
-    /// The number of possible values represented by this type.
-    @inlinable var numberOfValues: Int {
-        switch self {
-        case .bit, .boolean:
-            return 2
-        case .integer, .natural, .positive, .real:
-            return Int(UInt32.max) + 1
-        case .stdLogic, .stdULogic:
-            return 3
-        case .ranged(let type):
-            return type.numberOfValues
-        }
+    /// The number of state variables in this machine.
+    @inlinable var stateVariablesAmount: Int {
+        self.states.reduce(0) { $0 + $1.signals.count }
     }
 
-    // @inlinable var numberOfUnresolvedValues: Int {
-    //     switch self {
-    //     case .bit, .boolean, .integer, .natural, .positive, .real:
-    //         return self.numberOfValues
-    //     case .stdLogic, .stdULogic:
-    //         return 9
-    //     case .ranged(let type):
-    //         return type.numberOfUnresolvedValues
-    //     }
-    // }
-
-}
-
-/// Add state calculations.
-extension RangedType {
-
-    // swiftlint:disable force_unwrapping
-
-    /// The number of possible values represented by this type.
-    @inlinable var numberOfValues: Int {
-        let size = self.size.size!
-        switch self {
-        case .bitVector, .signed, .unsigned:
-            return Int(ceil(pow(Double(SignalType.bit.numberOfValues), Double(size))))
-        case .integer:
-            return size
-        case .stdLogicVector, .stdULogicVector:
-            return Int(ceil(pow(Double(SignalType.stdLogic.numberOfValues), Double(size))))
-        }
+    /// A dictionary of all the state variables that exist within the machine. The `Key` of the dictionary is
+    /// the name of the State, with the `Value` representing an array of variables local to that State.
+    /// - Note: This dictionary only includes States with State variables; all States without State variables
+    /// are not included.
+    /// - Warning: This property does not check for duplicate state names within the machine. The behaviour
+    /// is undefined in this case.
+    @inlinable var stateVariables: [VariableName: [LocalSignal]] {
+        Dictionary(uniqueKeysWithValues: self.states.compactMap {
+            guard !$0.signals.isEmpty else {
+                return nil
+            }
+            return ($0.name, $0.signals)
+        })
     }
-
-    /// The number of possible values represented by this type.
-    // @inlinable var numberOfUnresolvedValues: Int {
-    //     switch self {
-    //     case .bitVector, .signed, .unsigned, .integer:
-    //         return self.numberOfValues
-    //     case .stdLogicVector, .stdULogicVector:
-    //         return Int(
-    //             ceil(pow(Double(SignalType.stdLogic.numberOfUnresolvedValues), Double(self.size.size!)))
-    //         )
-    //     }
-    // }
-
-    // swiftlint:enable force_unwrapping
 
 }

@@ -1,4 +1,4 @@
-// Machine+helpers.swift
+// State+representation.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,14 +57,22 @@
 import VHDLMachines
 import VHDLParsing
 
-/// Adds helper properties and functions.
-extension MachineRepresentation {
+/// Add state representation.
+extension State {
 
-    /// Returns all the external variables in the representation.
-    @inlinable var externalVariables: [PortSignal] {
-        self.entity.port.signals.filter {
-            $0.name.rawValue.lowercased().hasPrefix("external_")
+    /// The encoded representation of this state.
+    /// - Parameter representation: The machine representation to use.
+    /// - Returns: The encoded value representing this state.
+    @inlinable
+    public func representation<T>(in representation: T) -> SignalLiteral where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        guard let stateIndex = machine.states.firstIndex(of: self) else {
+            fatalError("Cannot find state \(self) in machine \(machine.name.rawValue)!")
         }
+        let bitRepresentation = BitLiteral.bitVersion(
+            of: stateIndex, bitsRequired: machine.numberOfStateBits
+        )
+        return .vector(value: .bits(value: BitVector(values: bitRepresentation)))
     }
 
 }

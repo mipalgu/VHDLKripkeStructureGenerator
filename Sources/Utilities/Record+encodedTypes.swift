@@ -1,4 +1,4 @@
-// Record+bits.swift
+// Record+encodedTypes.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,55 +54,52 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-/// Add bit claculation helpers.
-extension Record {
+public extension Record {
 
-    /// The minimum number of bits required to represent the entire record.
-    @inlinable var bits: Int {
-        self.types.reduce(0) {
-            guard case .signal(let type) = $1.type else {
-                fatalError("Failed to find size of type \($1.type)!")
-            }
-            return $0 + type.bits
-        }
+    var encodedTypes: [(RecordTypeDeclaration, Type)] {
+        self.types.map { ($0, Type(encodedType: $0.type)!)}
     }
 
-    /// The minimum number of bits required to represent the entire encoded version of the record.
-    @inlinable var encodedBits: Int {
-        self.types.reduce(0) { $0 + $1.type.signalType.encodedBits }
-    }
-
-    func bitsIndex(for name: VariableName, isDownto: Bool = false, adding value: Int = 0) -> VectorIndex? {
-        var startIndex = (isDownto ? max(0, self.bits - 1) : 0) + value
-        return self.types.compactMap {
-            let numberOfBits = $0.type.bits
-            defer {
-                if isDownto {
-                    startIndex -= numberOfBits
-                } else {
-                    startIndex += numberOfBits
-                }
-            }
-            guard $0.name == name else {
-                return nil
-            }
-            guard numberOfBits <= 1 else {
-                guard !isDownto else {
-                    return VectorIndex.range(value: .downto(
-                        upper: .literal(value: .integer(value: startIndex)),
-                        lower: .literal(value: .integer(value: startIndex - numberOfBits + 1))
-                    ))
-                }
-                return VectorIndex.range(value: .to(
-                    lower: .literal(value: .integer(value: startIndex)),
-                    upper: .literal(value: .integer(value: startIndex + numberOfBits - 1))
+    var encodedIndexes: [(RecordTypeDeclaration, VectorIndex)] {
+        var currentIndex = 0
+        return self.types.map {
+            let numberOfBits = $0.type.signalType.encodedBits
+            let index: VectorIndex
+            if numberOfBits == 1 {
+                index = VectorIndex.index(value: .literal(value: .integer(value: currentIndex)))
+            } else {
+                index = VectorIndex.range(value: .to(
+                    lower: .literal(value: .integer(value: currentIndex)),
+                    upper: .literal(value: .integer(value: currentIndex + numberOfBits - 1))
                 ))
             }
-            return .index(value: .literal(value: .integer(value: startIndex)))
+            currentIndex += numberOfBits
+            return ($0, index)
         }
-        .first
+    }
+
+    func encodedIndexes(
+        ignoring names: Set<VariableName>, offset: Int = 0
+    ) -> [(RecordTypeDeclaration, VectorIndex)] {
+        var currentIndex = offset
+        return self.types.map {
+            let signalType = $0.type.signalType
+            let numberOfBits = names.contains($0.name) ? signalType.bits : signalType.encodedBits
+            let index: VectorIndex
+            if numberOfBits == 1 {
+                index = VectorIndex.index(value: .literal(value: .integer(value: currentIndex)))
+            } else {
+                index = VectorIndex.range(value: .to(
+                    lower: .literal(value: .integer(value: currentIndex)),
+                    upper: .literal(value: .integer(value: currentIndex + numberOfBits - 1))
+                ))
+            }
+            currentIndex += numberOfBits
+            return ($0, index)
+        }
     }
 
 }
