@@ -54,7 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-enum NodeType: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+enum NodeType: RawRepresentable, Equatable, Hashable, Codable, Comparable, Sendable {
 
     case read
 
