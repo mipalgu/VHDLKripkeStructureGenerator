@@ -23,6 +23,14 @@
             "args": [],
             "cwd": "${workspaceFolder:VHDLKripkeStructureGenerator}",
             "preLaunchTask": "swift: Build Release VHDLKripkeStructureGenerator"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test VHDLKripkeStructureGenerator",
+            "program": "${workspaceFolder:VHDLKripkeStructureGenerator}/.build/debug/VHDLKripkeStructureGeneratorPackageTests.xctest",
+            "cwd": "${workspaceFolder:VHDLKripkeStructureGenerator}",
+            "preLaunchTask": "swift: Build All"
         }
     ]
 }
