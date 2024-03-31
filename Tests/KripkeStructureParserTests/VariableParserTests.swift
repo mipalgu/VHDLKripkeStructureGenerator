@@ -90,7 +90,7 @@ final class VariableParserTests: XCTestCase {
             PortSignal(type: .stdLogic, name: VariableName(rawValue: "nullY")!, mode: .output),
             PortSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 3)), lower: .literal(value: .integer(value: 0))
+                    upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
                 ))),
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
