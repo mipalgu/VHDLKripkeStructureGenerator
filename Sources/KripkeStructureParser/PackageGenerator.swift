@@ -71,7 +71,10 @@ public struct PackageGenerator {
         let cFileRawData = (["#include \"include/\(name)/\(name).h\""] +
         [String(isValidImplementationFor: representation)] + machine.states.flatMap {
             [
-                VariableParser(state: $0, in: representation).functions.values.joined(separator: "\n\n"),
+                VariableParser(state: $0, in: representation).functions
+                    .sorted { $0.0 < $1.0 }
+                    .map { $0.1 }
+                    .joined(separator: "\n\n"),
                 String(isValidStateImplementationFor: $0, in: representation)
             ]
         })
@@ -84,7 +87,8 @@ public struct PackageGenerator {
             machine.states.flatMap {
                 [
                     VariableParser(state: $0, in: representation)
-                        .definitions.values.joined(separator: "\n\n"),
+                        .definitions
+                        .sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n\n"),
                     String(isValidStateDefinitionFor: $0, in: representation)
                 ]
             } + ["#ifdef __cplusplus\n}\n#endif\n#endif // \(name)_H"]

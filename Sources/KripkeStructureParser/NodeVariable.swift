@@ -56,10 +56,14 @@
 
 import VHDLParsing
 
-struct NodeVariable: Equatable, Hashable, Sendable, Codable {
+struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
 
     let data: RecordTypeDeclaration
 
     let type: NodeType
+
+    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
+        lhs.data.name < rhs.data.name
+    }
 
 }

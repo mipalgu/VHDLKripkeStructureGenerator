@@ -106,7 +106,7 @@ final class VariableParserTests: XCTestCase {
 
     func testFunctions() {
         let parser = VariableParser(state: machine.states[0], in: representation)
-        parser.functions.values.forEach {
+        parser.functions.sorted { $0.0 < $1.0 }.map { $0.1 }.forEach {
             print($0)
         }
     }
