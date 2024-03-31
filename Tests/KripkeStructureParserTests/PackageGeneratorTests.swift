@@ -1,8 +1,8 @@
-// VariableParserTests.swift
+// PackageGeneratorTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,15 +52,14 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
 @testable import KripkeStructureParser
 import VHDLMachines
 import VHDLParsing
 import XCTest
 
-/// Test class for `VariableParser`.
-final class VariableParserTests: XCTestCase {
+/// Test class for `PackageGenerator`.
+final class PackageGeneratorTests: XCTestCase {
 
     // swiftlint:disable implicitly_unwrapped_optional
 
@@ -104,20 +103,46 @@ final class VariableParserTests: XCTestCase {
         ]
     }
 
-    // func testFunctions() {
-    //     let generator = PackageGenerator()
-    //     guard
-    //         let package1 = generator.swiftPackage(representation: representation)?
-    //             .fileWrappers?["Sources"]?.fileWrappers?["CM"]?.fileWrappers?["M.c"]?.regularFileContents,
-    //         let package2 = generator.swiftPackage(representation: representation)?
-    //             .fileWrappers?["Sources"]?.fileWrappers?["CM"]?.fileWrappers?["M.c"]?.regularFileContents,
-    //         let raw1 = String(data: package1, encoding: .utf8),
-    //         let raw2 = String(data: package2, encoding: .utf8)
-    //     else {
-    //         XCTFail("failed to get c files.")
-    //         return
-    //     }
-    //     XCTAssertEqual(raw1, raw2)
-    // }
+    /// Test that the C file generation creates the same file every time.
+    func testCFileContentsIsGeneratedDeterministically() {
+        let generator = PackageGenerator()
+        guard
+            let package1 = generator.swiftPackage(representation: representation),
+            let package1CFile = package1
+                .fileWrappers?["Sources"]?
+                .fileWrappers?["CM"]?
+                .fileWrappers?["M.c"]?
+                .regularFileContents,
+            let package1HFile = package1
+                .fileWrappers?["Sources"]?
+                .fileWrappers?["CM"]?
+                .fileWrappers?["include"]?
+                .fileWrappers?["CM"]?
+                .fileWrappers?["M.h"]?
+                .regularFileContents,
+            let package2 = generator.swiftPackage(representation: representation),
+            let package2CFile = package2
+                .fileWrappers?["Sources"]?
+                .fileWrappers?["CM"]?
+                .fileWrappers?["M.c"]?
+                .regularFileContents,
+            let package2HFile = package1
+                .fileWrappers?["Sources"]?
+                .fileWrappers?["CM"]?
+                .fileWrappers?["include"]?
+                .fileWrappers?["CM"]?
+                .fileWrappers?["M.h"]?
+                .regularFileContents,
+            let craw1 = String(data: package1CFile, encoding: .utf8),
+            let craw2 = String(data: package2CFile, encoding: .utf8),
+            let hraw1 = String(data: package1HFile, encoding: .utf8),
+            let hraw2 = String(data: package2HFile, encoding: .utf8)
+        else {
+            XCTFail("failed to get c files.")
+            return
+        }
+        XCTAssertEqual(craw1, craw2)
+        XCTAssertEqual(hraw1, hraw2)
+    }
 
 }
