@@ -63,7 +63,10 @@ struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
     let type: NodeType
 
     static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        lhs.data.name < rhs.data.name
+        guard lhs.type != rhs.type else {
+            return lhs.data.name < rhs.data.name
+        }
+        return lhs.type < rhs.type
     }
 
 }
