@@ -78,7 +78,6 @@ public struct PackageGenerator {
                 String(isValidStateImplementationFor: $0, in: representation)
             ]
         })
-        .sorted()
         .joined(separator: "\n\n")
         let cHeaderRawData = (
             [
@@ -94,7 +93,6 @@ public struct PackageGenerator {
                 ]
             } + ["#ifdef __cplusplus\n}\n#endif\n#endif // \(name)_H"]
         )
-        .sorted()
         .joined(separator: "\n\n")
         let stateFilesRaw = machine.states.flatMap {
             [
