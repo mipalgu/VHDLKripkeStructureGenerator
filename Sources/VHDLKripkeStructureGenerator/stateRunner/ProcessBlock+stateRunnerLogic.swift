@@ -194,23 +194,28 @@ extension WhenCase {
         }
         let machine = representation.machine
         let validExternals = Set(state.externalVariables)
-        let workingVariables: [VariableName] = machine.externalSignals.filter {
+        let externalVariables = machine.externalSignals.filter {
             $0.mode != .input && validExternals.contains($0.name)
         }
-        .map(\.name) + machine.externalSignals.filter {
+        let externalVariableNames = externalVariables.map(\.name)
+        let snapshots = machine.externalSignals.filter {
             $0.mode != .input && !validExternals.contains($0.name)
         }
-        .map {
+        let snapshotNames = snapshots.map {
             VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")!
-        } + machine.machineSignals.map {
+        }
+        let machineNames = machine.machineSignals.map {
             VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")!
-        } + machine.stateVariables.values.flatMap {
+        }
+        let stateVariableNames = machine.stateVariables.values.flatMap {
             $0.map {
                 VariableName(
                     rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
                 )!
             }
         }
+        let workingVariables: [VariableName] = externalVariableNames + snapshotNames + machineNames +
+            stateVariableNames
         let assignments: [(VariableName, VariableName)] = [
             (VariableName(rawValue: "current_ExecuteOnEntry")!, VariableName.executeOnEntry),
             (VariableName(rawValue: "working_ExecuteOnEntry")!, VariableName.executeOnEntry)
