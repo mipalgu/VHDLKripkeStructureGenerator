@@ -124,7 +124,7 @@ public struct PackageGenerator {
         let swiftExtensions = FileWrapper(regularFileWithContents: swiftExtensionsData)
         swiftExtensions.preferredFilename = "VHDLParsingExtensions.swift"
         let cIncludeSubfolder = FileWrapper(directoryWithFileWrappers: ["\(name).h": cHeader])
-        cIncludeSubfolder.preferredFilename = "\(name)"
+        cIncludeSubfolder.preferredFilename = "C\(name)"
         let includeFolder = FileWrapper(directoryWithFileWrappers: ["C\(name)": cIncludeSubfolder])
         includeFolder.preferredFilename = "include"
         let cTargetFolder = FileWrapper(
