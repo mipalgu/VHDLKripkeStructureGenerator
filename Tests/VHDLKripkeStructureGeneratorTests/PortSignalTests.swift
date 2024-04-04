@@ -96,7 +96,10 @@ final class PortSignalTests: XCTestCase {
         XCTAssertEqual(
             signal, PortSignal(name: .currentStateIn(for: representation), machine: machine, mode: .input)
         )
-        machine.states += [machine.states[0]]
+        var newState = machine.states[0]
+        // swiftlint:disable:next force_unwrapping
+        newState.name = VariableName(rawValue: "NewState")!
+        machine.states += [newState]
         let signal2 = PortSignal(name: .currentStateIn(for: representation), machine: machine, mode: .input)
         XCTAssertEqual(
             signal2?.type,
@@ -108,8 +111,8 @@ final class PortSignalTests: XCTestCase {
             signal2, PortSignal(name: .currentStateIn(for: representation), bitsRequired: 2, mode: .input)
         )
         machine.states = []
-        XCTAssertNil(PortSignal(currentStateInFor: representation))
-        XCTAssertNil(PortSignal(name: .currentStateIn(for: representation), machine: machine, mode: .input))
+        // swiftlint:disable:next force_unwrapping
+        XCTAssertNil(PortSignal(name: VariableName(rawValue: "M_currentStateIn")!, machine: machine, mode: .input))
     }
 
     /// Test remaining machine signals.
