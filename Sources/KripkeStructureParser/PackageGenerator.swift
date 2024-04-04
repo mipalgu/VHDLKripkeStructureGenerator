@@ -66,7 +66,7 @@ public struct PackageGenerator {
     public func swiftPackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let name = representation.entity.name.rawValue
-        let cFileRawData = (["#include \"include/\(name)/\(name).h\""] +
+        let cFileRawData = (["#include \"include/C\(name)/\(name).h\""] +
         [String(isValidImplementationFor: representation)] +
             machine.states.sorted { $0.name < $1.name }.flatMap {
                 [
