@@ -91,7 +91,7 @@ extension String {
                 "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))!"
         }
         .joined(separator: ", ")
-        let machineName = representation.machine.name.rawValue
+        let machineName = representation.entity.name.rawValue
         self = """
         import C\(machineName)
         import VHDLParsing
@@ -148,7 +148,7 @@ extension String {
                 "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))!"
         }
         .joined(separator: ", ")
-        let machineName = representation.machine.name.rawValue
+        let machineName = representation.entity.name.rawValue
         self = """
         import C\(machineName)
         import VHDLParsing
@@ -171,7 +171,7 @@ extension String {
     }
 
     init<T>(kripkeNodeFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let machineName = representation.machine.name.rawValue
+        let machineName = representation.entity.name.rawValue
         self = """
         import C\(machineName)
         import VHDLParsing

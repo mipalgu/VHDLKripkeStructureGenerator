@@ -60,12 +60,12 @@ import VHDLParsing
 extension String {
 
     init<T>(isValidDefinitionFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.machine.name.rawValue
+        let name = representation.entity.name.rawValue
         self = "bool \(name)_isValid(uint32_t data);"
     }
 
     init<T>(isValidImplementationFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.machine.name.rawValue
+        let name = representation.entity.name.rawValue
         self = """
         bool \(name)_isValid(uint32_t data)
         {
@@ -75,7 +75,7 @@ extension String {
     }
 
     init<T>(isValidStateDefinitionFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.machine.name
+        let name = representation.entity.name
         self = "bool \(name.rawValue)_\(state.name.rawValue)_isValid(uint32_t data);"
     }
 
@@ -83,7 +83,7 @@ extension String {
         isValidStateImplementationFor state: State, in representation: T
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let name = machine.name
+        let name = representation.entity.name
         let index = machine.states.firstIndex(of: state)!
         let numberOfStateBits = machine.numberOfStateBits
         let stateMask = String(repeating: "1", count: numberOfStateBits) + "0"

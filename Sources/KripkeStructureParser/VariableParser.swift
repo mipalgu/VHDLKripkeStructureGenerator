@@ -243,7 +243,7 @@ extension String {
     init<T>(
         stateVariableAccessNameFor state: State, in representation: T, variable: NodeVariable
     ) where T: MachineVHDLRepresentable {
-        self = "\(representation.machine.name.rawValue)_\(state.name.rawValue)_\(variable.type.rawValue)" +
+        self = "\(representation.entity.name.rawValue)_\(state.name.rawValue)_\(variable.type.rawValue)" +
             "_\(variable.data.name.rawValue)"
     }
 

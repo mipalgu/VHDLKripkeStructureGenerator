@@ -55,9 +55,7 @@
 // 
 
 import Foundation
-#if os(Linux)
-import IO
-#endif
+import SwiftUtils
 import VHDLMachines
 import VHDLParsing
 
@@ -67,7 +65,7 @@ public struct PackageGenerator {
 
     public func swiftPackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let name = machine.name.rawValue
+        let name = representation.entity.name.rawValue
         let cFileRawData = (["#include \"include/\(name)/\(name).h\""] +
         [String(isValidImplementationFor: representation)] +
             machine.states.sorted { $0.name < $1.name }.flatMap {
@@ -155,7 +153,7 @@ public struct PackageGenerator {
 extension String {
 
     init<T>(machinePackage representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.machine.name.rawValue
+        let name = representation.entity.name.rawValue
         self = """
         // swift-tools-version:5.7
 
