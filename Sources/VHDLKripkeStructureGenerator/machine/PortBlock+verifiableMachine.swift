@@ -71,14 +71,14 @@ extension PortBlock {
     init?<T>(verifiable representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
-            let currentStateIn = PortSignal(currentStateInFor: machine),
-            let currentStateOut = PortSignal(currentStateOutFor: machine),
-            let previousRingletIn = PortSignal(previousRingletInFor: machine),
-            let previousRingletOut = PortSignal(previousRingletOutFor: machine),
-            let internalStateIn = PortSignal(internalStateInFor: machine),
-            let internalStateOut = PortSignal(internalStateOutFor: machine),
-            let targetStateIn = PortSignal(targetStateInFor: machine),
-            let targetStateOut = PortSignal(targetStateOutFor: machine)
+            let currentStateIn = PortSignal(currentStateInFor: representation),
+            let currentStateOut = PortSignal(currentStateOutFor: representation),
+            let previousRingletIn = PortSignal(previousRingletInFor: representation),
+            let previousRingletOut = PortSignal(previousRingletOutFor: representation),
+            let internalStateIn = PortSignal(internalStateInFor: representation),
+            let internalStateOut = PortSignal(internalStateOutFor: representation),
+            let targetStateIn = PortSignal(targetStateInFor: representation),
+            let targetStateOut = PortSignal(targetStateOutFor: representation)
         else {
             return nil
         }
@@ -88,22 +88,28 @@ extension PortBlock {
             switch signal.mode {
             case .output, .inputoutput, .buffer:
                 // swiftlint:disable:next force_unwrapping
-                let newName = VariableName(rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In")!
+                let newName = VariableName(
+                    rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
+                )!
                 ports += [PortSignal(type: signal.type, name: newName, mode: .input)]
             default:
                 break
             }
             // swiftlint:disable:next force_unwrapping
-            let newName = VariableName(rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)")!
+            let newName = VariableName(
+                rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)"
+            )!
             return [PortSignal(type: signal.type, name: newName, mode: .output)] + ports
         }
         let machineSignals = machine.machineSignals
         var machinePorts = machineSignals.compactMap {
-            PortSignal(signal: $0, in: machine, mode: .output)
+            PortSignal(signal: $0, in: representation, mode: .output)
         }
         var machineInputs: [PortSignal] = machineSignals.compactMap { (signal: LocalSignal) -> PortSignal? in
             guard
-                let name = VariableName(rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"),
+                let name = VariableName(
+                    rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
+                ),
                 case .signal(let type) = signal.type
             else {
                 return nil
@@ -118,7 +124,8 @@ extension PortBlock {
             signals.compactMap { (signal: LocalSignal) -> PortSignal? in
                 guard
                     let newName = VariableName(
-                        rawValue: "\(machine.name.rawValue)_STATE_\(state.rawValue)_\(signal.name.rawValue)In"
+                        rawValue: "\(representation.entity.name.rawValue)_STATE_" +
+                            "\(state.rawValue)_\(signal.name.rawValue)In"
                     ),
                     case .signal(let type) = signal.type
                 else {
@@ -131,7 +138,8 @@ extension PortBlock {
             signals.compactMap { (signal: LocalSignal) -> PortSignal? in
                 guard
                     let newName = VariableName(
-                        rawValue: "\(machine.name.rawValue)_STATE_\(state.rawValue)_\(signal.name.rawValue)"
+                        rawValue: "\(representation.entity.name.rawValue)_STATE_" +
+                            "\(state.rawValue)_\(signal.name.rawValue)"
                     ),
                     case .signal(let type) = signal.type
                 else {
@@ -153,7 +161,8 @@ extension PortBlock {
                 PortSignal(
                     type: .natural,
                     name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                        rawValue: "\(representation.entity.name.rawValue)_" +
+                            "\(VariableName.ringletCounter.rawValue)"
                     )!,
                     mode: .output
                 )
@@ -162,7 +171,8 @@ extension PortBlock {
                 PortSignal(
                     type: .natural,
                     name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)In"
+                        rawValue: "\(representation.entity.name.rawValue)_" +
+                            "\(VariableName.ringletCounter.rawValue)In"
                     )!,
                     mode: .input
                 )

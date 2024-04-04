@@ -68,7 +68,7 @@ extension Entity {
     @inlinable
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        guard let name = VariableName(rawValue: "\(machine.name.rawValue)RingletRunner") else {
+        guard let name = VariableName(rawValue: "\(representation.entity.name.rawValue)RingletRunner") else {
             return nil
         }
         guard machine.drivingClock >= 0, machine.drivingClock < machine.clocks.count else {
@@ -91,21 +91,22 @@ extension Entity {
         }
         var machineSignals = machine.machineSignals.map {
             // swiftlint:disable:next force_unwrapping
-            PortSignal(signal: $0, in: machine, mode: .input)!
+            PortSignal(signal: $0, in: representation, mode: .input)!
         }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
             machineSignals += [
                 PortSignal(
                     type: .natural,
                     name: VariableName(
-                        rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                        rawValue: "\(representation.entity.name.rawValue)_" +
+                            "\(VariableName.ringletCounter.rawValue)"
                     )!,
                     mode: .input
                 )
             ]
         }
         let stateSignals = machine.stateVariables.flatMap { state, variables in
-            let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
+            let preamble = "\(representation.entity.name.rawValue)_STATE_\(state.rawValue)_"
             return variables.map {
                 PortSignal(
                     type: $0.type,

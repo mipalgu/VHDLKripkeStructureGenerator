@@ -67,7 +67,7 @@ extension PortMap {
     @inlinable
     init?<T>(runnerMachineInst representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let machineName = machine.name
+        let machineName = representation.entity.name
         var machineVariables: [VariableMap] = representation.machine.machineSignals.compactMap {
             [VariableMap](machineName: machineName, variable: $0.name)
         }
@@ -123,52 +123,51 @@ extension Array where Element == VariableMap {
     /// - Parameter representation: The machine to instantiate.
     @inlinable
     init<T>(runner representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
         self = [
             VariableMap(
-                lhs: .variable(reference: .variable(name: .currentStateIn(for: machine))),
+                lhs: .variable(reference: .variable(name: .currentStateIn(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .currentStateIn)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .previousRingletIn(for: machine))),
+                lhs: .variable(reference: .variable(name: .previousRingletIn(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .previousRingletIn)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .internalStateIn(for: machine))),
+                lhs: .variable(reference: .variable(name: .internalStateIn(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .internalStateIn)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .targetStateIn(for: machine))),
+                lhs: .variable(reference: .variable(name: .targetStateIn(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .targetStateIn)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .currentStateOut(for: machine))),
+                lhs: .variable(reference: .variable(name: .currentStateOut(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .currentStateOut)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .previousRingletOut(for: machine))),
+                lhs: .variable(reference: .variable(name: .previousRingletOut(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .previousRingletOut)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .internalStateOut(for: machine))),
+                lhs: .variable(reference: .variable(name: .internalStateOut(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .internalState)))
                 )
             ),
             VariableMap(
-                lhs: .variable(reference: .variable(name: .targetStateOut(for: machine))),
+                lhs: .variable(reference: .variable(name: .targetStateOut(for: representation))),
                 rhs: .expression(
                     value: .reference(variable: .variable(reference: .variable(name: .targetStateOut)))
                 )

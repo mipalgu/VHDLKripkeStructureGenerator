@@ -60,11 +60,12 @@ import VHDLParsing
 extension VHDLFile {
 
     init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
         guard
             let head = ArchitectureHead(generatorFor: representation),
             let body = AsynchronousBlock(generatorFor: representation),
-            let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;")
+            let typesInclude = UseStatement(
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
+            )
         else {
             return nil
         }

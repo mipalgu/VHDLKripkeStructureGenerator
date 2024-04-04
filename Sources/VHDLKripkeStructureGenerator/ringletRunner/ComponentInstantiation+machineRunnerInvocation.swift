@@ -74,19 +74,19 @@ extension ComponentInstantiation {
         machineRunnerInvocationFor representation: T, record name: VariableName, label: VariableName
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        guard let runnerName = VariableName(name: machine.name, post: "MachineRunner") else {
+        guard let runnerName = VariableName(name: representation.entity.name, post: "MachineRunner") else {
             return nil
         }
         let externals = machine.externalSignals.map(\.name)
         let snapshots: [[VariableName]] = machine.externalSignals.compactMap {
-            guard let snapshot = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name) else {
+            guard let snapshot = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name) else {
                 return nil
             }
             guard $0.mode != .input else {
                 return [snapshot]
             }
             guard
-                let inputSnapshot = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")
+                let inputSnapshot = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name, post: "In")
             else {
                 return nil
             }
@@ -98,8 +98,8 @@ extension ComponentInstantiation {
         let unwrappedSnapshots = snapshots.flatMap { $0 }
         var machineVariables: [[VariableName]] = machine.machineSignals.compactMap {
             guard
-                let output = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name),
-                let input = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")
+                let output = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name),
+                let input = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name, post: "In")
             else {
                 return nil
             }
@@ -111,14 +111,14 @@ extension ComponentInstantiation {
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
             machineVariables += [
                 [
-                    VariableName(pre: "\(machine.name.rawValue)_", name: .ringletCounter)!,
-                    VariableName(pre: "\(machine.name.rawValue)_", name: .ringletCounter, post: "In")!
+                    VariableName(pre: "\(representation.entity.name.rawValue)_", name: .ringletCounter)!,
+                    VariableName(pre: "\(representation.entity.name.rawValue)_", name: .ringletCounter, post: "In")!
                 ]
             ]
         }
         let machineVariablesUnwrapped = machineVariables.flatMap { $0 }
         let stateVariables: [VariableName] = machine.stateVariables.flatMap { stateName, variables in
-            let preamble = "\(machine.name.rawValue)_STATE_\(stateName.rawValue)_"
+            let preamble = "\(representation.entity.name.rawValue)_STATE_\(stateName.rawValue)_"
             return variables.compactMap { (variable: LocalSignal) -> [VariableName]? in
                 guard
                     let input = VariableName(pre: preamble, name: variable.name),

@@ -84,7 +84,9 @@ extension AsynchronousBlock {
         let machine = representation.machine
         let readableVariables = machine.externalSignals.filter { $0.mode == .input }
         let snapshots: [(VariableName, VariableName)] = readableVariables.compactMap {
-            guard let name = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)") else {
+            guard let name = VariableName(
+                rawValue: "\(representation.entity.name.rawValue)_\($0.name.rawValue)"
+            ) else {
                 return nil
             }
             return ($0.name, name)
@@ -100,13 +102,13 @@ extension AsynchronousBlock {
         }
         switch body {
         case .blocks(let blocks):
-            let newBlocks = blocks.compactMap { AsynchronousBlock(verifiable: $0, in: machine) }
+            let newBlocks = blocks.compactMap { AsynchronousBlock(verifiable: $0, in: representation) }
             guard newBlocks.count == blocks.count else {
                 return nil
             }
             self = .blocks(blocks: assignments + newBlocks)
         case .process(let process):
-            guard let newProcess = ProcessBlock(verifiable: process, in: machine) else {
+            guard let newProcess = ProcessBlock(verifiable: process, in: representation) else {
                 return nil
             }
             self = .blocks(blocks: assignments + [.process(block: newProcess)])
@@ -121,16 +123,16 @@ extension AsynchronousBlock {
     ///   - block: The block to convert.
     ///   - machine: The machine this block represents.
     @inlinable
-    init?(verifiable block: AsynchronousBlock, in machine: Machine) {
+    init?<T>(verifiable block: AsynchronousBlock, in representation: T) where T: MachineVHDLRepresentable {
         switch block {
         case .blocks(let blocks):
-            let newBlocks = blocks.compactMap { AsynchronousBlock(verifiable: $0, in: machine) }
+            let newBlocks = blocks.compactMap { AsynchronousBlock(verifiable: $0, in: representation) }
             guard newBlocks.count == blocks.count else {
                 return nil
             }
             self = .blocks(blocks: newBlocks)
         case .process(let process):
-            guard let newProcess = ProcessBlock(verifiable: process, in: machine) else {
+            guard let newProcess = ProcessBlock(verifiable: process, in: representation) else {
                 return nil
             }
             self = .process(block: newProcess)

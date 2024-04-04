@@ -55,10 +55,8 @@
 // 
 
 import Foundation
-#if os(Linux)
-import IO
-#endif
 import KripkeStructureParser
+import SwiftUtils
 import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
 import VHDLParsing
@@ -126,7 +124,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             wrapper.preferredFilename = "\(name).vhd"
             return ("\(name).vhd", wrapper)
         }
-        let name = representation.machine.name.rawValue
+        let name = representation.entity.name.rawValue
         guard
             vhdlData.count == vhdlFiles.count,
             let package = self.generatePackage(representation: representation),

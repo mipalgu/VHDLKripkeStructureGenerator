@@ -67,9 +67,10 @@ extension VHDLFile {
     ///   - representation: The representation of the machine.
     @inlinable
     init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
         guard
-            let typesInclude = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;"),
+            let typesInclude = UseStatement(
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
+            ),
             let entity = Entity(stateKripkeGeneratorFor: state, in: representation),
             let body = AsynchronousBlock(stateKripkeGeneratorFor: state, in: representation)
         else {

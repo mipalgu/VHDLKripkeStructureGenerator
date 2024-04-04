@@ -79,7 +79,7 @@ extension Entity {
         }
         let clk = machine.clocks[machine.drivingClock]
         self.init(
-            name: VariableName(rawValue: "\(machine.name.rawValue)Generator")!,
+            name: VariableName(rawValue: "\(representation.entity.name.rawValue)Generator")!,
             port: PortBlock(
                 signals: [PortSignal(clock: clk)] + signals + [
                     PortSignal(type: .stdLogic, name: .finished, mode: .output)

@@ -66,9 +66,8 @@ extension VHDLFile {
     ///   - representation: The machine representation to use.
     @inlinable
     init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
         guard
-            let typesInclude = UseStatement(rawValue: "use work.\(machine.name)Types.all;"),
+            let typesInclude = UseStatement(rawValue: "use work.\(representation.entity.name)Types.all;"),
             let entity = Entity(ringletExpanderFor: state, in: representation),
             let body = AsynchronousBlock(ringletExpanderFor: state, in: representation)
         else {

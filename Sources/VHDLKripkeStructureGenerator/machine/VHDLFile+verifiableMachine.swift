@@ -70,10 +70,12 @@ extension VHDLFile {
         else {
             return nil
         }
-        let machine = representation.machine
-        let entity = Entity(name: machine.name, port: port)
+        let entity = Entity(name: representation.entity.name, port: port)
         let architecture = Architecture(
-            body: body, entity: machine.name, head: representation.architectureHead, name: .behavioral
+            body: body,
+            entity: representation.entity.name,
+            head: representation.architectureHead,
+            name: .behavioral
         )
         self.init(architectures: [architecture], entities: [entity], includes: representation.includes)
     }

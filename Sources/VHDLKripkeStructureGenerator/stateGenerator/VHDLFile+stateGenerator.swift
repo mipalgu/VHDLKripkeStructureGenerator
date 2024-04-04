@@ -71,7 +71,7 @@ extension VHDLFile {
             ),
             let entity = Entity(stateGeneratorFor: state, in: representation),
             let typesInclude = UseStatement(
-                rawValue: "use work.\(representation.machine.name.rawValue)Types.all;"
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
             )
         else {
             return nil

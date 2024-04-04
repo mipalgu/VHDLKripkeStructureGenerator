@@ -73,59 +73,63 @@ extension PortSignal {
     @usableFromInline static let clk = PortSignal(type: .stdLogic, name: .clk, mode: .input)
 
     /// Create the `currentStateIn` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(currentStateInFor machine: Machine) {
-        self.init(name: .currentStateIn(for: machine), machine: machine, mode: .input)
+    init?<T>(currentStateInFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(name: .currentStateIn(for: representation), machine: representation.machine, mode: .input)
     }
 
     /// Create the `currentStateOut` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(currentStateOutFor machine: Machine) {
-        self.init(name: .currentStateOut(for: machine), machine: machine, mode: .output)
+    init?<T>(currentStateOutFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(name: .currentStateOut(for: representation), machine: representation.machine, mode: .output)
     }
 
     /// Create the `internalStateIn` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter machine: The representation to create the signal for.
     @usableFromInline
-    init?(internalStateInFor machine: Machine) {
-        self.init(name: .internalStateIn(for: machine), bitsRequired: 3, mode: .input)
+    init?<T>(internalStateInFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(name: .internalStateIn(for: representation), bitsRequired: 3, mode: .input)
     }
 
     /// Create the `internalStateOut` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(internalStateOutFor machine: Machine) {
-        self.init(name: .internalStateOut(for: machine), bitsRequired: 3, mode: .output)
+    init?<T>(internalStateOutFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(name: .internalStateOut(for: representation), bitsRequired: 3, mode: .output)
     }
 
     /// Create the `previousRingletIn` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(previousRingletInFor machine: Machine) {
-        self.init(name: .previousRingletIn(for: machine), machine: machine, mode: .input)
+    init?<T>(previousRingletInFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(
+            name: .previousRingletIn(for: representation), machine: representation.machine, mode: .input
+        )
     }
 
     /// Create the `previousRingletOut` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(previousRingletOutFor machine: Machine) {
-        self.init(name: .previousRingletOut(for: machine), machine: machine, mode: .output)
+    init?<T>(previousRingletOutFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(
+            name: .previousRingletOut(for: representation), machine: representation.machine, mode: .output
+        )
     }
 
     /// Create the `targetStateIn` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(targetStateInFor machine: Machine) {
-        self.init(name: .targetStateIn(for: machine), machine: machine, mode: .input)
+    init?<T>(targetStateInFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(name: .targetStateIn(for: representation), machine: representation.machine, mode: .input)
     }
 
     /// Create the `targetStateOut` signal for a machine.
-    /// - Parameter machine: The machine to create the signal for.
+    /// - Parameter representation: The machine to create the signal for.
     @inlinable
-    init?(targetStateOutFor machine: Machine) {
-        self.init(name: .targetStateOut(for: machine), machine: machine, mode: .output)
+    init?<T>(targetStateOutFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(name: .targetStateOut(for: representation), machine: representation.machine, mode: .output)
     }
 
     /// Create a `std_logic_vector` port signal.
@@ -171,11 +175,11 @@ extension PortSignal {
     ///   - mode: The mode of the new `PortSignal`.
     /// - Warning: This init returns `nil` for signals containing alias types.
     @inlinable
-    init?(signal: LocalSignal, in machine: Machine, mode: Mode) {
+    init?<T>(signal: LocalSignal, in representation: T, mode: Mode) where T: MachineVHDLRepresentable {
         guard case .signal(let type) = signal.type else {
             return nil
         }
-        let name = VariableName(portNameFor: signal, in: machine)
+        let name = VariableName(portNameFor: signal, in: representation)
         self.init(type: type, name: name, mode: mode)
     }
 

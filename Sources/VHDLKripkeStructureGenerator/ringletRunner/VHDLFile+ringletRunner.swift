@@ -70,7 +70,7 @@ extension VHDLFile {
             let entity = Entity(ringletRunnerFor: representation),
             let library = VariableName(rawValue: "IEEE"),
             let stdLogic = UseStatement(rawValue: "use IEEE.std_logic_1164.all;"),
-            let types = UseStatement(rawValue: "use work.\(representation.machine.name.rawValue)Types.all;")
+            let types = UseStatement(rawValue: "use work.\(representation.entity.name.rawValue)Types.all;")
         else {
             return nil
         }

@@ -63,7 +63,7 @@ extension Entity {
         let machine = representation.machine
         let clk = machine.clocks[machine.drivingClock]
         self.init(
-            name: VariableName(rawValue: "\(machine.name.rawValue)BRAMInterface")!,
+            name: VariableName(rawValue: "\(representation.entity.name.rawValue)BRAMInterface")!,
             port: PortBlock(signals: [
                 PortSignal(clock: clk),
                 PortSignal(type: .logicVector32, name: .address, mode: .input),

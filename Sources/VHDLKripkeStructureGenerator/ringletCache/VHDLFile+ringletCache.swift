@@ -67,7 +67,7 @@ extension VHDLFile {
             .include(statement: .stdLogic1164),
             .include(statement: .numericStd),
             .include(statement: UseStatement(
-                rawValue: "use work.\(representation.machine.name.rawValue)Types.all;"
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
             )!)
         ]
         let entity = Entity(ringletCacheFor: state, representation: representation)
@@ -82,7 +82,9 @@ extension VHDLFile {
             return nil
         }
         self.init(
-            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            architectures: [
+                Architecture(body: body, entity: entity.name, head: head, name: .behavioral)
+            ],
             entities: [entity],
             includes: includes
         )

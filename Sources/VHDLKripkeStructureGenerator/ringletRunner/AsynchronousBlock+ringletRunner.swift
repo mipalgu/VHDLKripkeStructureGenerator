@@ -66,7 +66,7 @@ extension AsynchronousBlock {
     @inlinable
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         guard
-            let componentLabel = VariableName(rawValue: "\(representation.machine.name.rawValue)_inst"),
+            let componentLabel = VariableName(rawValue: "\(representation.entity.name.rawValue)_inst"),
             let component = ComponentInstantiation(
                 machineRunnerInvocationFor: representation, record: .machine, label: componentLabel
             ),
@@ -144,13 +144,13 @@ extension WhenCase {
             machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
         }
         let allOutputs: [(VariableName, VariableName)] = machine.externalSignals.filter { $0.mode == .output }
-            .map { (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!, $0.name) }
+            .map { (VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name)!, $0.name) }
             + machineSignals.map {
-                let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
+                let name = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name)!
                 return (name, name)
             }
             + machine.stateVariables.flatMap { state, variables in
-                let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
+                let preamble = "\(representation.entity.name.rawValue)_STATE_\(state.rawValue)_"
                 return variables.map {
                     let name = VariableName(pre: preamble, name: $0.name)!
                     return (name, name)
@@ -180,14 +180,16 @@ extension WhenCase {
             $0.mode != .input
         }
         .map {
-            (VariableName(pre: "\(machine.name.rawValue)_", name: $0.name, post: "In")!, $0.name)
+            (VariableName(
+                pre: "\(representation.entity.name.rawValue)_", name: $0.name, post: "In"
+            )!, $0.name)
         }
             + machineSignals.map {
-                let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
+                let name = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name)!
                 return (VariableName(name: name, post: "In")!, name)
             }
             + machine.stateVariables.flatMap { state, variables in
-                let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
+                let preamble = "\(representation.entity.name.rawValue)_STATE_\(state.rawValue)_"
                 return variables.map {
                     (
                         VariableName(pre: preamble, name: $0.name, post: "In")!,
@@ -316,7 +318,9 @@ extension WhenCase {
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: $0.name)))),
                 value: .reference(variable: .variable(reference: .member(access: MemberAccess(
                     record: record,
-                    member: .variable(name: VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!)
+                    member: .variable(name: VariableName(
+                        pre: "\(representation.entity.name.rawValue)_", name: $0.name
+                    )!)
                 ))))
             )
         }
@@ -325,7 +329,7 @@ extension WhenCase {
             machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
         }
         let machineVariables = machineSignals.map {
-            let name = VariableName(pre: "\(machine.name.rawValue)_", name: $0.name)!
+            let name = VariableName(pre: "\(representation.entity.name.rawValue)_", name: $0.name)!
             return IndexedValue(
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: name)))),
                 value: Expression.reference(variable: .variable(reference: .member(access: MemberAccess(
@@ -335,7 +339,7 @@ extension WhenCase {
         }
 
         let stateVariables = machine.stateVariables.flatMap { state, variables in
-            let preamble = "\(machine.name.rawValue)_STATE_\(state.rawValue)_"
+            let preamble = "\(representation.entity.name.rawValue)_STATE_\(state.rawValue)_"
             return variables.map {
                 let name = VariableName(pre: preamble, name: $0.name)!
                 return IndexedValue(

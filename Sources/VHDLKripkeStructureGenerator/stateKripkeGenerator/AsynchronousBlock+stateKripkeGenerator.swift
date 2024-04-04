@@ -90,8 +90,8 @@ extension AsynchronousBlock {
         }
         let writeSnapshot = writeRecord.types.map {
             let name = $0.name.rawValue
-            guard !name.hasPrefix(machine.name.rawValue) else {
-                let withoutPrefix = name.dropFirst(machine.name.rawValue.count + 1)
+            guard !name.hasPrefix(representation.entity.name.rawValue) else {
+                let withoutPrefix = name.dropFirst(representation.entity.name.rawValue.count + 1)
                 let newName = VariableName(rawValue: String(withoutPrefix))!
                 guard !externals.contains(newName) else {
                     return IndexedValue(
@@ -153,8 +153,8 @@ extension AsynchronousBlock {
             ))
         ))) {
             let name = $1.name.rawValue
-            guard !name.hasPrefix(machine.name.rawValue) else {
-                let withoutPrefix = name.dropFirst(machine.name.rawValue.count + 1)
+            guard !name.hasPrefix(representation.entity.name.rawValue) else {
+                let withoutPrefix = name.dropFirst(representation.entity.name.rawValue.count + 1)
                 let newName = VariableName(rawValue: String(withoutPrefix))!
                 guard !externals.contains(newName) else {
                     return Expression.binary(operation: .concatenate(

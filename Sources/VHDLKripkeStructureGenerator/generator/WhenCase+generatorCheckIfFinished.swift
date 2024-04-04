@@ -62,9 +62,9 @@ extension WhenCase {
     init<T>(generatorCheckIfFinishedFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let maxIndex = max(0, machine.numberOfTargetStates - 1)
-        let range = VectorSize.to(
-            lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: maxIndex))
-        )
+        // let range = VectorSize.to(
+        //     lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: maxIndex))
+        // )
         let stateBlocks = machine.states.map {
             let name = $0.name.rawValue
             return SynchronousBlock.ifStatement(block: .ifStatement(

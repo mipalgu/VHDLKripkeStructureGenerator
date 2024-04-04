@@ -68,7 +68,7 @@ extension VHDLPackage {
     init?<T>(typesFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard
-            let name = VariableName(rawValue: "\(machine.name.rawValue)Types"),
+            let name = VariableName(rawValue: "\(representation.entity.name.rawValue)Types"),
             let readSnapshot = Record(readSnapshotFor: representation),
             let writeSnapshot = Record(writeSnapshotFor: representation),
             let totalSnapshot = Record(totalSnapshotFor: representation)

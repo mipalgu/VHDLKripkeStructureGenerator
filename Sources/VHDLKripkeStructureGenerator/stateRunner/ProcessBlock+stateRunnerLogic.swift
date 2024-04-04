@@ -202,15 +202,16 @@ extension WhenCase {
             $0.mode != .input && !validExternals.contains($0.name)
         }
         let snapshotNames = snapshots.map {
-            VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")!
+            VariableName(rawValue: "\(representation.entity.name.rawValue)_\($0.name.rawValue)")!
         }
         let machineNames = machine.machineSignals.map {
-            VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)")!
+            VariableName(rawValue: "\(representation.entity.name.rawValue)_\($0.name.rawValue)")!
         }
         let stateVariableNames = machine.stateVariables.values.flatMap {
             $0.map {
-                VariableName(
-                    rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
+                let stateName = "\(state.name.rawValue)_\($0.name.rawValue)"
+                return VariableName(
+                    rawValue: "\(representation.entity.name.rawValue)_STATE_\(stateName)"
                 )!
             }
         }

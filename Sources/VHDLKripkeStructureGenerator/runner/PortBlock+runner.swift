@@ -70,7 +70,7 @@ extension PortBlock {
     @inlinable
     init?<T>(runnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let label = "\(machine.name.rawValue)_"
+        let label = "\(representation.entity.name.rawValue)_"
         let snapshots: [PortSignal] = machine.externalSignals
             .compactMap { (signal: PortSignal) -> [PortSignal]? in
                 guard

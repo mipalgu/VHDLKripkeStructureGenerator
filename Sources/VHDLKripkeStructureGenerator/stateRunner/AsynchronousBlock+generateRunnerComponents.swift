@@ -128,7 +128,7 @@ extension AsynchronousBlock {
         let clk = machine.clocks[machine.drivingClock]
         let validExternals = Set(state.externalVariables)
         var startIndex = 0
-        let preamble = "\(machine.name.rawValue)_"
+        let preamble = "\(representation.entity.name.rawValue)_"
         var machineSignals = machine.machineSignals
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
             machineSignals += [LocalSignal(type: .natural, name: .ringletCounter)]
@@ -203,7 +203,7 @@ extension AsynchronousBlock {
         }
         self = .component(block: ComponentInstantiation(
             label: VariableName(rawValue: "runner_inst")!,
-            name: VariableName(rawValue: "\(machine.name)RingletRunner")!,
+            name: VariableName(rawValue: "\(representation.entity.name)RingletRunner")!,
             port: PortMap(
                 variables: [
                     VariableMap(

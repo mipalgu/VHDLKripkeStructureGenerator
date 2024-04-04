@@ -72,7 +72,8 @@ extension ProcessBlock {
     ///   - machine: The machine to convert.
     /// - Warning: This function assumes the ``ProcessBlock`` of the machine fits the standard logic.
     @inlinable
-    init?(verifiable process: ProcessBlock, in machine: Machine) {
+    init?<T>(verifiable process: ProcessBlock, in representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
         let drivingClock = machine.clocks[machine.drivingClock].name
         guard
             process.sensitivityList == [drivingClock],
@@ -99,20 +100,22 @@ extension ProcessBlock {
                     internalSignal: SynchronousBlock(
                         internalSignal: secondBlock,
                         signal: .internalState,
-                        newSignal: .internalStateOut(for: machine)
+                        newSignal: .internalStateOut(for: representation)
                     ),
                     signal: .currentState,
-                    newSignal: VariableName.currentStateOut(for: machine)
+                    newSignal: VariableName.currentStateOut(for: representation)
                 ),
                 signal: .previousRinglet,
-                newSignal: .previousRingletOut(for: machine)
+                newSignal: .previousRingletOut(for: representation)
             ),
             signal: .targetState,
-            newSignal: .targetStateOut(for: machine)
+            newSignal: .targetStateOut(for: representation)
         )
         let writeExternals = machine.externalSignals.filter { $0.mode != .input }
         let actuatorSnapshots: [SynchronousBlock] = writeExternals.compactMap {
-            guard let newName = VariableName(rawValue: "\(machine.name.rawValue)_\($0.name.rawValue)") else {
+            guard let newName = VariableName(
+                rawValue: "\(representation.entity.name.rawValue)_\($0.name.rawValue)"
+            ) else {
                 return nil
             }
             return SynchronousBlock.statement(statement: .assignment(
@@ -122,7 +125,9 @@ extension ProcessBlock {
         }
         let machineAssignments = machine.machineSignals.map {
             SynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: VariableName(portNameFor: $0, in: machine))),
+                name: .variable(reference: .variable(
+                    name: VariableName(portNameFor: $0, in: representation)
+                )),
                 value: .reference(variable: .variable(reference: .variable(name: $0.name)))
             ))
         }
@@ -130,7 +135,7 @@ extension ProcessBlock {
             variables.compactMap { (variable: LocalSignal) -> SynchronousBlock? in
                 guard
                     let externalName = VariableName(
-                        pre: "\(machine.name)_STATE_\(state)_", name: variable.name
+                        pre: "\(representation.entity.name)_STATE_\(state)_", name: variable.name
                     ),
                     let stateName = VariableName(pre: "STATE_\(state)_", name: variable.name)
                 else {
@@ -145,7 +150,7 @@ extension ProcessBlock {
         guard
             actuatorSnapshots.count == writeExternals.count,
             stateAssignments.count == machine.stateVariablesAmount,
-            let elseBlock = SynchronousBlock.internalMutation(for: machine)
+            let elseBlock = SynchronousBlock.internalMutation(for: representation)
         else {
             return nil
         }
@@ -155,7 +160,8 @@ extension ProcessBlock {
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(
                         name: VariableName(
-                            rawValue: "\(machine.name.rawValue)_\(VariableName.ringletCounter.rawValue)"
+                            rawValue: "\(representation.entity.name.rawValue)_" +
+                                "\(VariableName.ringletCounter.rawValue)"
                         )!
                     )),
                     value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))

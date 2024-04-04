@@ -62,9 +62,8 @@ extension VHDLFile {
     init?<T>(
         stateRunnerFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
         guard
-            let types = UseStatement(rawValue: "use work.\(machine.name.rawValue)Types.all;"),
+            let types = UseStatement(rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"),
             let entity = Entity(stateRunnerFor: state, in: representation),
             let head = ArchitectureHead(
                 stateRunnerFor: state, in: representation, maxExecutionSize: maxExecutionSize

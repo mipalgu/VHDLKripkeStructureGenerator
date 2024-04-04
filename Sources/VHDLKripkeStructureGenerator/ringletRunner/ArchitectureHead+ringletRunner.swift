@@ -83,7 +83,7 @@ extension ArchitectureHead {
                 value: .literal(value: .vector(value: .bits(value: BitVector(values: [.high, .high, .low]))))
             ),
             let machineRunnerPort = PortBlock(runnerFor: representation),
-            let runnerName = VariableName(rawValue: "\(machine.name.rawValue)MachineRunner")
+            let runnerName = VariableName(rawValue: "\(representation.entity.name.rawValue)MachineRunner")
         else {
             return nil
         }
@@ -91,7 +91,7 @@ extension ArchitectureHead {
             type: .alias(name: .totalSnapshot),
             name: .machine,
             defaultValue: .literal(value: .vector(value: .indexed(
-                values: IndexedVector(snapshotDefaultsFor: machine)
+                values: IndexedVector(snapshotDefaultsFor: representation)
             )))
         )
         let tracker = LocalSignal(
@@ -180,7 +180,8 @@ extension IndexedVector {
     /// Create snapshot default for machine.
     /// - Parameter machine: The machine to create the snapshot default for.
     @inlinable
-    init(snapshotDefaultsFor machine: Machine) {
+    init<T>(snapshotDefaultsFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
         // swiftlint:disable:next closure_body_length
         let externals = machine.externalSignals.flatMap { (signal: PortSignal) -> [IndexedValue] in
             guard case .signal(let type) = signal.type else {
@@ -198,7 +199,7 @@ extension IndexedVector {
             ))
             declarations.append(IndexedValue(
                 index: .index(value: .reference(variable: .variable(reference: .variable(name: VariableName(
-                    rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)"
+                    rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)"
                 // swiftlint:disable:next force_unwrapping
                 )!)))),
                 value: type.defaultValue
@@ -208,7 +209,7 @@ extension IndexedVector {
                     index: .index(value: .reference(variable: .variable(
                         reference: .variable(
                             name: VariableName(
-                                rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"
+                                rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
                             // swiftlint:disable:next force_unwrapping
                             )!
                         )
@@ -237,7 +238,8 @@ extension IndexedVector {
                             variable: .variable(
                                 reference: .variable(
                                     name: VariableName(
-                                        rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)"
+                                        rawValue: "\(representation.entity.name.rawValue)_" +
+                                            "\(signal.name.rawValue)"
                                     // swiftlint:disable:next force_unwrapping
                                     )!
                                 )
@@ -250,7 +252,7 @@ extension IndexedVector {
                     index: .index(value: .reference(variable: .variable(
                         reference: .variable(
                             name: VariableName(
-                                rawValue: "\(machine.name.rawValue)_\(signal.name.rawValue)In"
+                                rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
                             // swiftlint:disable:next force_unwrapping
                             )!
                         )
@@ -271,8 +273,8 @@ extension IndexedVector {
                     IndexedValue(
                         index: .index(value: .reference(variable: .variable(reference: .variable(
                             name: VariableName(
-                                rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_" +
-                                    "\(signal.name.rawValue)"
+                                rawValue: "\(representation.entity.name.rawValue)_STATE_" +
+                                    "\(state.name.rawValue)_\(signal.name.rawValue)"
                             // swiftlint:disable:next force_unwrapping
                             )!
                         )))),
@@ -281,8 +283,8 @@ extension IndexedVector {
                     IndexedValue(
                         index: .index(value: .reference(variable: .variable(reference: .variable(
                             name: VariableName(
-                                rawValue: "\(machine.name.rawValue)_STATE_\(state.name.rawValue)_" +
-                                    "\(signal.name.rawValue)In"
+                                rawValue: "\(representation.entity.name.rawValue)_STATE_" +
+                                    "\(state.name.rawValue)_\(signal.name.rawValue)In"
                             // swiftlint:disable:next force_unwrapping
                             )!
                         )))),
