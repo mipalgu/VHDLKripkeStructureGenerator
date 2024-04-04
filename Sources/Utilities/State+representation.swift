@@ -67,7 +67,7 @@ extension State {
     public func representation<T>(in representation: T) -> SignalLiteral where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard let stateIndex = machine.states.firstIndex(of: self) else {
-            fatalError("Cannot find state \(self) in machine \(machine.name.rawValue)!")
+            fatalError("Cannot find state \(self) in machine \(representation.entity.name.rawValue)!")
         }
         let bitRepresentation = BitLiteral.bitVersion(
             of: stateIndex, bitsRequired: machine.numberOfStateBits

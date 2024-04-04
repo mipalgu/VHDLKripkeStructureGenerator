@@ -70,7 +70,7 @@ extension Record {
             return nil
         }
         let machine = representation.machine
-        let preamble = "\(machine.name.rawValue)_"
+        let preamble = "\(representation.entity.name.rawValue)_"
         let inputs = machine.externalSignals.filter { $0.mode == .input }.map {
             RecordTypeDeclaration(name: $0.name, type: $0.type)
         }
@@ -110,7 +110,7 @@ extension Record {
             return nil
         }
         let machine = representation.machine
-        let preamble = "\(machine.name.rawValue)_"
+        let preamble = "\(representation.entity.name.rawValue)_"
         let externals = machine.externalSignals.map {
             RecordTypeDeclaration(name: $0.name, type: $0.type)
         }
@@ -148,7 +148,7 @@ extension Record {
         }
         let machine = representation.machine
         let externals = machine.externalSignals.map { RecordTypeDeclaration(name: $0.name, type: $0.type) }
-        let preamble = "\(machine.name.rawValue)_"
+        let preamble = "\(representation.entity.name.rawValue)_"
         let internalExternals = machine.externalSignals.flatMap {
             let internalSignal = RecordTypeDeclaration(
                 name: VariableName(pre: preamble, name: $0.name)!, type: $0.type

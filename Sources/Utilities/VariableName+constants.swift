@@ -156,10 +156,10 @@ public extension VariableName {
     /// namespaces the machine before the signal name.
     /// - Parameters:
     ///   - signal: The signal to convert to a port name.
-    ///   - machine: The machine that uses this signal.
+    ///   - representation: The machine that uses this signal.
     @inlinable
-    init(portNameFor signal: LocalSignal, in machine: Machine) {
-        self.init(rawValue: "\(machine.name)_\(signal.name)")!
+    init<T>(portNameFor signal: LocalSignal, in representation: T) where T: MachineVHDLRepresentable {
+        self.init(rawValue: "\(representation.entity.name)_\(signal.name)")!
     }
 
     /// Prepends a string to the start of a `VariableName`.
@@ -182,67 +182,73 @@ public extension VariableName {
     }
 
     /// The `setTargetState` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func currentStateIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_currentStateIn")!
+    static func currentStateIn<T>(for representation: T) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_currentStateIn")!
     }
 
     /// The `currentStateOut` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func currentStateOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_currentStateOut")!
+    static func currentStateOut<T>(for representation: T) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_currentStateOut")!
     }
 
     /// The `internalStateIn` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func internalStateIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_internalStateIn")!
+    static func internalStateIn<T>(for representation: T) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_internalStateIn")!
     }
 
     /// The `internalStateOut` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func internalStateOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_internalStateOut")!
+    static func internalStateOut<T>(
+        for representation: T
+    ) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_internalStateOut")!
     }
 
     /// The `previousRingletIn` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func previousRingletIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_previousRingletIn")!
+    static func previousRingletIn<T>(
+        for representation: T
+    ) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_previousRingletIn")!
     }
 
     /// The `previousRingletOut` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func previousRingletOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_previousRingletOut")!
+    static func previousRingletOut<T>(
+        for representation: T
+    ) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_previousRingletOut")!
     }
 
     /// The `targetStateIn` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func targetStateIn(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_targetStateIn")!
+    static func targetStateIn<T>(for representation: T) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_targetStateIn")!
     }
 
     /// The `targetStateOut` signal.
-    /// - Parameter machine: The machine that uses this signal.
+    /// - Parameter representation: The machine that uses this signal.
     /// - Returns: The variable name for this signal.
     @inlinable
-    static func targetStateOut(for machine: Machine) -> VariableName {
-        VariableName(rawValue: "\(machine.name)_targetStateOut")!
+    static func targetStateOut<T>(for representation: T) -> VariableName where T: MachineVHDLRepresentable {
+        VariableName(rawValue: "\(representation.entity.name)_targetStateOut")!
     }
 
 }

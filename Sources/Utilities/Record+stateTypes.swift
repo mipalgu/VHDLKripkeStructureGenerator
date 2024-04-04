@@ -73,7 +73,7 @@ extension Record {
         let validExternals = machine.externalSignals.filter {
             $0.mode != .input || stateExternals.contains($0.name)
         }
-        let preamble = "\(machine.name.rawValue)_"
+        let preamble = "\(representation.entity.name.rawValue)_"
         let externals = validExternals.map {
             let name = $0.mode == .input ? $0.name : VariableName(pre: preamble, name: $0.name)!
             return RecordTypeDeclaration(name: name, type: $0.type)
@@ -113,7 +113,7 @@ extension Record {
         let machine = representation.machine
         let stateExternals = Set(state.externalVariables)
         let validExternals = machine.externalSignals.filter { $0.mode != .input }
-        let preamble = "\(machine.name.rawValue)_"
+        let preamble = "\(representation.entity.name.rawValue)_"
         let externals = validExternals.map {
             let name = stateExternals.contains($0.name) ? $0.name :
                 VariableName(pre: preamble, name: $0.name)!
