@@ -62,21 +62,24 @@ import XCTest
 /// Test class for `SynchronousBlock` extensions.
 final class SynchronousBlockTests: XCTestCase {
 
-    // swiftlint:disable implicitly_unwrapped_optional
-
     /// A machine to use for testing.
-    var machine: Machine! = Machine.initial(
-        path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true)
-    )
-
-    // swiftlint:enable implicitly_unwrapped_optional
+    var machine: Machine = Machine.initialSuspensible
 
     /// The varaible `x`.
     let x = Expression.reference(variable: .variable(reference: .variable(name: .x)))
 
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// The representation of the machine.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
     /// Initialise the machine before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
@@ -251,7 +254,7 @@ final class SynchronousBlockTests: XCTestCase {
 
     /// Test that internal mutation block is created correctly.
     func testInternalMutation() {
-        guard let result = SynchronousBlock.internalMutation(for: machine) else {
+        guard let result = SynchronousBlock.internalMutation(for: representation) else {
             XCTFail("Failed to create block!")
             return
         }

@@ -69,14 +69,14 @@ final class PortBlockTests: XCTestCase {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialise the machine before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
@@ -102,14 +102,14 @@ final class PortBlockTests: XCTestCase {
             let y2SnapshotIn = VariableName(rawValue: "M_y2In"),
             let initialXIn = VariableName(rawValue: "M_STATE_Initial_initialXIn"),
             let initialXOut = VariableName(rawValue: "M_STATE_Initial_initialX"),
-            let currentStateIn = PortSignal(currentStateInFor: machine),
-            let currentStateOut = PortSignal(currentStateOutFor: machine),
-            let previousRingletIn = PortSignal(previousRingletInFor: machine),
-            let previousRingletOut = PortSignal(previousRingletOutFor: machine),
-            let internalStateIn = PortSignal(internalStateInFor: machine),
-            let internalStateOut = PortSignal(internalStateOutFor: machine),
-            let targetStateIn = PortSignal(targetStateInFor: machine),
-            let targetStateOut = PortSignal(targetStateOutFor: machine),
+            let currentStateIn = PortSignal(currentStateInFor: representation),
+            let currentStateOut = PortSignal(currentStateOutFor: representation),
+            let previousRingletIn = PortSignal(previousRingletInFor: representation),
+            let previousRingletOut = PortSignal(previousRingletOutFor: representation),
+            let internalStateIn = PortSignal(internalStateInFor: representation),
+            let internalStateOut = PortSignal(internalStateOutFor: representation),
+            let targetStateIn = PortSignal(targetStateInFor: representation),
+            let targetStateOut = PortSignal(targetStateOutFor: representation),
             let expected = PortBlock(signals: [
                 PortSignal(clock: machine.clocks[0]),
                 PortSignal(type: .stdLogic, name: xName, mode: .input),

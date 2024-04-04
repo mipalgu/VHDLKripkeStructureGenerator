@@ -94,14 +94,10 @@ class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
         ),
         machine: Machine = Machine(
             actions: [],
-            name: .machine1,
-            // swiftlint:disable:next force_unwrapping
-            path: URL(string: "/dev/null")!,
             includes: [],
             externalSignals: [],
             clocks: [],
             drivingClock: 0,
-            dependentMachines: [:],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],

@@ -69,7 +69,7 @@ final class PortBlockRunnerTests: XCTestCase {
 
     /// The representation of the machine.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
@@ -96,7 +96,7 @@ final class PortBlockRunnerTests: XCTestCase {
 
     /// Initialises the machine before each test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
@@ -107,7 +107,7 @@ final class PortBlockRunnerTests: XCTestCase {
 
     /// Test that the new String init creates the label correctly.
     func testStringInit() {
-        XCTAssertEqual(String(labelFor: machine.name), "m")
+        XCTAssertEqual(String(labelFor: representation.entity.name), "m")
         guard let name = VariableName(rawValue: "machine") else {
             XCTFail("Failed to create name")
             return

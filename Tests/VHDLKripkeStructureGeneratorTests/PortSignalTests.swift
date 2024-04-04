@@ -67,19 +67,22 @@ final class PortSignalTests: XCTestCase {
     /// A machine to use as test data.
     var machine: Machine!
 
+    /// The representation of the `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
-        machine = Machine.initial(
-            path: URL(fileURLWithPath: "path/to/M.machine", isDirectory: true)
-        )
+        machine = Machine.initialSuspensible
     }
 
     /// Test that ``init(currentStateInFor:)`` works correctly.
     func testCurrentStateInInit() {
-        let signal = PortSignal(currentStateInFor: machine)
+        let signal = PortSignal(currentStateInFor: representation)
         XCTAssertNotNil(signal)
-        XCTAssertEqual(signal?.name, .currentStateIn(for: machine))
+        XCTAssertEqual(signal?.name, .currentStateIn(for: representation))
         XCTAssertEqual(
             signal?.type,
             .signal(type: .ranged(type: .stdLogicVector(size: .downto(
@@ -87,12 +90,14 @@ final class PortSignalTests: XCTestCase {
             ))))
         )
         XCTAssertEqual(signal?.mode, .input)
-        XCTAssertEqual(signal, PortSignal(name: .currentStateIn(for: machine), bitsRequired: 1, mode: .input))
         XCTAssertEqual(
-            signal, PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input)
+            signal, PortSignal(name: .currentStateIn(for: representation), bitsRequired: 1, mode: .input)
+        )
+        XCTAssertEqual(
+            signal, PortSignal(name: .currentStateIn(for: representation), machine: machine, mode: .input)
         )
         machine.states += [machine.states[0]]
-        let signal2 = PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input)
+        let signal2 = PortSignal(name: .currentStateIn(for: representation), machine: machine, mode: .input)
         XCTAssertEqual(
             signal2?.type,
             .signal(type: .ranged(type: .stdLogicVector(size: .downto(
@@ -100,18 +105,18 @@ final class PortSignalTests: XCTestCase {
             ))))
         )
         XCTAssertEqual(
-            signal2, PortSignal(name: .currentStateIn(for: machine), bitsRequired: 2, mode: .input)
+            signal2, PortSignal(name: .currentStateIn(for: representation), bitsRequired: 2, mode: .input)
         )
         machine.states = []
-        XCTAssertNil(PortSignal(currentStateInFor: machine))
-        XCTAssertNil(PortSignal(name: .currentStateIn(for: machine), machine: machine, mode: .input))
+        XCTAssertNil(PortSignal(currentStateInFor: representation))
+        XCTAssertNil(PortSignal(name: .currentStateIn(for: representation), machine: machine, mode: .input))
     }
 
     /// Test remaining machine signals.
     func testStateSignals() {
         XCTAssertEqual(
-            PortSignal(currentStateOutFor: machine),
-            PortSignal(name: .currentStateOut(for: machine), bitsRequired: 1, mode: .output)
+            PortSignal(currentStateOutFor: representation),
+            PortSignal(name: .currentStateOut(for: representation), bitsRequired: 1, mode: .output)
         )
         XCTAssertEqual(PortSignal.reset, PortSignal(type: .stdLogic, name: .reset, mode: .input))
         XCTAssertEqual(
@@ -119,35 +124,35 @@ final class PortSignalTests: XCTestCase {
             PortSignal(type: .stdLogic, name: .setInternalSignals, mode: .input)
         )
         XCTAssertEqual(
-            PortSignal(internalStateInFor: machine),
-            PortSignal(name: .internalStateIn(for: machine), bitsRequired: 3, mode: .input)
+            PortSignal(internalStateInFor: representation),
+            PortSignal(name: .internalStateIn(for: representation), bitsRequired: 3, mode: .input)
         )
         XCTAssertEqual(
-            PortSignal(internalStateOutFor: machine),
-            PortSignal(name: .internalStateOut(for: machine), bitsRequired: 3, mode: .output)
+            PortSignal(internalStateOutFor: representation),
+            PortSignal(name: .internalStateOut(for: representation), bitsRequired: 3, mode: .output)
         )
         XCTAssertEqual(
-            PortSignal(previousRingletInFor: machine),
-            PortSignal(name: .previousRingletIn(for: machine), bitsRequired: 1, mode: .input)
+            PortSignal(previousRingletInFor: representation),
+            PortSignal(name: .previousRingletIn(for: representation), bitsRequired: 1, mode: .input)
         )
         XCTAssertEqual(
-            PortSignal(previousRingletOutFor: machine),
-            PortSignal(name: .previousRingletOut(for: machine), bitsRequired: 1, mode: .output)
+            PortSignal(previousRingletOutFor: representation),
+            PortSignal(name: .previousRingletOut(for: representation), bitsRequired: 1, mode: .output)
         )
         XCTAssertEqual(
-            PortSignal(targetStateInFor: machine),
-            PortSignal(name: .targetStateIn(for: machine), bitsRequired: 1, mode: .input)
+            PortSignal(targetStateInFor: representation),
+            PortSignal(name: .targetStateIn(for: representation), bitsRequired: 1, mode: .input)
         )
         XCTAssertEqual(
-            PortSignal(targetStateOutFor: machine),
-            PortSignal(name: .targetStateOut(for: machine), bitsRequired: 1, mode: .output)
+            PortSignal(targetStateOutFor: representation),
+            PortSignal(name: .targetStateOut(for: representation), bitsRequired: 1, mode: .output)
         )
     }
 
     /// Test that init(signal:,in:,mode:) works correctly for signal typed `LocalSignal`s.
     func testLocalSignalInit() {
         let signal = LocalSignal(type: .stdLogic, name: .x)
-        let portSignal = PortSignal(signal: signal, in: machine, mode: .input)
+        let portSignal = PortSignal(signal: signal, in: representation, mode: .input)
         guard let expectedName = VariableName(rawValue: "M_x") else {
             XCTFail("Failed to create expected name")
             return
@@ -159,7 +164,7 @@ final class PortSignalTests: XCTestCase {
     /// Test that init(signal:,in:,mode:) returns nil for alias typed `LocalSignal`s.
     func testLocalSignalInitReturnsNilForAlias() {
         let signal = LocalSignal(type: .alias(name: .y), name: .x)
-        XCTAssertNil(PortSignal(signal: signal, in: machine, mode: .input))
+        XCTAssertNil(PortSignal(signal: signal, in: representation, mode: .input))
     }
 
 }

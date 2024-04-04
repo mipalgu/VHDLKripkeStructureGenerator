@@ -62,15 +62,17 @@ import XCTest
 final class PackageGeneratorTests: XCTestCase {
 
     // swiftlint:disable implicitly_unwrapped_optional
+    // swiftlint:disable force_unwrapping
 
     /// A machine to use for testing.
     var machine: Machine!
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: VariableName(rawValue: "M")!)
     }
 
+    // swiftlint:enable force_unwrapping
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// The raw VHDL for the initial state runner architecture head of `machine`.
@@ -81,7 +83,7 @@ final class PackageGeneratorTests: XCTestCase {
 
     /// Initialise the machine before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output),

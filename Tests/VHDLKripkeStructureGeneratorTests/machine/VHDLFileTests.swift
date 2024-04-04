@@ -71,7 +71,7 @@ final class VHDLFileTests: XCTestCase {
 
     /// Initialise the test data before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/tmp/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
@@ -153,17 +153,17 @@ final class VHDLFileTests: XCTestCase {
     /// Test verifiable init creates the correct file.
     func testVerifiableInit() {
         guard
-            let representation = MachineRepresentation(machine: machine),
+            let representation = MachineRepresentation(machine: machine, name: .M),
             let port = PortBlock(verifiable: representation),
             let body = AsynchronousBlock(verifiable: representation)
         else {
             XCTFail("Failed to create file components!")
             return
         }
-        let entity = Entity(name: machine.name, port: port)
+        let entity = Entity(name: representation.entity.name, port: port)
         let architecture = Architecture(
             body: body,
-            entity: machine.name,
+            entity: representation.entity.name,
             head: representation.architectureHead,
             name: representation.architectureName
         )
@@ -182,7 +182,7 @@ final class VHDLFileTests: XCTestCase {
     /// Test runner init returns correct file.
     func testRunnerInit() {
         guard
-            let representation = MachineRepresentation(machine: machine),
+            let representation = MachineRepresentation(machine: machine, name: .M),
             let head = ArchitectureHead(runner: representation),
             let body = AsynchronousBlock(runnerFor: representation),
             let name = VariableName(rawValue: "MMachineRunner"),

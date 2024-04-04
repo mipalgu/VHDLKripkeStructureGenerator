@@ -69,14 +69,14 @@ final class ComponentDefinitionTests: XCTestCase {
 
     /// The representation of `machine`.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialise the test data before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
     }
 
     /// Test that `ComponentDefinition.init(runner:)` returns nil for an invalid representation.

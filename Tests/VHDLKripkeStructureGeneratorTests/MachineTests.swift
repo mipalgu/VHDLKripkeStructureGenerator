@@ -65,15 +65,13 @@ final class MachineTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
 
     /// A machine to use for testing.
-    var machine: Machine! = Machine.initial(
-        path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true)
-    )
+    var machine: Machine! = Machine.initialSuspensible
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialise the machine before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)

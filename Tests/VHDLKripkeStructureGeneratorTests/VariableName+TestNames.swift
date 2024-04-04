@@ -70,6 +70,9 @@ extension VariableName {
     /// A variable `initialY`.
     static let initialY = VariableName(rawValue: "initialY")!
 
+    /// A variable `M`.
+    static let M = VariableName(rawValue: "M")!
+
     /// The name of `Machine1`.
     static let machine1 = VariableName(rawValue: "Machine1")!
 

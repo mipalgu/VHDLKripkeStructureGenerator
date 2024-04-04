@@ -75,14 +75,14 @@ final class MachineRepresentationTests: XCTestCase {
 
     /// The representation under test.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialise the test data before each test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.states[0].externalVariables = [.x, .y]
         machine.externalSignals = externals
     }

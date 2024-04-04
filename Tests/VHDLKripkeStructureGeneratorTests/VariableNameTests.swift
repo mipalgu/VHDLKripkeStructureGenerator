@@ -65,9 +65,12 @@ final class VariableNameTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
 
     /// A machine to use as test data.
-    let machine: Machine! = Machine.initial(
-        path: URL(fileURLWithPath: "path/to/M.machine", isDirectory: true)
-    )
+    let machine: Machine! = Machine.initialSuspensible
+
+    /// The representation of the `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -82,14 +85,14 @@ final class VariableNameTests: XCTestCase {
         XCTAssertEqual(VariableName.stdLogicTypes.rawValue, "stdLogicTypes")
         XCTAssertEqual(VariableName.stdLogicTypesT.rawValue, "stdLogicTypes_t")
         XCTAssertEqual(VariableName.targetState.rawValue, "targetState")
-        XCTAssertEqual(VariableName.currentStateIn(for: machine).rawValue, "M_currentStateIn")
-        XCTAssertEqual(VariableName.currentStateOut(for: machine).rawValue, "M_currentStateOut")
-        XCTAssertEqual(VariableName.internalStateIn(for: machine).rawValue, "M_internalStateIn")
-        XCTAssertEqual(VariableName.internalStateOut(for: machine).rawValue, "M_internalStateOut")
-        XCTAssertEqual(VariableName.previousRingletIn(for: machine).rawValue, "M_previousRingletIn")
-        XCTAssertEqual(VariableName.previousRingletOut(for: machine).rawValue, "M_previousRingletOut")
-        XCTAssertEqual(VariableName.targetStateIn(for: machine).rawValue, "M_targetStateIn")
-        XCTAssertEqual(VariableName.targetStateOut(for: machine).rawValue, "M_targetStateOut")
+        XCTAssertEqual(VariableName.currentStateIn(for: representation).rawValue, "M_currentStateIn")
+        XCTAssertEqual(VariableName.currentStateOut(for: representation).rawValue, "M_currentStateOut")
+        XCTAssertEqual(VariableName.internalStateIn(for: representation).rawValue, "M_internalStateIn")
+        XCTAssertEqual(VariableName.internalStateOut(for: representation).rawValue, "M_internalStateOut")
+        XCTAssertEqual(VariableName.previousRingletIn(for: representation).rawValue, "M_previousRingletIn")
+        XCTAssertEqual(VariableName.previousRingletOut(for: representation).rawValue, "M_previousRingletOut")
+        XCTAssertEqual(VariableName.targetStateIn(for: representation).rawValue, "M_targetStateIn")
+        XCTAssertEqual(VariableName.targetStateOut(for: representation).rawValue, "M_targetStateOut")
     }
 
     /// Tests that the port name is created correctly from the local signal and machine name.
@@ -99,7 +102,7 @@ final class VariableNameTests: XCTestCase {
             return
         }
         let signal = LocalSignal(type: .stdLogic, name: signalName)
-        let portName = VariableName(portNameFor: signal, in: machine)
+        let portName = VariableName(portNameFor: signal, in: representation)
         XCTAssertEqual(portName.rawValue, "M_x")
     }
 

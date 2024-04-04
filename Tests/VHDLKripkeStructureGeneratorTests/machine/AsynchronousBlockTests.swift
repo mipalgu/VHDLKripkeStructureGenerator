@@ -75,14 +75,14 @@ final class AsynchronousBlockTests: XCTestCase {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialise the machine before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)
@@ -122,13 +122,13 @@ final class AsynchronousBlockTests: XCTestCase {
         guard
             let representation,
             case .process(let process) = representation.architectureBody,
-            let newProcess = ProcessBlock(verifiable: process, in: representation.machine)
+            let newProcess = ProcessBlock(verifiable: process, in: representation)
         else {
             XCTFail("Not a process!")
             return
         }
         XCTAssertEqual(
-            AsynchronousBlock(verifiable: representation.architectureBody, in: representation.machine),
+            AsynchronousBlock(verifiable: representation.architectureBody, in: representation),
             AsynchronousBlock.process(block: newProcess)
         )
     }
@@ -138,7 +138,7 @@ final class AsynchronousBlockTests: XCTestCase {
         guard
             let representation,
             case .process(let process) = representation.architectureBody,
-            let newProcess = ProcessBlock(verifiable: process, in: representation.machine)
+            let newProcess = ProcessBlock(verifiable: process, in: representation)
         else {
             XCTFail("Not a process!")
             return
@@ -148,7 +148,7 @@ final class AsynchronousBlockTests: XCTestCase {
             blocks: [nullStatement, representation.architectureBody]
         )
         let expected = AsynchronousBlock.blocks(blocks: [nullStatement, .process(block: newProcess)])
-        XCTAssertEqual(AsynchronousBlock(verifiable: blocks, in: machine), expected)
+        XCTAssertEqual(AsynchronousBlock(verifiable: blocks, in: representation), expected)
     }
 
     /// Test init returns nil when `ProcessBlock.init(verifiable:in:)` returns nil.
@@ -156,7 +156,7 @@ final class AsynchronousBlockTests: XCTestCase {
         let block = AsynchronousBlock.process(
             block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
         )
-        XCTAssertNil(AsynchronousBlock(verifiable: block, in: machine))
+        XCTAssertNil(AsynchronousBlock(verifiable: block, in: representation))
     }
 
     /// Test blocks return nil when containing invalid process.
@@ -165,7 +165,7 @@ final class AsynchronousBlockTests: XCTestCase {
             comment,
             .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
         ])
-        XCTAssertNil(AsynchronousBlock(verifiable: blocks, in: machine))
+        XCTAssertNil(AsynchronousBlock(verifiable: blocks, in: representation))
     }
 
     /// Test init returns nil without a process.
@@ -216,7 +216,7 @@ final class AsynchronousBlockTests: XCTestCase {
             blocks.count == 3,
             case .statement(statement: .comment) = blocks[0],
             case .process(let process) = blocks[2],
-            let verifiableProcess = ProcessBlock(verifiable: process, in: machine),
+            let verifiableProcess = ProcessBlock(verifiable: process, in: representation),
             let xName = VariableName(rawValue: "M_x")
         else {
             XCTFail("Not a block!")

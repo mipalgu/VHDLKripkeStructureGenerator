@@ -69,14 +69,14 @@ final class ArchitectureHeadTests: XCTestCase {
 
     /// The representation of the machine.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialises the machine before each test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
     }
 
     /// Test `init(runner:)` returns nil for invalid representation.

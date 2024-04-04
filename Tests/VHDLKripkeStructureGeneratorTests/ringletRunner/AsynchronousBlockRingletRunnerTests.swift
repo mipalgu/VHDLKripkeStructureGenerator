@@ -69,7 +69,7 @@ final class AsynchronousBlockRingletRunnerTests: XCTestCase {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine)
+        MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
@@ -195,7 +195,7 @@ final class AsynchronousBlockRingletRunnerTests: XCTestCase {
 
     /// Initialise the machine before every test.
     override func setUp() {
-        machine = Machine.initial(path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true))
+        machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output)

@@ -71,9 +71,7 @@ final class ProcessBlockTests: XCTestCase {
 
     /// Initialise the test data before every test.
     override func setUp() {
-        machine = Machine.initial(
-            path: URL(fileURLWithPath: "/path/to/M.machine", isDirectory: true)
-        )
+        machine = Machine.initialSuspensible
     }
 
     // swiftlint:disable function_body_length
@@ -92,7 +90,7 @@ final class ProcessBlockTests: XCTestCase {
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
         let y2 = LocalSignal(type: .stdLogic, name: .y2)
         machine.machineSignals = [y2]
-        guard let representation = MachineRepresentation(machine: machine) else {
+        guard let representation = MachineRepresentation(machine: machine, name: .M) else {
             XCTFail("Failed to create representation.")
             return
         }
@@ -116,15 +114,15 @@ final class ProcessBlockTests: XCTestCase {
         }
         let clk = machine.clocks[machine.drivingClock].name
         let newVariables = [
-            (VariableName.internalState, VariableName.internalStateOut(for: machine)),
-            (VariableName.targetState, VariableName.targetStateOut(for: machine)),
-            (VariableName.currentState, VariableName.currentStateOut(for: machine)),
-            (VariableName.previousRinglet, VariableName.previousRingletOut(for: machine))
+            (VariableName.internalState, VariableName.internalStateOut(for: representation)),
+            (VariableName.targetState, VariableName.targetStateOut(for: representation)),
+            (VariableName.currentState, VariableName.currentStateOut(for: representation)),
+            (VariableName.previousRinglet, VariableName.previousRingletOut(for: representation))
         ]
         let newLogic = newVariables.reduce(logic) {
             SynchronousBlock(internalSignal: $0, signal: $1.0, newSignal: $1.1)
         }
-        guard let mutationBlock = SynchronousBlock.internalMutation(for: machine) else {
+        guard let mutationBlock = SynchronousBlock.internalMutation(for: representation) else {
             XCTFail("Failed to create mutation block.")
             return
         }
@@ -143,19 +141,20 @@ final class ProcessBlockTests: XCTestCase {
                     blocks: [
                         SynchronousBlock.statement(statement: .assignment(
                             name: .variable(reference: .variable(name: VariableName(
-                                portNameFor: LocalSignal(type: .stdLogic, name: .y), in: machine
+                                portNameFor: LocalSignal(type: .stdLogic, name: .y), in: representation
                             ))),
                             value: .reference(variable: .variable(reference: .variable(name: .y)))
                         )),
                         SynchronousBlock.statement(statement: .assignment(
                             name: .variable(reference: .variable(name: VariableName(
-                                portNameFor: y2, in: machine
+                                portNameFor: y2, in: representation
                             ))),
                             value: .reference(variable: .variable(reference: .variable(name: y2.name)))
                         )),
                         SynchronousBlock.statement(statement: .assignment(
                             name: .variable(reference: .variable(name: VariableName(
-                                portNameFor: LocalSignal(type: .stdLogic, name: newInitialX), in: machine
+                                portNameFor: LocalSignal(type: .stdLogic, name: newInitialX),
+                                in: representation
                             ))),
                             value: .reference(variable: .variable(reference: .variable(name: newInitialX)))
                         ))
@@ -165,7 +164,7 @@ final class ProcessBlockTests: XCTestCase {
             ))
         ))
         let expected = ProcessBlock(sensitivityList: [clk], code: expectedLogic)
-        guard let newProcess = ProcessBlock(verifiable: process, in: machine) else {
+        guard let newProcess = ProcessBlock(verifiable: process, in: representation) else {
             XCTFail("Failed to construct new process.")
             return
         }
@@ -176,8 +175,14 @@ final class ProcessBlockTests: XCTestCase {
 
     /// Test that the verifiable init returns nil for an invalid process.
     func testVerifiableInitReturnsNilForInvalidProcess() {
+        guard
+            let representation = MachineRepresentation(machine: machine, name: .M)
+        else {
+            XCTFail("Failed to create representation!")
+            return
+        }
         let process = ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
-        XCTAssertNil(ProcessBlock(verifiable: process, in: machine))
+        XCTAssertNil(ProcessBlock(verifiable: process, in: representation))
     }
 
 }
