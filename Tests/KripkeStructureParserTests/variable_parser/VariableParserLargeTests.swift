@@ -95,4 +95,39 @@ final class VariableParserLargeTests: XCTestCase {
         XCTAssertEqual(definitions, expected)
     }
 
+    /// Test that the function implementations are correct.
+    func testImplementations() {
+        let implementations = parser.functions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
+        let expected = """
+        uint32_t* IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2])
+        {
+            const uint32_t count0 = (data[0] & 0b11111111111111111111111111111100) >> 2;
+            const uint32_t count1 = (data[1] & 0b11000000000000000000000000000000) >> 30;
+            const uint32_t count[2] = { count0, count1 };
+            return ((uint32_t*) (count));
+        }
+        bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2])
+        {
+            return ((bool) ((data[1] & 0b00001000000000000000000000000000) >> 27));
+        }
+        uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(uint32_t data[2])
+        {
+            return ((uint8_t) ((data[1] & 0b00110000000000000000000000000000) >> 28));
+        }
+        bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(uint32_t data[2])
+        {
+            return ((bool) ((data[1] & 0b00000001000000000000000000000000) >> 24));
+        }
+        uint8_t IsEvenMachine_calculateIsEven_WRITE_isEven(uint32_t data[2])
+        {
+            return ((uint8_t) ((data[1] & 0b00000110000000000000000000000000) >> 25));
+        }
+        uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(uint32_t data[2])
+        {
+            return ((uint32_t) ((data[1] & 0b00000000100000000000000000000000) >> 23));
+        }
+        """
+        XCTAssertEqual(implementations, expected)
+    }
+
 }
