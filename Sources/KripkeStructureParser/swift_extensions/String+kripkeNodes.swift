@@ -57,6 +57,7 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add inits for Kripke node creation.
 extension String {
 
     // swiftlint:disable line_length
@@ -263,13 +264,16 @@ extension RangedType {
 
 }
 
+/// Add record helper properties for kripke node creation.
 extension Record {
 
-    var definitions: [String] {
+    /// The definition of the types within a kripke node.
+    @inlinable var definitions: [String] {
         self.types.map { "public var \($0.name.rawValue): \($0.type.signalType.swiftLiteral)" }
     }
 
-    var encodedAssignments: [String] {
+    /// The assignment of the literal values of each type within a kripke node.
+    @inlinable var encodedAssignments: [String] {
         self.types.map {
             let signalType = $0.type.signalType
             return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: " +
@@ -277,18 +281,27 @@ extension Record {
         }
     }
 
-    var initAssignments: [String] {
+    /// The assignment of the properties within a kripke node.
+    @inlinable var initAssignments: [String] {
         self.types.map { "self.\($0.name.rawValue) = \($0.name.rawValue)" }
     }
 
-    var initParameters: [String] {
+    /// The parameters into the kripke node initializer.
+    @inlinable var initParameters: [String] {
         self.types.map { "\($0.name.rawValue): \($0.type.signalType.swiftLiteral)" }
     }
 
-    var literalAssignments: [String] {
+    /// The literal assignments for the kripke node.
+    @inlinable var literalAssignments: [String] {
         self.types.map { "\($0.name.rawValue): \($0.name.rawValue)Literal" }
     }
 
+    /// Create the swift code that defines the values of each record type within a kripke node.
+    /// - Parameters:
+    ///   - state: The state this record represents.
+    ///   - representation: The machine containing the state.
+    ///   - type: The type of the kripke node to create.
+    /// - Returns: The code that creates the values of each record type.
     func valueAssignment<T>(
         state: State, representation: T, type: NodeType
     ) -> [String] where T: MachineVHDLRepresentable {
