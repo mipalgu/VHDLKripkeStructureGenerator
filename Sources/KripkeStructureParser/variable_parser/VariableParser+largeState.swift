@@ -159,11 +159,23 @@ extension Dictionary where Key == NodeVariable, Value == String {
             let access = MemoryAccess.getAccess(indexes: $1, in: representation)
             let variableName = $0.name.rawValue
             let body = access.map {
-                let trailingZeros = String(
-                    repeating: "0",
-                    count: representation.numberOfDataBitsPerAddress - $0.indexes.count - $0.indexes[0]
-                )
-                let leadingZeros = String(repeating: "0", count: $0.indexes[0])
+                let leadingZeros: String
+                if $0.address != 0 {
+                    leadingZeros = ""
+                } else {
+                    leadingZeros = String(repeating: "0", count: $0.indexes[0])
+                }
+                let trailingZeros: String
+                if $0.address != access[access.count - 1].address {
+                    trailingZeros = String(
+                        repeating: "0", count: 32 - representation.numberOfDataBitsPerAddress
+                    )
+                } else {
+                    trailingZeros = String(
+                        repeating: "0",
+                        count: 32 - $0.indexes.count
+                    )
+                }
                 let mask = "0b\(leadingZeros)\(String(repeating: "1", count: $0.indexes.count))" +
                     trailingZeros
                 let shiftAmount = 32 - $0.indexes.count - leadingZeros.count
