@@ -1,4 +1,4 @@
-// VariableName+constants.swift
+// UseStatement+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,41 +56,15 @@
 import VHDLParsing
 
 // swiftlint:disable force_unwrapping
-// swiftlint:disable missing_docs
 
-/// Constants in test targets.
-public extension VariableName {
+/// Add constants.
+public extension UseStatement {
 
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let ieee = VariableName(rawValue: "IEEE")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let `internal` = VariableName(rawValue: "Internal")!
-
-    static let ping = VariableName(rawValue: "ping")!
-
-    static let pong = VariableName(rawValue: "pong")!
-
-    static let onEntry = VariableName(rawValue: "OnEntry")!
-
-    static let onExit = VariableName(rawValue: "OnExit")!
-
-    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
-
-    static let waitForPong = VariableName(rawValue: "WaitForPong")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`.
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `z`.
-    static let z = VariableName(rawValue: "z")!
+    /// A use statement for the IEEE library `std_logic_1164.all;`.
+    static let stdLogic1164All = UseStatement(
+        nonEmptyComponents: [.module(name: .ieee), .module(name: .stdLogic1164), .all]
+    )!
 
 }
 
-// swiftlint:enable missing_docs
 // swiftlint:enable force_unwrapping

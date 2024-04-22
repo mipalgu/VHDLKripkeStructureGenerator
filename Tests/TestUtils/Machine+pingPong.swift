@@ -1,4 +1,4 @@
-// VariableName+constants.swift
+// Machine+pingPong.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,44 +53,67 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import VHDLMachines
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
-// swiftlint:disable missing_docs
+/// Add constant machines.
+public extension Machine {
 
-/// Constants in test targets.
-public extension VariableName {
-
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let ieee = VariableName(rawValue: "IEEE")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let `internal` = VariableName(rawValue: "Internal")!
-
-    static let ping = VariableName(rawValue: "ping")!
-
-    static let pong = VariableName(rawValue: "pong")!
-
-    static let onEntry = VariableName(rawValue: "OnEntry")!
-
-    static let onExit = VariableName(rawValue: "OnExit")!
-
-    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
-
-    static let waitForPong = VariableName(rawValue: "WaitForPong")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`.
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `z`.
-    static let z = VariableName(rawValue: "z")!
+    /// A `PingMachine.machine`.
+    static let pingMachine = Machine(
+        actions: [.internal, .onEntry, .onExit],
+        includes: [.library(value: .ieee), .include(statement: .stdLogic1164All)],
+        externalSignals: [
+            PortSignal(type: .stdLogic, name: .ping, mode: .output),
+            PortSignal(type: .stdLogic, name: .pong, mode: .input)
+        ],
+        clocks: [Clock(name: .clk, frequency: 125, unit: .MHz)],
+        drivingClock: 0,
+        machineSignals: [],
+        isParameterised: false,
+        parameterSignals: [],
+        returnableSignals: [],
+        states: [
+            State(
+                name: .initial,
+                actions: [
+                    .onExit: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .ping)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ],
+                signals: [],
+                externalVariables: [.ping]
+            ),
+            State(
+                name: .waitForPong,
+                actions: [
+                    .internal: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .ping)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .onExit: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .ping)),
+                        value: .literal(value: .bit(value: .high))
+                    ))
+                ],
+                signals: [],
+                externalVariables: [.ping, .pong]
+            )
+        ],
+        transitions: [
+            Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1),
+            Transition(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .pong))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                source: 1,
+                target: 1
+            )
+        ],
+        initialState: 0,
+        suspendedState: nil
+    )
 
 }
-
-// swiftlint:enable missing_docs
-// swiftlint:enable force_unwrapping
