@@ -202,9 +202,11 @@ extension String {
 
 }
 
+/// Add `swiftLiteral`.
 extension SignalType {
 
-    var swiftLiteral: String {
+    /// The equivalent `Swift` type for storing the literal value.
+    @inlinable var swiftLiteral: String {
         switch self {
         case .bit:
             return "BitLiteral"
@@ -225,9 +227,11 @@ extension SignalType {
 
 }
 
+/// Add `swiftLiteral`.
 extension RangedType {
 
-    var swiftLiteral: String {
+    /// The equivalent `Swift` type for storing the literal value.
+    @inlinable var swiftLiteral: String {
         switch self {
         case .bitVector, .signed, .unsigned:
             return "BitVector"
