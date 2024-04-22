@@ -156,15 +156,31 @@ extension Dictionary where Key == NodeVariable, Value == String {
                     """
                 )
             }
-            let lowerMemoryIndex = Int(
-                (Double($1.min.integer) / Double(representation.numberOfDataBitsPerAddress))
+            let access = MemoryAccess.getAccess(indexes: $1, in: representation)
+            let variableName = $0.name.rawValue
+            let body = access.map {
+                let trailingZeros = String(
+                    repeating: "0",
+                    count: representation.numberOfDataBitsPerAddress - $0.indexes.count - $0.indexes[0]
+                )
+                let leadingZeros = String(repeating: "0", count: $0.indexes[0])
+                let mask = "0b\(leadingZeros)\(String(repeating: "1", count: $0.indexes.count))" +
+                    trailingZeros
+                let shiftAmount = 32 - $0.indexes.count - leadingZeros.count
+                return "const uint32_t \(variableName)\($0.address) = " +
+                    "(data[\($0.address)] & \(mask)) >> \(shiftAmount);"
+            }
+            let addressVariables = access.map { "\(variableName)\($0.address)" }.joined(separator: ", ")
+            let functionBody = (body + ["\(variableName) = { \(addressVariables) };"]).joined(separator: "\n")
+            return (
+                variable,
+                """
+                void \(functionName)(\(addressType), uint32_t *\(variableName))
+                {
+                \(functionBody.indent(amount: 1))
+                }
+                """
             )
-            let upperMemoryIndex = Int(
-                (Double($1.max.integer) / Double(representation.numberOfDataBitsPerAddress))
-            )
-            let memoryIndexes = lowerMemoryIndex...upperMemoryIndex
-            let returnType = "void"
-            return (variable, "")
         }
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         let writeSnapshotImplementations = writeSnapshot.encodedIndexes.map {
