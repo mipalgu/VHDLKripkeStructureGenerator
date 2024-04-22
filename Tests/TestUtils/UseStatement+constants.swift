@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// UseStatement+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,19 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
 import VHDLParsing
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+// swiftlint:disable force_unwrapping
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+/// Add constants.
+public extension UseStatement {
 
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
-    }
+    /// A use statement for the IEEE library `std_logic_1164.all;`.
+    static let stdLogic1164All = UseStatement(
+        nonEmptyComponents: [.module(name: .ieee), .module(name: .stdLogic1164), .all]
+    )!
 
 }
+
+// swiftlint:enable force_unwrapping

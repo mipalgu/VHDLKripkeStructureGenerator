@@ -81,6 +81,8 @@ final class VariableParserTests: XCTestCase {
         """
     }
 
+    // swiftlint:disable force_unwrapping
+
     /// Initialise the machine before every test.
     override func setUp() {
         machine = Machine.initialSuspensible
@@ -96,7 +98,7 @@ final class VariableParserTests: XCTestCase {
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
             ),
-            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output),
+            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -104,6 +106,8 @@ final class VariableParserTests: XCTestCase {
             .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!
         ]
     }
+
+    // swiftlint:enable force_unwrapping
 
     // func testFunctions() {
     //     let generator = PackageGenerator()

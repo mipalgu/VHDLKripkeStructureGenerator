@@ -54,24 +54,38 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+/// An `enum` of all supported `C` primitive types.
+/// 
+/// The `rawValue` of these cases if the equivalent `C` type name as defined in `stdint.h`.
 enum CType: String, Equatable, Hashable, Sendable, Codable {
 
+    /// An unsigned 8-bit integer.
     case uint8 = "uint8_t"
 
+    /// An unsigned 16-bit integer.
     case uint16 = "uint16_t"
 
+    /// An unsigned 32-bit integer.
     case uint32 = "uint32_t"
 
+    /// A signed 8-bit integer.
     case int8 = "int8_t"
 
+    /// A signed 16-bit integer.
     case int16 = "int16_t"
 
+    /// A signed 32-bit integer.
     case int32 = "int32_t"
 
+    /// A boolean.
     case bool = "bool"
 
+    /// A floating point number.
     case float = "float"
 
+    /// Create a new `CType` that is a signed version of another `CType`.
+    /// - Parameter signedVersion: The `CType` to convert to a signed version.
+    @inlinable
     init(signedVersion: CType) {
         switch signedVersion {
         case .int8, .int16, .int32, .bool, .float:

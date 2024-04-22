@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// CTypeTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,35 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-import VHDLParsing
+@testable import KripkeStructureParser
+import XCTest
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Test class for ``CType``.
+final class CTypeTests: XCTestCase {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+    /// Test that raw values are correct for all supported c types.
+    func testRawValue() {
+        XCTAssertEqual(CType.uint8.rawValue, "uint8_t")
+        XCTAssertEqual(CType.uint16.rawValue, "uint16_t")
+        XCTAssertEqual(CType.uint32.rawValue, "uint32_t")
+        XCTAssertEqual(CType.int8.rawValue, "int8_t")
+        XCTAssertEqual(CType.int16.rawValue, "int16_t")
+        XCTAssertEqual(CType.int32.rawValue, "int32_t")
+        XCTAssertEqual(CType.bool.rawValue, "bool")
+        XCTAssertEqual(CType.float.rawValue, "float")
+    }
 
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
+    /// Test that the `init(signedVersion:)` converts the c-type correctly.
+    func testSignedVersionInit() {
+        XCTAssertEqual(CType(signedVersion: .uint8), .int8)
+        XCTAssertEqual(CType(signedVersion: .uint16), .int16)
+        XCTAssertEqual(CType(signedVersion: .uint32), .int32)
+        XCTAssertEqual(CType(signedVersion: .int8), .int8)
+        XCTAssertEqual(CType(signedVersion: .int16), .int16)
+        XCTAssertEqual(CType(signedVersion: .int32), .int32)
+        XCTAssertEqual(CType(signedVersion: .bool), .bool)
+        XCTAssertEqual(CType(signedVersion: .float), .float)
     }
 
 }

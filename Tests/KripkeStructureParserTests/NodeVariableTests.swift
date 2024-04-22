@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// NodeVariableTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,42 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
+@testable import KripkeStructureParser
+import TestUtils
 import VHDLParsing
+import XCTest
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Test class for ``NodeVariable``.
+final class NodeVariableTests: XCTestCase {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+    /// The declaration of a record member.
+    let declaration0 = RecordTypeDeclaration(name: .x, type: .signal(type: .stdLogic))
 
-    /// The type of the node.
-    let type: NodeType
+    /// The declaration of a record member.
+    let declaration1 = RecordTypeDeclaration(name: .y, type: .signal(type: .bit))
 
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
+    /// The declaration of a record member.
+    let declaration2 = RecordTypeDeclaration(name: .z, type: .signal(type: .integer))
+
+    /// Test init sets stored properties correctly.
+    func testInit() {
+        let variable = NodeVariable(data: declaration0, type: .write)
+        XCTAssertEqual(variable.data, declaration0)
+        XCTAssertEqual(variable.type, .write)
+    }
+
+    /// Test that comparable sorts the variables by type first.
+    func testComparableConformance() {
+        let variable0 = NodeVariable(data: declaration0, type: .write)
+        let variable1 = NodeVariable(data: declaration1, type: .read)
+        let variable2 = NodeVariable(data: declaration2, type: .write)
+        let variable3 = NodeVariable(data: declaration0, type: .read)
+        let variable4 = NodeVariable(data: declaration1, type: .write)
+        let variable5 = NodeVariable(data: declaration2, type: .read)
+        let variables = [variable0, variable1, variable2, variable3, variable4, variable5]
+        let sorted = variables.sorted()
+        XCTAssertEqual(sorted, [variable3, variable1, variable5, variable0, variable4, variable2])
     }
 
 }

@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// State+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,28 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
+import VHDLMachines
 import VHDLParsing
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Add constant states.
+public extension State {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
-
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
-    }
+    /// The `WaitForPong` state in the `PingMachine`.
+    static let waitForPong = State(
+        name: .waitForPong,
+        actions: [
+            .internal: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .ping)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .onExit: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .ping)),
+                value: .literal(value: .bit(value: .high))
+            ))
+        ],
+        signals: [],
+        externalVariables: [.ping, .pong]
+    )
 
 }

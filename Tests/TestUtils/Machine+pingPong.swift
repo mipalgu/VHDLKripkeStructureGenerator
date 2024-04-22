@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// Machine+pingPong.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,54 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
+import VHDLMachines
 import VHDLParsing
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Add constant machines.
+public extension Machine {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
-
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
-    }
+    /// A `PingMachine.machine`.
+    static let pingMachine = Machine(
+        actions: [.internal, .onEntry, .onExit],
+        includes: [.library(value: .ieee), .include(statement: .stdLogic1164All)],
+        externalSignals: [
+            PortSignal(type: .stdLogic, name: .ping, mode: .output),
+            PortSignal(type: .stdLogic, name: .pong, mode: .input)
+        ],
+        clocks: [Clock(name: .clk, frequency: 125, unit: .MHz)],
+        drivingClock: 0,
+        machineSignals: [],
+        isParameterised: false,
+        parameterSignals: [],
+        returnableSignals: [],
+        states: [
+            State(
+                name: .initial,
+                actions: [
+                    .onExit: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .ping)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ],
+                signals: [],
+                externalVariables: [.ping]
+            ),
+            .waitForPong
+        ],
+        transitions: [
+            Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1),
+            Transition(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .pong))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                source: 1,
+                target: 1
+            )
+        ],
+        initialState: 0,
+        suspendedState: nil
+    )
 
 }

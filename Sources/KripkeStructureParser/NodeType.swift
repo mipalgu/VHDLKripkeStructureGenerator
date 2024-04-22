@@ -54,13 +54,17 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+/// An enum categorising nodes within a Kripke structure as `READ` or `WRITE`.
 enum NodeType: RawRepresentable, Equatable, Hashable, Codable, Comparable, Sendable {
 
+    /// A Kripke node that is a read node.
     case read
 
+    /// A Kripke node that is a write node.
     case write
 
-    var rawValue: String {
+    /// The raw value of the node type.
+    @inlinable var rawValue: String {
         switch self {
         case .read:
             return "READ"
@@ -69,6 +73,9 @@ enum NodeType: RawRepresentable, Equatable, Hashable, Codable, Comparable, Senda
         }
     }
 
+    /// Creates a node type from a raw value.
+    /// - Parameter rawValue: The raw value of the node type.
+    @inlinable
     init?(rawValue: String) {
         switch rawValue {
         case "READ":

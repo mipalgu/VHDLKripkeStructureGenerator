@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// NodeTypeTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,23 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-import VHDLParsing
+@testable import KripkeStructureParser
+import XCTest
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Test class for ``NodeType``.
+final class NodeTypeTests: XCTestCase {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+    /// Test that raw value is correct.
+     func testRawValue() {
+        XCTAssertEqual(NodeType.read.rawValue, "READ")
+        XCTAssertEqual(NodeType.write.rawValue, "WRITE")
+     }
 
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
-    }
+     /// Test that type is created from the raw value correctly.
+     func testRawValueInit() {
+        XCTAssertEqual(NodeType(rawValue: "READ"), .read)
+        XCTAssertEqual(NodeType(rawValue: "WRITE"), .write)
+     }
 
 }

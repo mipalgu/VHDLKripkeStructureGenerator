@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// SignalTypeTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,38 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
+@testable import KripkeStructureParser
+import TestUtils
 import VHDLParsing
+import XCTest
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Test class for `SignalType` extensions.
+final class SignalTypeTests: XCTestCase {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+    /// Test `swiftLiteral` computed property correctly converts signal type.
+    func testSwiftLiteral() {
+        XCTAssertEqual(SignalType.bit.swiftLiteral, "BitLiteral")
+        XCTAssertEqual(SignalType.boolean.swiftLiteral, "Bool")
+        XCTAssertEqual(SignalType.integer.swiftLiteral, "Int")
+        XCTAssertEqual(SignalType.natural.swiftLiteral, "UInt")
+        XCTAssertEqual(SignalType.positive.swiftLiteral, "UInt")
+        XCTAssertEqual(SignalType.stdLogic.swiftLiteral, "LogicLiteral")
+        XCTAssertEqual(SignalType.stdULogic.swiftLiteral, "LogicLiteral")
+    }
 
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
+    /// Test `swiftLiteral` on ranged types.
+    func testSwiftLiteralRanged() {
+        XCTAssertEqual(SignalType.ranged(type: .bitVector(size: .downto8Bit)).swiftLiteral, "BitVector")
+        XCTAssertEqual(
+            SignalType.ranged(type: .stdLogicVector(size: .downto8Bit)).swiftLiteral, "LogicVector"
+        )
+        XCTAssertEqual(
+            SignalType.ranged(type: .stdULogicVector(size: .downto8Bit)).swiftLiteral, "LogicVector"
+        )
+        XCTAssertEqual(SignalType.ranged(type: .integer(size: .from0to255)).swiftLiteral, "Int")
+        XCTAssertEqual(SignalType.ranged(type: .signed(size: .downto8Bit)).swiftLiteral, "BitVector")
+        XCTAssertEqual(SignalType.ranged(type: .unsigned(size: .downto8Bit)).swiftLiteral, "BitVector")
     }
 
 }

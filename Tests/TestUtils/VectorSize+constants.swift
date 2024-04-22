@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// VectorSize+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,20 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
 import VHDLParsing
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+/// Add common vector sizes.
+public extension VectorSize {
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+    /// An 8-bit vector from 7 downto 0.
+    static let downto8Bit = VectorSize.downto(
+        upper: .literal(value: .integer(value: 7)), lower: .literal(value: .integer(value: 0))
+    )
 
-    /// The type of the node.
-    let type: NodeType
-
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
-    }
+    /// A range from `0` to `255`.
+    static let from0to255 = VectorSize.to(
+        lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: 255))
+    )
 
 }

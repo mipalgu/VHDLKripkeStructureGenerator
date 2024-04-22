@@ -151,7 +151,9 @@ extension String {
         }
 
         init?(value: [UInt8], numberOfBits: Int) {
-            guard numberOfBits.isMultiple(of: 2), numberOfBits >= 2, value.count > (numberOfBits - 1) / 8 else {
+            guard
+                numberOfBits.isMultiple(of: 2), numberOfBits >= 2, value.count > (numberOfBits - 1) / 8
+            else {
                 return nil
             }
             let values = Array(value.reversed())
@@ -251,7 +253,7 @@ extension String {
     }
 
     extension Bool {
-    
+
         init?(value: Bool, numberOfBits: Int = 1) {
             guard numberOfBits == 1 else {
                 return nil
@@ -262,7 +264,7 @@ extension String {
     }
 
     extension Int {
-    
+
         init?(value: Int32, numberOfBits: Int = 32) {
             self.init(bigEndian: Int(value))
         }
@@ -290,7 +292,7 @@ extension String {
     }
 
     extension UInt {
-    
+
         init?(value: Int32, numberOfBits: Int = 32) {
             guard value >= 0 else {
                 return nil

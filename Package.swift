@@ -48,16 +48,38 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "VHDLKripkeStructureGeneratorTests",
+            name: "TestUtils",
             dependencies: [
-                "VHDLKripkeStructureGenerator", "VHDLMachines", "VHDLParsing", "Utilities",
-                "KripkeStructureParser", .product(name: "SwiftUtils", package: "SwiftUtils")
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .product(name: "SwiftUtils", package: "SwiftUtils")
             ]
         ),
-        .testTarget(name: "UtilitiesTests", dependencies: ["Utilities", "VHDLMachines", "VHDLParsing"]),
+        .testTarget(
+            name: "VHDLKripkeStructureGeneratorTests",
+            dependencies: [
+                "VHDLKripkeStructureGenerator",
+                "VHDLMachines",
+                "VHDLParsing",
+                "Utilities",
+                "KripkeStructureParser",
+                .product(name: "SwiftUtils", package: "SwiftUtils"),
+                .target(name: "TestUtils")
+            ]
+        ),
+        .testTarget(
+            name: "UtilitiesTests",
+            dependencies: ["Utilities", "VHDLMachines", "VHDLParsing", .target(name: "TestUtils")]
+        ),
         .testTarget(
             name: "KripkeStructureParserTests",
-            dependencies: ["KripkeStructureParser", "VHDLMachines", "VHDLParsing", "Utilities"]
+            dependencies: [
+                "KripkeStructureParser",
+                "VHDLMachines",
+                "VHDLParsing",
+                "Utilities",
+                .target(name: "TestUtils")
+            ]
         )
     ]
 )

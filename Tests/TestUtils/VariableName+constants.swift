@@ -1,8 +1,8 @@
-// NodeVariable.swift
+// VariableName+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,26 +52,47 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
 import VHDLParsing
 
-/// A variable that exists within a Kripke Node.
-struct NodeVariable: Equatable, Hashable, Sendable, Codable, Comparable {
+// swiftlint:disable force_unwrapping
+// swiftlint:disable missing_docs
 
-    /// The data that describes the variable.
-    let data: RecordTypeDeclaration
+/// Constants in test targets.
+public extension VariableName {
 
-    /// The type of the node.
-    let type: NodeType
+    static let clk = VariableName(rawValue: "clk")!
 
-    /// Sort based on `type` before `data.name`.
-    @inlinable
-    static func < (lhs: NodeVariable, rhs: NodeVariable) -> Bool {
-        guard lhs.type != rhs.type else {
-            return lhs.data.name < rhs.data.name
-        }
-        return lhs.type < rhs.type
-    }
+    static let ieee = VariableName(rawValue: "IEEE")!
+
+    static let initial = VariableName(rawValue: "Initial")!
+
+    static let `internal` = VariableName(rawValue: "Internal")!
+
+    static let ping = VariableName(rawValue: "ping")!
+
+    static let pingMachine = VariableName(rawValue: "PingMachine")!
+
+    static let pong = VariableName(rawValue: "pong")!
+
+    static let onEntry = VariableName(rawValue: "OnEntry")!
+
+    static let onExit = VariableName(rawValue: "OnExit")!
+
+    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
+
+    static let waitForPong = VariableName(rawValue: "WaitForPong")!
+
+    /// A variable `x`.
+    static let x = VariableName(rawValue: "x")!
+
+    /// A variable `y`.
+    static let y = VariableName(rawValue: "y")!
+
+    /// A variable `z`.
+    static let z = VariableName(rawValue: "z")!
 
 }
+
+// swiftlint:enable missing_docs
+// swiftlint:enable force_unwrapping

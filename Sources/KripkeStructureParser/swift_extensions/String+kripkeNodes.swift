@@ -57,47 +57,36 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add inits for Kripke node creation.
 extension String {
 
     // swiftlint:disable line_length
 
+    /// Create the `Swift` code that defines the `Read` Kripke state for the given state in the machine.
+    /// - Parameters:
+    ///   - state: The `State` to create the read state for.
+    ///   - representation: The machine representation that contains the `state`.
     init<T>(readStateFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let name = state.name.rawValue + "Read"
         let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let definitions = readSnapshot.types.map {
-            "public var \($0.name.rawValue): \($0.type.signalType.swiftLiteral)"
-        }
-        .joined(separator: "\n\n")
-        let initParameters = readSnapshot.types.map {
-            "\($0.name.rawValue): \($0.type.signalType.swiftLiteral)"
-        }
-        .joined(separator: ", ")
-        let initAssignments = readSnapshot.types.map {
-            "self.\($0.name.rawValue) = \($0.name.rawValue)"
-        }
+        let definitions = readSnapshot.definitions.map { $0.indent(amount: 1) }.joined(separator: "\n\n")
+        let initParameters = readSnapshot.initParameters.joined(separator: ", ")
+        let initAssignments = readSnapshot.initAssignments.joined(separator: "\n")
+        let encodedPreamble = readSnapshot.valueAssignment(
+            state: state, representation: representation, type: .read
+        )
         .joined(separator: "\n")
-        let encodedPreamble = readSnapshot.types.map {
-            let functionName = String(
-                stateVariableAccessNameFor: state,
-                in: representation,
-                variable: NodeVariable(data: $0, type: .read)
-            )
-            return "let \($0.name.rawValue)Value = \(functionName)(value)"
-        }
-        .joined(separator: "\n")
-        let encodedAssignments = readSnapshot.types.map {
-            let signalType = $0.type.signalType
-            return "\($0.name.rawValue): \(signalType.swiftLiteral)(value: " +
-                "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))!"
-        }
-        .joined(separator: ", ")
+        let encodedAssignments = readSnapshot.encodedAssignments.joined(separator: ",\n")
+        let parameters = readSnapshot.literalAssignments.joined(separator: ",\n")
         let machineName = representation.entity.name.rawValue
         self = """
         import C\(machineName)
         import VHDLParsing
 
         public struct \(name): Equatable, Hashable, Codable, Sendable {
-        \(definitions.indent(amount: 1))
+
+        \(definitions)
+
             public init(\(initParameters)) {
         \(initAssignments.indent(amount: 2))
             }
@@ -107,54 +96,55 @@ extension String {
                     return nil
                 }
         \(encodedPreamble.indent(amount: 2))
-                self.init(\(encodedAssignments))
+                guard
+        \(encodedAssignments.indent(amount: 3))
+                else {
+                    return nil
+                }
+                self.init(
+        \(parameters.indent(amount: 3))
+                )
             }
+
         }
+
         """
     }
 
+    /// Create the `Swift` code that defines the `Write` Kripke state for the given state in the machine.
+    /// - Parameters:
+    ///   - state: The `State` to create the write state for.
+    ///   - representation: The machine representation that contains the `state`.
     init<T>(writeStateFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let name = state.name.rawValue + "Write"
+        // swiftlint:disable:next force_unwrapping
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
-        let definitions = writeSnapshot.types.map {
-            "public var \($0.name.rawValue): \($0.type.signalType.swiftLiteral)"
-        }
-        .joined(separator: "\n\n")
-        let initParameters = writeSnapshot.types.map {
-            "\($0.name.rawValue): \($0.type.signalType.swiftLiteral)"
-        }
-        .joined(separator: ", ")
-        let initAssignments = writeSnapshot.types.map {
-            "self.\($0.name.rawValue) = \($0.name.rawValue)"
-        }
-        .joined(separator: "\n")
-        let encodedPreamble = writeSnapshot.types.map {
-            let functionName = String(
-                stateVariableAccessNameFor: state,
-                in: representation,
-                variable: NodeVariable(data: $0, type: .write)
-            )
-            return "let \($0.name.rawValue)Value = \(functionName)(value)"
-        }
+        let definitions = writeSnapshot.definitions.map { $0.indent(amount: 1) }.joined(separator: "\n\n")
+        let initParameters = writeSnapshot.initParameters.joined(separator: ", ")
+        let initAssignments = writeSnapshot.initAssignments.joined(separator: "\n")
+        let encodedPreamble = writeSnapshot.valueAssignment(
+            state: state, representation: representation, type: .write
+        )
         .joined(separator: "\n")
         let encodedAssignments = writeSnapshot.types.map {
             let signalType = $0.type.signalType
             guard $0.name != .nextState else {
-                return "\($0.name.rawValue): LogicVector(values: BitVector(value: " +
-                "\($0.name.rawValue)Value, numberOfBits: \(signalType.bits))!.values.map { " +
-                "LogicLiteral(bit: $0) })"
+                return "let \(VariableName.nextState.rawValue)BitVector = BitVector(value: " +
+                    "\($0.name.rawValue)Value, numberOfBits: \(signalType.bits))"
             }
-            return "\($0.name.rawValue): \(signalType.swiftLiteral)(value: " +
-                "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))!"
+            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: " +
+                    "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
         }
-        .joined(separator: ", ")
         let machineName = representation.entity.name.rawValue
+        let parameters = writeSnapshot.literalAssignments.joined(separator: ",\n")
         self = """
         import C\(machineName)
         import VHDLParsing
 
         public struct \(name): Equatable, Hashable, Codable, Sendable {
-        \(definitions.indent(amount: 1))
+
+        \(definitions)
+
             public init(\(initParameters)) {
         \(initAssignments.indent(amount: 2))
             }
@@ -164,12 +154,38 @@ extension String {
                     return nil
                 }
         \(encodedPreamble.indent(amount: 2))
-                self.init(\(encodedAssignments))
+        \(String(guardedStatements: encodedAssignments).indent(amount: 2))
+                let nextStateLiteral = LogicVector(
+                    values: nextStateBitVector.values.map { LogicLiteral(bit: $0) }
+                )
+                self.init(
+        \(parameters.indent(amount: 3))
+                )
             }
+
+        }
+
+        """
+    }
+
+    /// Create a guard around a set of statements.
+    /// - Parameter statements: The statements to place within the guard.
+    @inlinable
+    init(guardedStatements statements: [String]) {
+        self = """
+        guard
+        \(statements.map { $0.indent(amount: 1) }.joined(separator: ",\n"))
+        else {
+            return nil
         }
         """
     }
 
+    /// Create the ringlet definition in the Kripke structure.
+    /// - Parameters:
+    ///   - state: The state to create the ringlet for.
+    ///   - representation: The machine representation that contains the `state`.
+    @inlinable
     init<T>(kripkeNodeFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machineName = representation.entity.name.rawValue
         self = """
@@ -188,13 +204,17 @@ extension String {
             }
 
             public init?(value: UInt32) {
-                guard let read = \(state.name.rawValue)Read(value: value), let write = \(state.name.rawValue)Write(value: value) else {
+                guard
+                    let read = \(state.name.rawValue)Read(value: value),
+                    let write = \(state.name.rawValue)Write(value: value)
+                else {
                     return nil
                 }
                 self.init(read: read, write: write)
             }
 
         }
+
         """
     }
 
@@ -202,9 +222,11 @@ extension String {
 
 }
 
+/// Add `swiftLiteral`.
 extension SignalType {
 
-    var swiftLiteral: String {
+    /// The equivalent `Swift` type for storing the literal value.
+    @inlinable var swiftLiteral: String {
         switch self {
         case .bit:
             return "BitLiteral"
@@ -225,9 +247,11 @@ extension SignalType {
 
 }
 
+/// Add `swiftLiteral`.
 extension RangedType {
 
-    var swiftLiteral: String {
+    /// The equivalent `Swift` type for storing the literal value.
+    @inlinable var swiftLiteral: String {
         switch self {
         case .bitVector, .signed, .unsigned:
             return "BitVector"
@@ -235,6 +259,59 @@ extension RangedType {
             return "Int"
         case .stdLogicVector, .stdULogicVector:
             return "LogicVector"
+        }
+    }
+
+}
+
+/// Add record helper properties for kripke node creation.
+extension Record {
+
+    /// The definition of the types within a kripke node.
+    @inlinable var definitions: [String] {
+        self.types.map { "public var \($0.name.rawValue): \($0.type.signalType.swiftLiteral)" }
+    }
+
+    /// The assignment of the literal values of each type within a kripke node.
+    @inlinable var encodedAssignments: [String] {
+        self.types.map {
+            let signalType = $0.type.signalType
+            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: " +
+                "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
+        }
+    }
+
+    /// The assignment of the properties within a kripke node.
+    @inlinable var initAssignments: [String] {
+        self.types.map { "self.\($0.name.rawValue) = \($0.name.rawValue)" }
+    }
+
+    /// The parameters into the kripke node initializer.
+    @inlinable var initParameters: [String] {
+        self.types.map { "\($0.name.rawValue): \($0.type.signalType.swiftLiteral)" }
+    }
+
+    /// The literal assignments for the kripke node.
+    @inlinable var literalAssignments: [String] {
+        self.types.map { "\($0.name.rawValue): \($0.name.rawValue)Literal" }
+    }
+
+    /// Create the swift code that defines the values of each record type within a kripke node.
+    /// - Parameters:
+    ///   - state: The state this record represents.
+    ///   - representation: The machine containing the state.
+    ///   - type: The type of the kripke node to create.
+    /// - Returns: The code that creates the values of each record type.
+    func valueAssignment<T>(
+        state: State, representation: T, type: NodeType
+    ) -> [String] where T: MachineVHDLRepresentable {
+        self.types.map {
+            let functionName = String(
+                stateVariableAccessNameFor: state,
+                in: representation,
+                variable: NodeVariable(data: $0, type: type)
+            )
+            return "let \($0.name.rawValue)Value = \(functionName)(value)"
         }
     }
 
