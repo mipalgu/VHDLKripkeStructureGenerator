@@ -71,6 +71,8 @@ public extension VariableName {
 
     static let ping = VariableName(rawValue: "ping")!
 
+    static let pingMachine = VariableName(rawValue: "PingMachine")!
+
     static let pong = VariableName(rawValue: "pong")!
 
     static let onEntry = VariableName(rawValue: "OnEntry")!
