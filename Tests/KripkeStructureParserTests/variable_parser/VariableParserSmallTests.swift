@@ -1,4 +1,4 @@
-// VariableParserLargeTests.swift
+// VariableParserSmallTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -59,40 +59,36 @@ import VHDLMachines
 import VHDLParsing
 import XCTest
 
-/// Tests for ``VariableParser`` large init.
-final class VariableParserLargeTests: XCTestCase {
+/// Test class for ``VariableParser`` small init.
+final class VariableParserSmallTests: XCTestCase {
 
     // swiftlint:disable force_unwrapping
 
-    /// The representation of the `isEven` machine.
-    let representation = MachineRepresentation(machine: .isEvenMachine, name: .isEvenMachine)!
+    /// A representation of the `PingMachine`.
+    let representation = MachineRepresentation(machine: .pingMachine, name: .pingMachine)!
 
     // swiftlint:enable force_unwrapping
 
-    /// The parser to test.
-    lazy var parser = VariableParser(
-        largeState: representation.machine.states[1], in: representation, numberOfAddresses: 2
-    )
+    /// The parser under test.
+    lazy var parser = VariableParser(smallState: .waitForPong, in: representation)
 
     /// Setup the parser before every test.
     override func setUp() {
-        parser = VariableParser(
-            largeState: representation.machine.states[1], in: representation, numberOfAddresses: 2
-        )
+        parser = VariableParser(smallState: .waitForPong, in: representation)
     }
 
-    /// Test that the function definitions are correct.
-    func testDefinitionsAreCorrect() {
-        let definitions = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
+    /// Test the definitions are correct.
+    func testDefinitions() {
+        let result = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
         let expected = """
-        uint32_t* IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2]);
-        bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2]);
-        uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(uint32_t data[2]);
-        bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(uint32_t data[2]);
-        uint8_t IsEvenMachine_CalculateIsEven_WRITE_isEven(uint32_t data[2]);
-        uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(uint32_t data[2]);
+        bool PingMachine_WaitForPong_READ_executeOnEntry(uint32_t data);
+        uint8_t PingMachine_WaitForPong_READ_PingMachine_ping(uint32_t data);
+        uint8_t PingMachine_WaitForPong_READ_pong(uint32_t data);
+        bool PingMachine_WaitForPong_WRITE_executeOnEntry(uint32_t data);
+        uint32_t PingMachine_WaitForPong_WRITE_nextState(uint32_t data);
+        uint8_t PingMachine_WaitForPong_WRITE_ping(uint32_t data);
         """
-        XCTAssertEqual(definitions, expected)
+        XCTAssertEqual(result, expected)
     }
 
 }

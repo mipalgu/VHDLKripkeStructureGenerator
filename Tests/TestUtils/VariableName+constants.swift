@@ -71,6 +71,8 @@ public extension VariableName {
 
     static let isEven = VariableName(rawValue: "isEven")!
 
+    static let isEvenMachine = VariableName(rawValue: "IsEvenMachine")!
+
     static let initial = VariableName(rawValue: "Initial")!
 
     static let `internal` = VariableName(rawValue: "Internal")!
