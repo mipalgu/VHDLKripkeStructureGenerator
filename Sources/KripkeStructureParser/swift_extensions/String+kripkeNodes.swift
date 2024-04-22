@@ -303,16 +303,40 @@ extension Record {
     ///   - type: The type of the kripke node to create.
     /// - Returns: The code that creates the values of each record type.
     func valueAssignment<T>(
-        state: State, representation: T, type: NodeType
+        state: State, representation: T, type: NodeType, count: Int = 0
     ) -> [String] where T: MachineVHDLRepresentable {
-        self.types.map {
-            let functionName = String(
-                stateVariableAccessNameFor: state,
-                in: representation,
-                variable: NodeVariable(data: $0, type: type)
-            )
-            return "let \($0.name.rawValue)Value = \(functionName)(value)"
+        guard state.numberOfAddressesForRinglet(in: representation) > 1 else {
+            return self.types.map {
+                let functionName = String(
+                    stateVariableAccessNameFor: state,
+                    in: representation,
+                    variable: NodeVariable(data: $0, type: type)
+                )
+                return "let \($0.name.rawValue)Value = \(functionName)(value)"
+            }
         }
+        return self.encodedIndexes(ignoring: [.nextState])
+            .map { IndexedType(record: $0, index: $1.mutateIndexes { $0 + count }) }
+            .map {
+                let functionName = String(
+                    stateVariableAccessNameFor: state,
+                    in: representation,
+                    variable: NodeVariable(data: $0.record, type: type)
+                )
+                let valueName = "\($0.record.name.rawValue)Value"
+                guard $0.index.isAccrossBoundary(state: state, in: representation) else {
+                    return "let \(valueName) = \(functionName)(value)"
+                }
+                let access = MemoryAccess.getAccess(indexes: $0.index, in: representation)
+                let tupleTypes = [String](repeating: "UInt32", count: access.count).joined(separator: ", ")
+                let initialValues = [String](repeating: "0", count: access.count).joined(separator: ", ")
+                return """
+                var \(valueName): (\(tupleTypes)) = (\(initialValues))
+                withUnsafeMutablePointer(to: &\(valueName)) {
+                    \(functionName)(value, $0)
+                }
+                """
+            }
     }
 
 }
