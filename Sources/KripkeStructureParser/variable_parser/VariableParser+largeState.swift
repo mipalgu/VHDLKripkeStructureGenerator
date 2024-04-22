@@ -118,9 +118,12 @@ extension VariableParser {
             let memoryIndexes = lowerMemoryIndex...upperMemoryIndex
             return (variable, "")
         }
+        let writeSnapshotImplementations = writeSnapshot.encodedIndexes.map {
+            (NodeVariable(data: $0.0, type: .write), "")
+        }
         self.init(
             definitions: Dictionary(uniqueKeysWithValues: readSnapshotDefinitions + writeSnapshotDefinitions),
-            functions: [:]
+            functions: Dictionary(uniqueKeysWithValues: readSnapshotImplementations + writeSnapshotImplementations)
         )
     }
 
