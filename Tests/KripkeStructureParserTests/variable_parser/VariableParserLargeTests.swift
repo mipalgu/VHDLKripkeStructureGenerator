@@ -85,7 +85,7 @@ final class VariableParserLargeTests: XCTestCase {
     func testDefinitionsAreCorrect() {
         let definitions = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
         let expected = """
-        uint32_t* IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2]);
+        void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count);
         bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2]);
         uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(uint32_t data[2]);
         bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(uint32_t data[2]);
@@ -99,12 +99,11 @@ final class VariableParserLargeTests: XCTestCase {
     func testImplementations() {
         let implementations = parser.functions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
         let expected = """
-        uint32_t* IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2])
+        void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count)
         {
             const uint32_t count0 = (data[0] & 0b11111111111111111111111111111100) >> 2;
             const uint32_t count1 = (data[1] & 0b11000000000000000000000000000000) >> 30;
-            const uint32_t count[2] = { count0, count1 };
-            return ((uint32_t*) (count));
+            count = { count0, count1 };
         }
         bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2])
         {

@@ -62,7 +62,7 @@ extension VariableParser {
     init<T>(largeState state: State, in representation: T) where T: MachineVHDLRepresentable {
         self.init(
             definitions: Dictionary(largeDefinitionsFor: state, in: representation),
-            functions: [:]
+            functions: Dictionary(largeImplementationsFor: state, in: representation)
         )
     }
 
@@ -81,7 +81,8 @@ extension Dictionary where Key == NodeVariable, Value == String {
             guard $0.type.signalType.encodedBits <= representation.numberOfDataBitsPerAddress else {
                 return (
                     variable,
-                    "uint32_t* \(machineName)_\(stateName)_READ_\($0.name.rawValue)(\(addressType));"
+                    "void \(machineName)_\(stateName)_READ_\($0.name.rawValue)(\(addressType), " +
+                        "uint32_t *\($0.name.rawValue));"
                 )
             }
             return (
@@ -92,8 +93,16 @@ extension Dictionary where Key == NodeVariable, Value == String {
         }
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         let writeSnapshotDefinitions = writeSnapshot.types.filter { $0.name != .nextState }.map {
-            (
-                NodeVariable(data: $0, type: .write),
+            let variable = NodeVariable(data: $0, type: .write)
+            guard $0.type.signalType.encodedBits <= representation.numberOfDataBitsPerAddress else {
+                return (
+                    variable,
+                    "void \(machineName)_\(stateName)_READ_\($0.name.rawValue)(\(addressType), " +
+                        "uint32_t *\($0.name.rawValue));"
+                )
+            }
+            return (
+                variable,
                 "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_WRITE_" +
                     "\($0.name.rawValue)(\(addressType));"
             )
@@ -120,12 +129,14 @@ extension Dictionary where Key == NodeVariable, Value == String {
         let readSnapshotImplementations = readSnapshot.encodedIndexes.map {
             let variable = NodeVariable(data: $0, type: .read)
             let functionName = "\(machineName)_\(stateName)_READ_\($0.name.rawValue)"
-            let returnType = $0.type.signalType.ctype.0.rawValue
             guard $1.isAccrossBoundary(state: state, in: representation) else {
+                let returnType = $0.type.signalType.ctype.0.rawValue
                 let memoryIndex = Int(
-                    (Double($1.min.integer) / Double(representation.numberOfDataBitsPerAddress)).rounded(.up)
+                    (Double($1.min.integer) / Double(representation.numberOfDataBitsPerAddress))
                 )
-                let dataIndexOffset = $1.min.integer % representation.numberOfDataBitsPerAddress
+                let dataIndexOffset = $1.min.integer - (
+                    $1.min.integer % representation.numberOfDataBitsPerAddress
+                )
                 let indexes = $1.mutateIndexes { $0 - dataIndexOffset }.asRange
                 let trailingZeros = String(
                     repeating: "0",
@@ -133,7 +144,7 @@ extension Dictionary where Key == NodeVariable, Value == String {
                 )
                 let leadingZeros = String(repeating: "0", count: indexes[0])
                 let mask = "0b\(leadingZeros)\(String(repeating: "1", count: indexes.count))\(trailingZeros)"
-                let shiftAmount = 32 - indexes[indexes.count - 1]
+                let shiftAmount = 32 - indexes.count - leadingZeros.count
                 return (
                     variable,
                     """
@@ -146,12 +157,13 @@ extension Dictionary where Key == NodeVariable, Value == String {
                 )
             }
             let lowerMemoryIndex = Int(
-                (Double($1.min.integer) / Double(representation.numberOfDataBitsPerAddress)).rounded(.up)
+                (Double($1.min.integer) / Double(representation.numberOfDataBitsPerAddress))
             )
             let upperMemoryIndex = Int(
-                (Double($1.max.integer) / Double(representation.numberOfDataBitsPerAddress)).rounded(.up)
+                (Double($1.max.integer) / Double(representation.numberOfDataBitsPerAddress))
             )
             let memoryIndexes = lowerMemoryIndex...upperMemoryIndex
+            let returnType = "void"
             return (variable, "")
         }
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!

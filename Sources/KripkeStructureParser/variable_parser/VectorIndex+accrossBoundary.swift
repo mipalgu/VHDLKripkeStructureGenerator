@@ -99,7 +99,7 @@ extension VectorIndex {
             fatalError("Does not support others!")
         case .range(let size):
             let dataBits = representation.numberOfDataBitsPerAddress
-            return size.min.integer / dataBits == size.max.integer / dataBits
+            return size.min.integer / dataBits != size.max.integer / dataBits
         }
     }
 
