@@ -112,4 +112,55 @@ final class StringTests: XCTestCase {
         XCTAssertEqual(result, expected, "\(result.difference(from: expected))")
     }
 
+    /// Test `WRITE` kripke state is defined correctly.
+    func testWriteStateCreation() {
+        let result = String(writeStateFor: .waitForPong, in: pingRepresentation)
+        let expected = """
+        import CPingMachine
+        import VHDLParsing
+
+        public struct WaitForPongWrite: Equatable, Hashable, Codable, Sendable {
+
+            public var ping: LogicLiteral
+
+            public var nextState: LogicVector
+
+            public var executeOnEntry: Bool
+
+            public init(ping: LogicLiteral, nextState: LogicVector, executeOnEntry: Bool) {
+                self.ping = ping
+                self.nextState = nextState
+                self.executeOnEntry = executeOnEntry
+            }
+
+            public init?(value: UInt32) {
+                guard PingMachine_isValid(value), PingMachine_WaitForPong_isValid(value) else {
+                    return nil
+                }
+                let pingValue = PingMachine_WaitForPong_WRITE_ping(value)
+                let nextStateValue = PingMachine_WaitForPong_WRITE_nextState(value)
+                let executeOnEntryValue = PingMachine_WaitForPong_WRITE_executeOnEntry(value)
+                guard
+                    let pingLiteral = LogicLiteral(value: pingValue, numberOfBits: 2),
+                    let nextStateBitVector = BitVector(value: nextStateValue, numberOfBits: 1),
+                    let executeOnEntryLiteral = Bool(value: executeOnEntryValue, numberOfBits: 1)
+                else {
+                    return nil
+                }
+                let nextStateLiteral = LogicVector(
+                    values: nextStateBitVector.values.map { LogicLiteral(bit: $0) }
+                )
+                self.init(
+                    ping: pingLiteral,
+                    nextState: nextStateLiteral,
+                    executeOnEntry: executeOnEntryLiteral
+                )
+            }
+
+        }
+
+        """
+        XCTAssertEqual(result, expected, "\(result.difference(from: expected))")
+    }
+
 }
