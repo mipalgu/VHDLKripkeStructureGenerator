@@ -71,13 +71,13 @@ final class VariableParserLargeTests: XCTestCase {
 
     /// The parser to test.
     lazy var parser = VariableParser(
-        largeState: representation.machine.states[1], in: representation, numberOfAddresses: 2
+        largeState: representation.machine.states[1], in: representation
     )
 
     /// Setup the parser before every test.
     override func setUp() {
         parser = VariableParser(
-            largeState: representation.machine.states[1], in: representation, numberOfAddresses: 2
+            largeState: representation.machine.states[1], in: representation
         )
     }
 

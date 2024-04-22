@@ -71,7 +71,7 @@ struct VariableParser {
             self.init(smallState: state, in: representation)
             return
         }
-        self.init(largeState: state, in: representation, numberOfAddresses: numberOfAddresses)
+        self.init(largeState: state, in: representation)
     }
 
     init(definitions: [NodeVariable: String], functions: [NodeVariable: String]) {
