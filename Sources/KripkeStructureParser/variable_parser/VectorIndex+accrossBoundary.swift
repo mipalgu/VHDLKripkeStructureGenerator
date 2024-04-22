@@ -58,14 +58,14 @@ import VHDLParsing
 
 extension VectorIndex {
 
-    var asRange: Range<Int> {
+    var asRange: [Int] {
         switch self {
         case .index(let index):
-            return Range(index.integer...index.integer)
+            return [index.integer]
         case .others:
             fatalError("Does not support others!")
         case .range(let size):
-            return size.min.integer..<size.max.integer
+            return Array(size.min.integer...size.max.integer)
         }
     }
 
