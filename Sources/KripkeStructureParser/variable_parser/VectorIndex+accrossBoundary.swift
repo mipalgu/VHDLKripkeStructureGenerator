@@ -69,6 +69,10 @@ extension VectorIndex {
         }
     }
 
+    var count: Int {
+        self.asRange.count
+    }
+
     var max: Expression {
         switch self {
         case .index(let index):

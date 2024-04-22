@@ -115,7 +115,7 @@ final class VariableParserLargeTests: XCTestCase {
         }
         bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(uint32_t data[2])
         {
-            return ((bool) ((data[1] & 0b00000001000000000000000000000000) >> 24));
+            return ((bool) ((data[1] & 0b00000000100000000000000000000000) >> 23));
         }
         uint8_t IsEvenMachine_calculateIsEven_WRITE_isEven(uint32_t data[2])
         {
@@ -123,7 +123,7 @@ final class VariableParserLargeTests: XCTestCase {
         }
         uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(uint32_t data[2])
         {
-            return ((uint32_t) ((data[1] & 0b00000000100000000000000000000000) >> 23));
+            return ((uint32_t) ((data[1] & 0b00000001000000000000000000000000) >> 24));
         }
         """
         XCTAssertEqual(implementations, expected)

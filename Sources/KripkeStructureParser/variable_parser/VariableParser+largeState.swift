@@ -121,84 +121,143 @@ extension Dictionary where Key == NodeVariable, Value == String {
     }
 
     init<T>(largeImplementationsFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let readSnapshotImplementations = readSnapshot.largeTypeImplementations(
+            ignoring: [],
+            state: state,
+            representation: representation,
+            type: .read,
+            previousRecordIndexCount: 0
+        )
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let writeSnapshotImplementations = writeSnapshot.largeTypeImplementations(
+            ignoring: [.nextState],
+            state: state,
+            representation: representation,
+            type: .write,
+            previousRecordIndexCount: readSnapshot.encodedBits
+        )
+        // let nextStateIndexes = writeSnapshot.encodedIndexes.first { $0.0.name == .nextState }!.1
+        // let numberOfIndexes = (nextStateIndexes.min.integer...nextStateIndexes.max.integer).count
+        // let indexReduction = numberOfIndexes / 2
+        // let maxIndex = indexReduction + nextStateIndexes.min.integer
+        // let bitIndexes: VectorIndex
+        // if maxIndex == nextStateIndexes.min.integer {
+        //     bitIndexes = .index(value: nextStateIndexes.min)
+        // } else {
+        //     bitIndexes = VectorIndex.range(value: .to(
+        //         lower: nextStateIndexes.min, upper: .literal(value: .integer(value: maxIndex))
+        //     ))
+        // }
+        // let nextState = IndexedType(
+        //     record: RecordTypeDeclaration(name: .nextState, type: .signal(type: representation.stateType!)),
+        //     index: bitIndexes
+        // )
+        // .implementation(state: state, representation: representation, type: .write)
+        self.init(
+            uniqueKeysWithValues: readSnapshotImplementations + writeSnapshotImplementations
+        )
+    }
+
+}
+
+extension Record {
+
+    func largeTypeImplementations<T>(
+        ignoring: Set<VariableName>,
+        state: State,
+        representation: T,
+        type: NodeType,
+        previousRecordIndexCount count: Int
+    ) -> [(NodeVariable, String)] where T: MachineVHDLRepresentable {
+        self.encodedIndexes(
+            ignoring: ignoring
+        ).map { IndexedType(record: $0, index: $1.mutateIndexes({ $0 + count })) }.map {
+            $0.implementation(state: state, representation: representation, type: type)
+        }
+    }
+
+}
+
+struct IndexedType {
+
+    let record: RecordTypeDeclaration
+
+    let index: VectorIndex
+
+    func implementation<T>(
+        state: State, representation: T, type: NodeType
+    ) -> (NodeVariable, String) where T: MachineVHDLRepresentable {
         let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
         let addressType = "uint32_t data[\(numberOfAddresses)]"
-        let readSnapshot = Record(readSnapshotFor: state, in: representation)
         let machineName = representation.entity.name.rawValue
         let stateName = state.name.rawValue
-        let readSnapshotImplementations = readSnapshot.encodedIndexes.map {
-            let variable = NodeVariable(data: $0, type: .read)
-            let functionName = "\(machineName)_\(stateName)_READ_\($0.name.rawValue)"
-            guard $1.isAccrossBoundary(state: state, in: representation) else {
-                let returnType = $0.type.signalType.ctype.0.rawValue
-                let memoryIndex = Int(
-                    (Double($1.min.integer) / Double(representation.numberOfDataBitsPerAddress))
-                )
-                let dataIndexOffset = $1.min.integer - (
-                    $1.min.integer % representation.numberOfDataBitsPerAddress
-                )
-                let indexes = $1.mutateIndexes { $0 - dataIndexOffset }.asRange
-                let trailingZeros = String(
-                    repeating: "0",
-                    count: representation.numberOfDataBitsPerAddress - indexes.count - indexes[0]
-                )
-                let leadingZeros = String(repeating: "0", count: indexes[0])
-                let mask = "0b\(leadingZeros)\(String(repeating: "1", count: indexes.count))\(trailingZeros)"
-                let shiftAmount = 32 - indexes.count - leadingZeros.count
-                return (
-                    variable,
-                    """
-                    \(returnType) \(functionName)(\(addressType))
-                    {
-                        const uint32_t value = (data[\(memoryIndex)] & \(mask)) >> \(shiftAmount);
-                        return ((\(returnType)) (value));
-                    }
-                    """
-                )
-            }
-            let access = MemoryAccess.getAccess(indexes: $1, in: representation)
-            let variableName = $0.name.rawValue
-            let body = access.map {
-                let leadingZeros: String
-                if $0.address != 0 {
-                    leadingZeros = ""
-                } else {
-                    leadingZeros = String(repeating: "0", count: $0.indexes[0])
-                }
-                let trailingZeros: String
-                if $0.address != access[access.count - 1].address {
-                    trailingZeros = String(
-                        repeating: "0", count: 32 - representation.numberOfDataBitsPerAddress
-                    )
-                } else {
-                    trailingZeros = String(
-                        repeating: "0",
-                        count: 32 - $0.indexes.count
-                    )
-                }
-                let mask = "0b\(leadingZeros)\(String(repeating: "1", count: $0.indexes.count))" +
-                    trailingZeros
-                let shiftAmount = 32 - $0.indexes.count - leadingZeros.count
-                return "const uint32_t \(variableName)\($0.address) = " +
-                    "(data[\($0.address)] & \(mask)) >> \(shiftAmount);"
-            }
-            let addressVariables = access.map { "\(variableName)\($0.address)" }.joined(separator: ", ")
-            let functionBody = (body + ["\(variableName) = { \(addressVariables) };"]).joined(separator: "\n")
+        let variable = NodeVariable(data: self.record, type: type)
+        let functionName = "\(machineName)_\(stateName)_\(type.rawValue)_\(self.record.name.rawValue)"
+        guard self.index.isAccrossBoundary(state: state, in: representation) else {
+            let returnType = self.record.type.signalType.ctype.0.rawValue
+            let memoryIndex = Int(
+                (Double(self.index.min.integer) / Double(representation.numberOfDataBitsPerAddress))
+            )
+            let dataIndexOffset = self.index.min.integer - (
+                self.index.min.integer % representation.numberOfDataBitsPerAddress
+            )
+            let indexes = self.index.mutateIndexes { $0 - dataIndexOffset }.asRange
+            let trailingZeros = String(
+                repeating: "0",
+                count: representation.numberOfDataBitsPerAddress - indexes.count - indexes[0]
+            )
+            let leadingZeros = String(repeating: "0", count: indexes[0])
+            let mask = "0b\(leadingZeros)\(String(repeating: "1", count: indexes.count))\(trailingZeros)"
+            let shiftAmount = 32 - indexes.count - leadingZeros.count
             return (
                 variable,
                 """
-                void \(functionName)(\(addressType), uint32_t *\(variableName))
+                \(returnType) \(functionName)(\(addressType))
                 {
-                \(functionBody.indent(amount: 1))
+                    const uint32_t value = (data[\(memoryIndex)] & \(mask)) >> \(shiftAmount);
+                    return ((\(returnType)) (value));
                 }
                 """
             )
         }
-        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
-        let writeSnapshotImplementations = writeSnapshot.encodedIndexes.map {
-            (NodeVariable(data: $0.0, type: .write), "")
+        let access = MemoryAccess.getAccess(indexes: self.index, in: representation)
+        let variableName = self.record.name.rawValue
+        let body = access.map {
+            let leadingZeros: String
+            if $0.address != 0 {
+                leadingZeros = ""
+            } else {
+                leadingZeros = String(repeating: "0", count: $0.indexes[0])
+            }
+            let trailingZeros: String
+            if $0.address != access[access.count - 1].address {
+                trailingZeros = String(
+                    repeating: "0", count: 32 - representation.numberOfDataBitsPerAddress
+                )
+            } else {
+                trailingZeros = String(
+                    repeating: "0",
+                    count: 32 - $0.indexes.count
+                )
+            }
+            let mask = "0b\(leadingZeros)\(String(repeating: "1", count: $0.indexes.count))" +
+                trailingZeros
+            let shiftAmount = 32 - $0.indexes.count - leadingZeros.count
+            return "const uint32_t \(variableName)\($0.address) = " +
+                "(data[\($0.address)] & \(mask)) >> \(shiftAmount);"
         }
-        self.init(uniqueKeysWithValues: readSnapshotImplementations + writeSnapshotImplementations)
+        let addressVariables = access.map { "\(variableName)\($0.address)" }.joined(separator: ", ")
+        let functionBody = (body + ["\(variableName) = { \(addressVariables) };"]).joined(separator: "\n")
+        return (
+            variable,
+            """
+            void \(functionName)(\(addressType), uint32_t *\(variableName))
+            {
+            \(functionBody.indent(amount: 1))
+            }
+            """
+        )
     }
 
 }
