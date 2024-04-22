@@ -123,7 +123,10 @@ extension String {
         let initParameters = writeSnapshot.initParameters.joined(separator: ", ")
         let initAssignments = writeSnapshot.initAssignments.joined(separator: "\n")
         let encodedPreamble = writeSnapshot.valueAssignment(
-            state: state, representation: representation, type: .write
+            state: state,
+            representation: representation,
+            type: .write,
+            count: Record(readSnapshotFor: state, in: representation).bits
         )
         .joined(separator: "\n")
         let encodedAssignments = writeSnapshot.types.map {
