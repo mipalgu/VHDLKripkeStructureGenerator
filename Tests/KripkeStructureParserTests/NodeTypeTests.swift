@@ -1,8 +1,8 @@
-// NodeType.swift
+// NodeTypeTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,39 +52,23 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-/// An enum categorising nodes within a Kripke structure as `READ` or `WRITE`.
-enum NodeType: RawRepresentable, Equatable, Hashable, Codable, Comparable, Sendable {
+@testable import KripkeStructureParser
+import XCTest
 
-    /// A Kripke node that is a read node.
-    case read
+/// Test class for ``NodeType``.
+final class NodeTypeTests: XCTestCase {
 
-    /// A Kripke node that is a write node.
-    case write
+    /// Test that raw value is correct.
+     func testRawValue() {
+        XCTAssertEqual(NodeType.read.rawValue, "READ")
+        XCTAssertEqual(NodeType.write.rawValue, "WRITE")
+     }
 
-    /// The raw value of the node type.
-    @inlinable var rawValue: String {
-        switch self {
-        case .read:
-            return "READ"
-        case .write:
-            return "WRITE"
-        }
-    }
-
-    /// Creates a node type from a raw value.
-    /// - Parameter rawValue: The raw value of the node type.
-    @inlinable
-    init?(rawValue: String) {
-        switch rawValue {
-        case "READ":
-            self = .read
-        case "WRITE":
-            self = .write
-        default:
-            return nil
-        }
-    }
+     /// Test that type is created from the raw value correctly.
+     func testRawValueInit() {
+        XCTAssertEqual(NodeType(rawValue: "READ"), .read)
+        XCTAssertEqual(NodeType(rawValue: "WRITE"), .write)
+     }
 
 }
