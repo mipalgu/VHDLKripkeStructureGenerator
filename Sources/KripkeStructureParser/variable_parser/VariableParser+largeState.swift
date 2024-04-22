@@ -77,7 +77,7 @@ extension VariableParser {
         let writeSnapshotDefinitions = writeSnapshot.types.filter { $0.name != .nextState }.map {
             (
                 NodeVariable(data: $0, type: .write),
-                "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_Write_" +
+                "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_WRITE_" +
                     "\($0.name.rawValue)(\(addressType));"
             )
         }
