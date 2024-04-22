@@ -61,43 +61,32 @@ extension String {
 
     // swiftlint:disable line_length
 
+    /// Create the `Swift` code that defines the `Read` Kripke state for the given state in the machine.
+    /// - Parameters:
+    ///   - state: The `State` to create the read state for.
+    ///   - representation: The machine representation that contains the `state`.
     init<T>(readStateFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let name = state.name.rawValue + "Read"
         let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let definitions = readSnapshot.types.map {
-            "public var \($0.name.rawValue): \($0.type.signalType.swiftLiteral)"
-        }
-        .joined(separator: "\n\n")
+        let definitions = readSnapshot.definitions.map { $0.indent(amount: 1)}.joined(separator: "\n\n")
         let initParameters = readSnapshot.types.map {
             "\($0.name.rawValue): \($0.type.signalType.swiftLiteral)"
         }
         .joined(separator: ", ")
-        let initAssignments = readSnapshot.types.map {
-            "self.\($0.name.rawValue) = \($0.name.rawValue)"
-        }
-        .joined(separator: "\n")
-        let encodedPreamble = readSnapshot.types.map {
-            let functionName = String(
-                stateVariableAccessNameFor: state,
-                in: representation,
-                variable: NodeVariable(data: $0, type: .read)
-            )
-            return "let \($0.name.rawValue)Value = \(functionName)(value)"
-        }
-        .joined(separator: "\n")
-        let encodedAssignments = readSnapshot.types.map {
-            let signalType = $0.type.signalType
-            return "\($0.name.rawValue): \(signalType.swiftLiteral)(value: " +
-                "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))!"
-        }
-        .joined(separator: ", ")
+        let initAssignments = readSnapshot.initParameters.joined(separator: "\n")
+        let encodedPreamble = readSnapshot.valueAssignment(state: state, representation: representation)
+            .joined(separator: "\n")
+        let encodedAssignments = readSnapshot.encodedAssignments.joined(separator: ",\n")
+        let parameters = readSnapshot.literalAssignments.joined(separator: ",\n")
         let machineName = representation.entity.name.rawValue
         self = """
         import C\(machineName)
         import VHDLParsing
 
         public struct \(name): Equatable, Hashable, Codable, Sendable {
-        \(definitions.indent(amount: 1))
+
+        \(definitions)
+
             public init(\(initParameters)) {
         \(initAssignments.indent(amount: 2))
             }
@@ -107,9 +96,18 @@ extension String {
                     return nil
                 }
         \(encodedPreamble.indent(amount: 2))
-                self.init(\(encodedAssignments))
+                guard
+        \(encodedAssignments.indent(amount: 3))
+                else {
+                    return nil
+                }
+                self.init(
+        \(parameters.indent(amount: 3))
+                )
             }
+
         }
+
         """
     }
 
@@ -239,6 +237,41 @@ extension RangedType {
             return "Int"
         case .stdLogicVector, .stdULogicVector:
             return "LogicVector"
+        }
+    }
+
+}
+
+extension Record {
+
+    var definitions: [String] {
+        self.types.map { "public var \($0.name.rawValue): \($0.type.signalType.swiftLiteral)" }
+    }
+
+    var encodedAssignments: [String] {
+        self.types.map {
+            let signalType = $0.type.signalType
+            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: " +
+                "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
+        }
+    }
+
+    var initParameters: [String] {
+        self.types.map { "self.\($0.name.rawValue) = \($0.name.rawValue)" }
+    }
+
+    var literalAssignments: [String] {
+        self.types.map { "\($0.name.rawValue): \($0.name.rawValue)Literal" }
+    }
+
+    func valueAssignment<T>(state: State, representation: T) -> [String] where T: MachineVHDLRepresentable {
+        self.types.map {
+            let functionName = String(
+                stateVariableAccessNameFor: state,
+                in: representation,
+                variable: NodeVariable(data: $0, type: .read)
+            )
+            return "let \($0.name.rawValue)Value = \(functionName)(value)"
         }
     }
 
