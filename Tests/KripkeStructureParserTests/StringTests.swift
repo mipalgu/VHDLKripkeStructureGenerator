@@ -163,4 +163,38 @@ final class StringTests: XCTestCase {
         XCTAssertEqual(result, expected, "\(result.difference(from: expected))")
     }
 
+    /// Test Ringlet representation in Kripke Structure.
+    func testRingletCreation() {
+        let result = String(kripkeNodeFor: .waitForPong, in: pingRepresentation)
+        let expected = """
+        import CPingMachine
+        import VHDLParsing
+
+        public struct WaitForPongRinglet: Equatable, Hashable, Codable, Sendable {
+
+            public var read: WaitForPongRead
+
+            public var write: WaitForPongWrite
+
+            public init(read: WaitForPongRead, write: WaitForPongWrite) {
+                self.read = read
+                self.write = write
+            }
+
+            public init?(value: UInt32) {
+                guard
+                    let read = WaitForPongRead(value: value),
+                    let write = WaitForPongWrite(value: value)
+                else {
+                    return nil
+                }
+                self.init(read: read, write: write)
+            }
+
+        }
+
+        """
+        XCTAssertEqual(result, expected)
+    }
+
 }

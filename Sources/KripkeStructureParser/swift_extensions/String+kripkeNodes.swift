@@ -180,6 +180,11 @@ extension String {
         """
     }
 
+    /// Create the ringlet definition in the Kripke structure.
+    /// - Parameters:
+    ///   - state: The state to create the ringlet for.
+    ///   - representation: The machine representation that contains the `state`.
+    @inlinable
     init<T>(kripkeNodeFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machineName = representation.entity.name.rawValue
         self = """
@@ -198,13 +203,17 @@ extension String {
             }
 
             public init?(value: UInt32) {
-                guard let read = \(state.name.rawValue)Read(value: value), let write = \(state.name.rawValue)Write(value: value) else {
+                guard
+                    let read = \(state.name.rawValue)Read(value: value),
+                    let write = \(state.name.rawValue)Write(value: value)
+                else {
                     return nil
                 }
                 self.init(read: read, write: write)
             }
 
         }
+
         """
     }
 
