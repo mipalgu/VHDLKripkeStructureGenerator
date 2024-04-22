@@ -123,7 +123,7 @@ extension MachineVHDLRepresentable {
 
     var numberOfDataBitsPerAddress: Int {
         // swiftlint:disable:next force_unwrapping
-        self.numberOfStateBits! - 1
+        32 - self.numberOfStateBits! - 1
     }
 
 }
