@@ -1,4 +1,4 @@
-// Machine+pingPong.swift
+// State+constants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,50 +56,24 @@
 import VHDLMachines
 import VHDLParsing
 
-/// Add constant machines.
-public extension Machine {
+/// Add constant states.
+public extension State {
 
-    /// A `PingMachine.machine`.
-    static let pingMachine = Machine(
-        actions: [.internal, .onEntry, .onExit],
-        includes: [.library(value: .ieee), .include(statement: .stdLogic1164All)],
-        externalSignals: [
-            PortSignal(type: .stdLogic, name: .ping, mode: .output),
-            PortSignal(type: .stdLogic, name: .pong, mode: .input)
+    /// The `WaitForPong` state in the `PingMachine`.
+    static let waitForPong = State(
+        name: .waitForPong,
+        actions: [
+            .internal: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .ping)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .onExit: .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .ping)),
+                value: .literal(value: .bit(value: .high))
+            ))
         ],
-        clocks: [Clock(name: .clk, frequency: 125, unit: .MHz)],
-        drivingClock: 0,
-        machineSignals: [],
-        isParameterised: false,
-        parameterSignals: [],
-        returnableSignals: [],
-        states: [
-            State(
-                name: .initial,
-                actions: [
-                    .onExit: .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: .ping)),
-                        value: .literal(value: .bit(value: .low))
-                    ))
-                ],
-                signals: [],
-                externalVariables: [.ping]
-            ),
-            .waitForPong
-        ],
-        transitions: [
-            Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1),
-            Transition(
-                condition: .conditional(condition: .comparison(value: .equality(
-                    lhs: .reference(variable: .variable(reference: .variable(name: .pong))),
-                    rhs: .literal(value: .bit(value: .high))
-                ))),
-                source: 1,
-                target: 1
-            )
-        ],
-        initialState: 0,
-        suspendedState: nil
+        signals: [],
+        externalVariables: [.ping, .pong]
     )
 
 }
