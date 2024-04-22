@@ -62,27 +62,8 @@ extension VariableParser {
     init<T>(
         largeState state: State, in representation: T, numberOfAddresses: Int
     ) where T: MachineVHDLRepresentable {
-        let addressType = "uint32_t data[\(numberOfAddresses)]"
-        let readSnapshot = Record(readSnapshotFor: state, in: representation)
-        let machineName = representation.entity.name.rawValue
-        let stateName = state.name.rawValue
-        let readSnapshotDefinitions = readSnapshot.types.map {
-            (
-                NodeVariable(data: $0, type: .read),
-                "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_READ_" +
-                    "\($0.name.rawValue)(\(addressType));"
-            )
-        }
-        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
-        let writeSnapshotDefinitions = writeSnapshot.types.filter { $0.name != .nextState }.map {
-            (
-                NodeVariable(data: $0, type: .write),
-                "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_WRITE_" +
-                    "\($0.name.rawValue)(\(addressType));"
-            )
-        }
-        let readSnapshotImplementations = readSnapshot.encodedIndexes.map {
-            let variable = NodeVariable(data: $0.0, type: .read)
+        // let readSnapshotImplementations = readSnapshot.encodedIndexes.map {
+        //     let variable = NodeVariable(data: $0.0, type: .read)
             // let functionName = "\(machineName)_\(stateName)_READ_\($0.name.rawValue)"
             // let returnType = $0.type.signalType.ctype.0.rawValue
             // guard $1.isAccrossBoundary(state: state, in: representation) else {
@@ -116,15 +97,60 @@ extension VariableParser {
             //     (Double($1.max.integer) / Double(representation.numberOfDataBitsPerAddress)).rounded(.up)
             // )
             // let memoryIndexes = lowerMemoryIndex...upperMemoryIndex
-            return (variable, "")
-        }
-        let writeSnapshotImplementations = writeSnapshot.encodedIndexes.map {
-            (NodeVariable(data: $0.0, type: .write), "")
-        }
+        //     return (variable, "")
+        // }
+        // let writeSnapshotImplementations = writeSnapshot.encodedIndexes.map {
+        //     (NodeVariable(data: $0.0, type: .write), "")
+        // }
         self.init(
-            definitions: Dictionary(uniqueKeysWithValues: readSnapshotDefinitions + writeSnapshotDefinitions),
-            functions: Dictionary(uniqueKeysWithValues: readSnapshotImplementations + writeSnapshotImplementations)
+            definitions: Dictionary(largeDefinitionsFor: state, in: representation),
+            functions: [:]
         )
+    }
+
+}
+
+extension Dictionary where Key == NodeVariable, Value == String {
+
+    init<T>(largeDefinitionsFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
+        let addressType = "uint32_t data[\(numberOfAddresses)]"
+        let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let machineName = representation.entity.name.rawValue
+        let stateName = state.name.rawValue
+        let readSnapshotDefinitions = readSnapshot.types.map {
+            let variable = NodeVariable(data: $0, type: .read)
+            guard $0.type.signalType.encodedBits <= representation.numberOfDataBitsPerAddress else {
+                return (
+                    variable,
+                    "uint32_t* \(machineName)_\(stateName)_READ_\($0.name.rawValue)(\(addressType));"
+                )
+            }
+            return (
+                variable,
+                "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_READ_" +
+                    "\($0.name.rawValue)(\(addressType));"
+            )
+        }
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let writeSnapshotDefinitions = writeSnapshot.types.filter { $0.name != .nextState }.map {
+            (
+                NodeVariable(data: $0, type: .write),
+                "\($0.type.signalType.ctype.0.rawValue) \(machineName)_\(stateName)_WRITE_" +
+                    "\($0.name.rawValue)(\(addressType));"
+            )
+        } + [
+            (
+                NodeVariable(
+                    data: RecordTypeDeclaration(
+                        name: .nextState, type: .signal(type: representation.stateType!)
+                    ),
+                    type: .write
+                ),
+                "uint32_t \(machineName)_\(stateName)_WRITE_nextState(\(addressType));"
+            )
+        ]
+        self.init(uniqueKeysWithValues: readSnapshotDefinitions + writeSnapshotDefinitions)
     }
 
 }
