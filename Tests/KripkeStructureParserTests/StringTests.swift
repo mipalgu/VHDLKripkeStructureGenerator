@@ -61,8 +61,12 @@ import XCTest
 /// Test class for `String` extensions.
 final class StringTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The representation of the `PingMachine`.
     let pingRepresentation = MachineRepresentation(machine: .pingMachine, name: .pingMachine)!
+
+    // swiftlint:enable force_unwrapping
 
     /// Test the `read` state is created correctly.
     func testReadStateCreation() {
