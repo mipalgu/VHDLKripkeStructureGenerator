@@ -101,9 +101,8 @@ final class VariableParserLargeTests: XCTestCase {
         let expected = """
         void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count)
         {
-            const uint32_t count0 = (data[0] & 0b11111111111111111111111111111100) >> 2;
-            const uint32_t count1 = (data[1] & 0b11000000000000000000000000000000) >> 30;
-            count = { count0, count1 };
+            count[0] = (data[0] & 0b11111111111111111111111111111100) >> 2;
+            count[1] = (data[1] & 0b11000000000000000000000000000000) >> 30;
         }
         bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2])
         {
@@ -117,7 +116,7 @@ final class VariableParserLargeTests: XCTestCase {
         {
             return ((bool) ((data[1] & 0b00000000100000000000000000000000) >> 23));
         }
-        uint8_t IsEvenMachine_calculateIsEven_WRITE_isEven(uint32_t data[2])
+        uint8_t IsEvenMachine_CalculateIsEven_WRITE_isEven(uint32_t data[2])
         {
             return ((uint8_t) ((data[1] & 0b00000110000000000000000000000000) >> 25));
         }
@@ -126,7 +125,7 @@ final class VariableParserLargeTests: XCTestCase {
             return ((uint32_t) ((data[1] & 0b00000001000000000000000000000000) >> 24));
         }
         """
-        XCTAssertEqual(implementations, expected)
+        XCTAssertEqual(implementations, expected, "\(implementations.difference(from: expected))")
     }
 
 }

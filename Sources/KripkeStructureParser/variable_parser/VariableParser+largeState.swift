@@ -97,7 +97,7 @@ extension Dictionary where Key == NodeVariable, Value == String {
             guard $0.type.signalType.encodedBits <= representation.numberOfDataBitsPerAddress else {
                 return (
                     variable,
-                    "void \(machineName)_\(stateName)_READ_\($0.name.rawValue)(\(addressType), " +
+                    "void \(machineName)_\(stateName)_WRITE_\($0.name.rawValue)(\(addressType), " +
                         "uint32_t *\($0.name.rawValue));"
                 )
             }
@@ -137,23 +137,6 @@ extension Dictionary where Key == NodeVariable, Value == String {
             type: .write,
             previousRecordIndexCount: readSnapshot.encodedBits
         )
-        // let nextStateIndexes = writeSnapshot.encodedIndexes.first { $0.0.name == .nextState }!.1
-        // let numberOfIndexes = (nextStateIndexes.min.integer...nextStateIndexes.max.integer).count
-        // let indexReduction = numberOfIndexes / 2
-        // let maxIndex = indexReduction + nextStateIndexes.min.integer
-        // let bitIndexes: VectorIndex
-        // if maxIndex == nextStateIndexes.min.integer {
-        //     bitIndexes = .index(value: nextStateIndexes.min)
-        // } else {
-        //     bitIndexes = VectorIndex.range(value: .to(
-        //         lower: nextStateIndexes.min, upper: .literal(value: .integer(value: maxIndex))
-        //     ))
-        // }
-        // let nextState = IndexedType(
-        //     record: RecordTypeDeclaration(name: .nextState, type: .signal(type: representation.stateType!)),
-        //     index: bitIndexes
-        // )
-        // .implementation(state: state, representation: representation, type: .write)
         self.init(
             uniqueKeysWithValues: readSnapshotImplementations + writeSnapshotImplementations
         )
@@ -170,11 +153,9 @@ extension Record {
         type: NodeType,
         previousRecordIndexCount count: Int
     ) -> [(NodeVariable, String)] where T: MachineVHDLRepresentable {
-        self.encodedIndexes(
-            ignoring: ignoring
-        ).map { IndexedType(record: $0, index: $1.mutateIndexes({ $0 + count })) }.map {
-            $0.implementation(state: state, representation: representation, type: type)
-        }
+        self.encodedIndexes(ignoring: ignoring)
+            .map { IndexedType(record: $0, index: $1.mutateIndexes { $0 + count }) }
+            .map { $0.implementation(state: state, representation: representation, type: type) }
     }
 
 }
@@ -203,11 +184,11 @@ struct IndexedType {
                 self.index.min.integer % representation.numberOfDataBitsPerAddress
             )
             let indexes = self.index.mutateIndexes { $0 - dataIndexOffset }.asRange
+            let leadingZeros = String(repeating: "0", count: indexes[0])
             let trailingZeros = String(
                 repeating: "0",
-                count: representation.numberOfDataBitsPerAddress - indexes.count - indexes[0]
+                count: 32 - indexes.count - leadingZeros.count
             )
-            let leadingZeros = String(repeating: "0", count: indexes[0])
             let mask = "0b\(leadingZeros)\(String(repeating: "1", count: indexes.count))\(trailingZeros)"
             let shiftAmount = 32 - indexes.count - leadingZeros.count
             return (
@@ -215,8 +196,7 @@ struct IndexedType {
                 """
                 \(returnType) \(functionName)(\(addressType))
                 {
-                    const uint32_t value = (data[\(memoryIndex)] & \(mask)) >> \(shiftAmount);
-                    return ((\(returnType)) (value));
+                    return ((\(returnType)) ((data[\(memoryIndex)] & \(mask)) >> \(shiftAmount)));
                 }
                 """
             )
@@ -244,11 +224,10 @@ struct IndexedType {
             let mask = "0b\(leadingZeros)\(String(repeating: "1", count: $0.indexes.count))" +
                 trailingZeros
             let shiftAmount = 32 - $0.indexes.count - leadingZeros.count
-            return "const uint32_t \(variableName)\($0.address) = " +
+            return "\(variableName)[\($0.address)] = " +
                 "(data[\($0.address)] & \(mask)) >> \(shiftAmount);"
         }
-        let addressVariables = access.map { "\(variableName)\($0.address)" }.joined(separator: ", ")
-        let functionBody = (body + ["\(variableName) = { \(addressVariables) };"]).joined(separator: "\n")
+        let functionBody = body.joined(separator: "\n")
         return (
             variable,
             """
