@@ -61,6 +61,21 @@ import VHDLParsing
 /// Add encoding helper methods.
 extension State {
 
+    public func encodedNumberOfAddresses<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
+        guard let write = Record(writeSnapshotFor: self, in: representation) else {
+            fatalError("Failed to get state encoding for \(self.name)!")
+        }
+        let read = Record(readSnapshotFor: self, in: representation)
+        let writeBits = write.types.filter { $0.name != .nextState }.reduce(0) {
+            $0 + $1.type.signalType.encodedBits
+        }
+        let size = Double(read.encodedBits + writeBits)
+        let stateSize = Double(representation.machine.numberOfStateBits)
+        let availableBits = 32.0 - stateSize - 1
+        let footprint = size / availableBits
+        return Int(ceil(footprint))
+    }
+
     /// Calculate the number of bits required to encode a ringlet for this state.
     /// - Parameter representation: The machine representation to use.
     /// - Returns: The number of bits required to encode a ringlet for this state.
