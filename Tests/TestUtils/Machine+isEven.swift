@@ -1,4 +1,4 @@
-// VariableName+constants.swift
+// Machine+isEven.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,52 +53,55 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import VHDLMachines
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
-// swiftlint:disable missing_docs
+/// Add `IsEvenMachine`.
+public extension Machine {
 
-/// Constants in test targets.
-public extension VariableName {
-
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let calculateIsEven = VariableName(rawValue: "CalculateIsEven")!
-
-    static let count = VariableName(rawValue: "count")!
-
-    static let ieee = VariableName(rawValue: "IEEE")!
-
-    static let isEven = VariableName(rawValue: "isEven")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let `internal` = VariableName(rawValue: "Internal")!
-
-    static let ping = VariableName(rawValue: "ping")!
-
-    static let pingMachine = VariableName(rawValue: "PingMachine")!
-
-    static let pong = VariableName(rawValue: "pong")!
-
-    static let onEntry = VariableName(rawValue: "OnEntry")!
-
-    static let onExit = VariableName(rawValue: "OnExit")!
-
-    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
-
-    static let waitForPong = VariableName(rawValue: "WaitForPong")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`.
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `z`.
-    static let z = VariableName(rawValue: "z")!
+    /// Definition of `IsEvenMachine`.
+    static let isEvenMachine = Machine(
+        actions: [.internal, .onEntry, .onExit],
+        includes: [.library(value: .ieee), .include(statement: .stdLogic1164All)],
+        externalSignals: [
+            PortSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 15)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .count,
+                mode: .input
+            ),
+            PortSignal(type: .stdLogic, name: .isEven, mode: .output)
+        ],
+        clocks: [Clock(name: .clk, frequency: 125, unit: .MHz)],
+        drivingClock: 0,
+        machineSignals: [],
+        isParameterised: false,
+        parameterSignals: [],
+        returnableSignals: [],
+        states: [
+            State(name: .initial, actions: [:], signals: [], externalVariables: []),
+            State(
+                name: .calculateIsEven,
+                actions: [
+                    .internal: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .isEven)),
+                        value: .logical(operation: .not(value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .count))),
+                            index: .index(value: .literal(value: .integer(value: 0)))
+                        ))))
+                    ))
+                ],
+                signals: [],
+                externalVariables: [.count, .isEven]
+            )
+        ],
+        transitions: [
+            Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1)
+        ],
+        initialState: 0,
+        suspendedState: nil
+    )
 
 }
-
-// swiftlint:enable missing_docs
-// swiftlint:enable force_unwrapping
