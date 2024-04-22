@@ -1,8 +1,8 @@
-// CType.swift
+// CTypeTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,51 +52,35 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-/// An `enum` of all supported `C` primitive types.
-/// 
-/// The `rawValue` of these cases if the equivalent `C` type name as defined in `stdint.h`.
-enum CType: String, Equatable, Hashable, Sendable, Codable {
+@testable import KripkeStructureParser
+import XCTest
 
-    /// An unsigned 8-bit integer.
-    case uint8 = "uint8_t"
+/// Test class for ``CType``.
+final class CTypeTests: XCTestCase {
 
-    /// An unsigned 16-bit integer.
-    case uint16 = "uint16_t"
+    /// Test that raw values are correct for all supported c types.
+    func testRawValue() {
+        XCTAssertEqual(CType.uint8.rawValue, "uint8_t")
+        XCTAssertEqual(CType.uint16.rawValue, "uint16_t")
+        XCTAssertEqual(CType.uint32.rawValue, "uint32_t")
+        XCTAssertEqual(CType.int8.rawValue, "int8_t")
+        XCTAssertEqual(CType.int16.rawValue, "int16_t")
+        XCTAssertEqual(CType.int32.rawValue, "int32_t")
+        XCTAssertEqual(CType.bool.rawValue, "bool")
+        XCTAssertEqual(CType.float.rawValue, "float")
+    }
 
-    /// An unsigned 32-bit integer.
-    case uint32 = "uint32_t"
-
-    /// A signed 8-bit integer.
-    case int8 = "int8_t"
-
-    /// A signed 16-bit integer.
-    case int16 = "int16_t"
-
-    /// A signed 32-bit integer.
-    case int32 = "int32_t"
-
-    /// A boolean.
-    case bool = "bool"
-
-    /// A floating point number.
-    case float = "float"
-
-    /// Create a new `CType` that is a signed version of another `CType`.
-    /// - Parameter signedVersion: The `CType` to convert to a signed version.
-    @inlinable
-    init(signedVersion: CType) {
-        switch signedVersion {
-        case .int8, .int16, .int32, .bool, .float:
-            self = signedVersion
-        case .uint8:
-            self = .int8
-        case .uint16:
-            self = .int16
-        case .uint32:
-            self = .int32
-        }
+    /// Test that the `init(signedVersion:)` converts the c-type correctly.
+    func testSignedVersionInit() {
+        XCTAssertEqual(CType(signedVersion: .uint8), .int8)
+        XCTAssertEqual(CType(signedVersion: .uint16), .int16)
+        XCTAssertEqual(CType(signedVersion: .uint32), .int32)
+        XCTAssertEqual(CType(signedVersion: .int8), .int8)
+        XCTAssertEqual(CType(signedVersion: .int16), .int16)
+        XCTAssertEqual(CType(signedVersion: .int32), .int32)
+        XCTAssertEqual(CType(signedVersion: .bool), .bool)
+        XCTAssertEqual(CType(signedVersion: .float), .float)
     }
 
 }
