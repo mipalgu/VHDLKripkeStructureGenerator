@@ -72,7 +72,6 @@ final class PackageGeneratorTests: XCTestCase {
         MachineRepresentation(machine: machine, name: VariableName(rawValue: "M")!)
     }
 
-    // swiftlint:enable force_unwrapping
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// The raw VHDL for the initial state runner architecture head of `machine`.
@@ -96,7 +95,7 @@ final class PackageGeneratorTests: XCTestCase {
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
             ),
-            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output),
+            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -104,6 +103,8 @@ final class PackageGeneratorTests: XCTestCase {
             .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!
         ]
     }
+
+    // swiftlint:enable force_unwrapping
 
     /// Test that the C file generation creates the same file every time.
     func testCFileContentsIsGeneratedDeterministically() {
