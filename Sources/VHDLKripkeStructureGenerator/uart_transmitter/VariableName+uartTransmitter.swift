@@ -61,19 +61,7 @@ extension VariableName {
 
     static let baudPulse = VariableName(rawValue: "baudPulse")!
 
-    static let behavioral = VariableName(rawValue: "Behavioral")!
-
     static let bitCount = VariableName(rawValue: "bitCount")!
-
-    static let busy = VariableName(rawValue: "busy")!
-
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let data = VariableName(rawValue: "data")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let ready = VariableName(rawValue: "ready")!
 
     static let sentDataBit = VariableName(rawValue: "SentDataBit")!
 
