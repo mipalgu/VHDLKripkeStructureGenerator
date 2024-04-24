@@ -97,7 +97,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         guard stateFiles.count == states.count else {
             return []
         }
-        return [verifiedMachine, runner, ringletRunner, types, generator, bramInterface] +
+        return [verifiedMachine, runner, ringletRunner, types, generator, bramInterface, .uartTransmitter] +
             stateFiles.flatMap { $0 }
     }
 
