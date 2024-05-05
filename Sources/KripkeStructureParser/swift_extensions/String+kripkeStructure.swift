@@ -93,7 +93,7 @@ extension String {
 
         public struct \(name)KripkeStructure: Codable {
 
-        \(stateVariables)
+        \(stateVariables.indent(amount: 1))
 
             public var totalCount: Int {
         \(stateVariableCounts.indent(amount: 2))
