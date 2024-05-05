@@ -160,8 +160,8 @@ extension String {
             let literals = (0..<numberOfBits / 2).compactMap {
                 let valueIndex = $0 * 2 / 8
                 let byteIndex = $0 * 2 - valueIndex * 8
-                let mask = UInt8(exp2(Double(byteIndex))) & UInt8(exp2(Double(byteIndex + 1)))
-                return LogicLiteral(value: values[valueIndex] & mask)
+                let mask = UInt8(exp2(Double(byteIndex))) | UInt8(exp2(Double(byteIndex + 1)))
+                return LogicLiteral(value: (values[valueIndex] & mask) >> byteIndex)
             }
             guard literals.count == numberOfBits / 2 else {
                 return nil
@@ -217,7 +217,7 @@ extension String {
                 let valueIndex = $0 / 8
                 let byteIndex = $0 - valueIndex * 8
                 let mask = UInt8(exp2(Double(byteIndex)))
-                return BitLiteral(value: values[valueIndex] & mask)
+                return BitLiteral(value: (values[valueIndex] & mask) >> byteIndex)
             }
             guard literals.count == numberOfBits else {
                 return nil
