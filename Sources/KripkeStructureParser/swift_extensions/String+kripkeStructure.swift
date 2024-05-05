@@ -89,6 +89,8 @@ extension String {
         .joined(separator: "\n")
         let initCall = stateVariableNames.map { "\($0): \($0)" }.joined(separator: ", ")
         self = """
+        import C\(name)
+
         public struct \(name)KripkeStructure: Codable {
 
         \(stateVariables)

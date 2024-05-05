@@ -61,6 +61,7 @@ extension String {
     init<T>(kripkeParserFor representation: T) where T: MachineVHDLRepresentable {
         let name = representation.entity.name.rawValue
         self = """
+        import C\(name)
         import Foundation
 
         public struct \(name)KripkeParser {
@@ -68,11 +69,11 @@ extension String {
             public init() {}
 
             public func parse(file: URL) throws -> \(name)KripkeStructure {
-                guard !parse.isDirectory else {
+                guard !file.hasDirectoryPath else {
                     throw \(name)ParseError.invalidData
                 }
                 let data = try Data(contentsOf: file)
-                try self.parse(data: data)
+                return try self.parse(data: data)
             }
 
             public func parse(data: [UInt8]) throws -> \(name)KripkeStructure {
@@ -96,7 +97,7 @@ extension String {
 
             public func parse(data: Data) throws -> \(name)KripkeStructure {
                 let bytes = data.withUnsafeBytes { Array($0) }
-                try self.parse(data: bytes)
+                return try self.parse(data: bytes)
             }
 
         }
