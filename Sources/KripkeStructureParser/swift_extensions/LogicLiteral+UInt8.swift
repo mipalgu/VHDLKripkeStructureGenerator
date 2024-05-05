@@ -184,7 +184,7 @@ extension String {
         }
 
         init?(value: UInt32, numberOfBits: Int) {
-            let vector = withUnsafeBytes(of: value) {
+            let vector = withUnsafeBytes(of: value.bigEndian) {
                 let array = Array($0)
                 return LogicVector(value: array, numberOfBits: numberOfBits)
             }
@@ -240,7 +240,7 @@ extension String {
         }
 
         init?(value: UInt32, numberOfBits: Int) {
-            let vector = withUnsafeBytes(of: value) {
+            let vector = withUnsafeBytes(of: value.bigEndian) {
                 let array = Array($0)
                 return BitVector(value: array, numberOfBits: numberOfBits)
             }
