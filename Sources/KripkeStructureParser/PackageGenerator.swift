@@ -111,7 +111,9 @@ public struct PackageGenerator {
             let cFileData = cFileRawData.data(using: .utf8),
             let cHeaderData = cHeaderRawData.data(using: .utf8),
             let packageData = String(machinePackage: representation).data(using: .utf8),
-            let swiftExtensionsData = String.swiftExtensions.data(using: .utf8)
+            let swiftExtensionsData = String.swiftExtensions.data(using: .utf8),
+            let kripkeParserData = String(kripkeParserFor: representation).data(using: .utf8),
+            let kripkeStructureData = String(kripkeStructureFor: representation).data(using: .utf8)
         else {
             return nil
         }
@@ -133,7 +135,14 @@ public struct PackageGenerator {
         cTargetFolder.preferredFilename = "C\(name)"
         let swiftTargetFolder = FileWrapper(
             directoryWithFileWrappers: Dictionary(
-                uniqueKeysWithValues: [("VHDLParsingExtensions.swift", swiftExtensions)] + stateFiles
+                uniqueKeysWithValues: [
+                    ("VHDLParsingExtensions.swift", swiftExtensions),
+                    ("\(name)KripkeParser.swift", FileWrapper(regularFileWithContents: kripkeParserData)),
+                    (
+                        "\(name)KripkeStructure.swift",
+                        FileWrapper(regularFileWithContents: kripkeStructureData)
+                    )
+                ] + stateFiles
             )
         )
         swiftTargetFolder.preferredFilename = "\(name)"
