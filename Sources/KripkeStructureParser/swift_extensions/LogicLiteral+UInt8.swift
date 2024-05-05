@@ -91,27 +91,27 @@ extension String {
         }
 
         init(value: Int32) {
-            self = .integer(value: Int(bigEndian: Int(value)))
+            self = .integer(value: Int(value))
         }
 
         init(value: UInt32) {
-            self = .integer(value: Int(bigEndian: Int(value)))
+            self = .integer(value: Int(value))
         }
 
         init(value: Int16) {
-            self = .integer(value: Int(bigEndian: Int(value)))
+            self = .integer(value: Int(value))
         }
 
         init(value: UInt16) {
-            self = .integer(value: Int(bigEndian: Int(value)))
+            self = .integer(value: Int(value))
         }
 
         init(value: Int8) {
-            self = .integer(value: Int(bigEndian: Int(value)))
+            self = .integer(value: Int(value))
         }
 
         init(value: UInt8) {
-            self = .integer(value: Int(bigEndian: Int(value)))
+            self = .integer(value: Int(value))
         }
 
     }
@@ -266,27 +266,27 @@ extension String {
     extension Int {
 
         init?(value: Int32, numberOfBits: Int = 32) {
-            self.init(bigEndian: Int(value))
+            self.init(value)
         }
 
         init?(value: Int16, numberOfBits: Int = 32) {
-            self.init(bigEndian: Int(value))
+            self.init(value)
         }
 
         init?(value: Int8, numberOfBits: Int = 32) {
-            self.init(bigEndian: Int(value))
+            self.init(value)
         }
 
         init?(value: UInt32, numberOfBits: Int = 32) {
-            self.init(bigEndian: Int(value))
+            self.init(value)
         }
 
         init?(value: UInt16, numberOfBits: Int = 32) {
-            self.init(bigEndian: Int(value))
+            self.init(value)
         }
 
         init?(value: UInt8, numberOfBits: Int = 32) {
-            self.init(bigEndian: Int(value))
+            self.init(value)
         }
 
     }
@@ -297,33 +297,33 @@ extension String {
             guard value >= 0 else {
                 return nil
             }
-            self.init(bigEndian: UInt(value))
+            self.init(value)
         }
 
         init?(value: Int16, numberOfBits: Int = 32) {
             guard value >= 0 else {
                 return nil
             }
-            self.init(bigEndian: UInt(value))
+            self.init(value)
         }
 
         init?(value: Int8, numberOfBits: Int = 32) {
             guard value >= 0 else {
                 return nil
             }
-            self.init(bigEndian: UInt(value))
+            self.init(value)
         }
 
         init?(value: UInt32, numberOfBits: Int = 32) {
-            self.init(bigEndian: UInt(value))
+            self.init(value)
         }
 
         init?(value: UInt16, numberOfBits: Int = 32) {
-            self.init(bigEndian: UInt(value))
+            self.init(value)
         }
 
         init?(value: UInt8, numberOfBits: Int = 32) {
-            self.init(bigEndian: UInt(value))
+            self.init(value)
         }
 
     }
