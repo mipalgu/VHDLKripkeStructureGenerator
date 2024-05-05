@@ -185,6 +185,7 @@ extension String {
             ],
             dependencies: [
                 .package(url: "https://github.com/mipalgu/VHDLParsing.git", from: "2.4.0"),
+                .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0")
             ],
             targets: [
                 .target(
@@ -198,7 +199,7 @@ extension String {
                 .executableTarget(name: "Parser", dependencies: [
                     .target(name: "\(name)"),
                     .product(name: "ArgumentParser", package: "swift-argument-parser")
-                ]
+                ])
             ]
         )
 
