@@ -113,7 +113,8 @@ public struct PackageGenerator {
             let packageData = String(machinePackage: representation).data(using: .utf8),
             let swiftExtensionsData = String.swiftExtensions.data(using: .utf8),
             let kripkeParserData = String(kripkeParserFor: representation).data(using: .utf8),
-            let kripkeStructureData = String(kripkeStructureFor: representation).data(using: .utf8)
+            let kripkeStructureData = String(kripkeStructureFor: representation).data(using: .utf8),
+            let parserData = String(parserFor: representation).data(using: .utf8)
         else {
             return nil
         }
@@ -146,8 +147,13 @@ public struct PackageGenerator {
             )
         )
         swiftTargetFolder.preferredFilename = "\(name)"
+        let parserTargetFolder = FileWrapper(directoryWithFileWrappers: [
+            "Parser.swift": FileWrapper(regularFileWithContents: parserData)
+        ])
         let sourcesFolder = FileWrapper(
-            directoryWithFileWrappers: ["C\(name)": cTargetFolder, "\(name)": swiftTargetFolder]
+            directoryWithFileWrappers: [
+                "C\(name)": cTargetFolder, "\(name)": swiftTargetFolder, "Parser": parserTargetFolder
+            ]
         )
         sourcesFolder.preferredFilename = "Sources"
         let packageFolder = FileWrapper(
@@ -174,7 +180,8 @@ extension String {
                 .library(
                     name: "\(name)",
                     targets: ["\(name)"]
-                )
+                ),
+                .executable(name: "\(name.lowercased())_parser", targets: ["Parser"])
             ],
             dependencies: [
                 .package(url: "https://github.com/mipalgu/VHDLParsing.git", from: "2.4.0"),
@@ -187,7 +194,11 @@ extension String {
                 .target(
                     name: "\(name)",
                     dependencies: ["C\(name)", "VHDLParsing"]
-                )
+                ),
+                .executableTarget(name: "Parser", dependencies: [
+                    .target(name: "\(name)"),
+                    .product(name: "ArgumentParser", package: "swift-argument-parser")
+                ]
             ]
         )
 
