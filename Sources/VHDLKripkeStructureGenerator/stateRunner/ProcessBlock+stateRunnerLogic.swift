@@ -277,11 +277,14 @@ extension WhenCase {
                                 )),
                                 ifBlock: .statement(statement: .assignment(
                                     name: .variable(reference: .variable(name: .previousRinglet)),
-                                    value: .literal(value: .vector(value: .logics(value: LogicVector(
-                                        values: [LogicLiteral](
-                                            repeating: .highImpedance, count: numberOfStateBits
-                                        )
-                                    ))))
+                                    value: .logical(operation: .xor(
+                                        lhs: .reference(variable: .variable(reference: .variable(
+                                            name: VariableName(rawValue: "STATE_\(state.name.rawValue)")!
+                                        ))),
+                                        rhs: .literal(value: .vector(value: .bits(value: BitVector(
+                                            values: [BitLiteral](repeating: .high, count: numberOfStateBits)
+                                        ))))
+                                    ))
                                 )),
                                 elseBlock: .statement(statement: .assignment(
                                     name: .variable(reference: .variable(name: .previousRinglet)),
