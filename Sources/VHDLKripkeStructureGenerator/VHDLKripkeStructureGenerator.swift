@@ -106,9 +106,10 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         let baudGenerator = VHDLFile(
             baudGeneratorWithClk: machine.clocks[machine.drivingClock], baudRate: baudRate
         )
+        let bramTransmitter = VHDLFile(bramTransmitterFor: representation)
         return [
             verifiedMachine, runner, ringletRunner, types, generator, bramInterface, .uartTransmitter,
-            baudGenerator
+            baudGenerator, bramTransmitter
         ] + stateFiles.flatMap { $0 }
     }
 
