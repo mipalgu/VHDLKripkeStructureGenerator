@@ -89,9 +89,165 @@ extension ProcessBlock {
                             rhs: .reference(variable: .variable(reference: .variable(name: .initial)))
                         ))),
                         ifBlock: .blocks(blocks: [
-
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .currentData)),
+                                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                ))))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .currentAddress)),
+                                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                ))))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .currentByte)),
+                                value: .literal(value: .integer(value: 3))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .read)),
+                                value: .literal(value: .bit(value: .low))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .ready)),
+                                value: .literal(value: .bit(value: .low))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .word)),
+                                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                ))))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .currentState)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .waitForFinish)
+                                ))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .finishedTx)),
+                                value: .literal(value: .bit(value: .low))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .rdy)),
+                                value: .literal(value: .bit(value: .low))
+                            ))
                         ]),
-                        elseBlock: .statement(statement: .null)
+                        elseBlock: .ifStatement(block: .ifElse(
+                            condition: .conditional(condition: .comparison(value: .equality(
+                                lhs: .reference(variable: .variable(reference: .variable(
+                                    name: .currentState
+                                ))),
+                                rhs: .reference(variable: .variable(reference: .variable(
+                                    name: .waitForFinish
+                                )))
+                            ))),
+                            ifBlock: .blocks(blocks: [
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .currentData)),
+                                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                    ))))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .currentAddress)),
+                                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                    ))))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .currentByte)),
+                                    value: .literal(value: .integer(value: 3))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .word)),
+                                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                    ))))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .finishedTx)),
+                                    value: .literal(value: .bit(value: .low))
+                                )),
+                                .ifStatement(block: .ifElse(
+                                    condition: .conditional(condition: .comparison(value: .equality(
+                                        lhs: .reference(variable: .variable(reference: .variable(
+                                            name: .finished
+                                        ))),
+                                        rhs: .literal(value: .bit(value: .high))
+                                    ))),
+                                    ifBlock: .blocks(blocks: [
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .currentState)),
+                                            value: .reference(variable: .variable(
+                                                reference: .variable(name: .startReadAddress)
+                                            ))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .read)),
+                                            value: .literal(value: .bit(value: .high))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .ready)),
+                                            value: .literal(value: .bit(value: .high))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .rdy)),
+                                            value: .literal(value: .bit(value: .high))
+                                        ))
+                                    ]),
+                                    elseBlock: .blocks(blocks: [
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .read)),
+                                            value: .literal(value: .bit(value: .low))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .ready)),
+                                            value: .literal(value: .bit(value: .low))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .rdy)),
+                                            value: .literal(value: .bit(value: .low))
+                                        ))
+                                    ])
+                                ))
+                            ]),
+                            elseBlock: .ifStatement(block: .ifElse(
+                                condition: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .reference(variable: .variable(
+                                        reference: .variable(name: .finished)
+                                    )),
+                                    rhs: .literal(value: .bit(value: .high))
+                                ))),
+                                ifBlock: .blocks(blocks: [
+                                    .statement(statement: .assignment(
+                                        name: .variable(reference: .variable(name: .rdy)),
+                                        value: .literal(value: .bit(value: .high))
+                                    )),
+                                    .caseStatement(block: CaseStatement(
+                                        condition: .reference(variable: .variable(reference: .variable(
+                                            name: .currentState
+                                        ))),
+                                        cases: [
+                                            .bramTxStartReadAddress, .bramTxReadAddress, .bramTxWaitForButton,
+                                            .bramTxWaitForFree, .bramTxWaitForBusy,
+                                            .bramTxFinishedTransmission, .bramTxOthers
+                                        ]
+                                    ))
+                                ]),
+                                elseBlock: .blocks(blocks: [
+                                    .statement(statement: .assignment(
+                                        name: .variable(reference: .variable(name: .rdy)),
+                                        value: .literal(value: .bit(value: .low))
+                                    )),
+                                    .statement(statement: .assignment(
+                                        name: .variable(reference: .variable(name: .finishedTx)),
+                                        value: .literal(value: .bit(value: .low))
+                                    ))
+                                ])
+                            ))
+                        ))
                     ))
                 ))
             )
