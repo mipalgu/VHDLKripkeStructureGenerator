@@ -75,7 +75,7 @@ extension String {
                 let url = URL(fileURLWithPath: path, isDirectory: false)
                 let kripkeStructure = try parser.parse(file: url)
                 let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted]
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
                 let data = try encoder.encode(kripkeStructure)
                 let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
                 try data.write(to: outputFile)
