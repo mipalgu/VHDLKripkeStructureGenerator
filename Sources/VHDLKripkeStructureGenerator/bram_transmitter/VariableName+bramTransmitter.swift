@@ -79,6 +79,8 @@ extension VariableName {
 
     static let rdy = VariableName(rawValue: "rdy")!
 
+    static let readAddressState = VariableName(rawValue: "ReadAddress")!
+
     static let startReadAddress = VariableName(rawValue: "StartReadAddress")!
 
     static let startTransmission = VariableName(rawValue: "startTransmission")!

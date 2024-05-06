@@ -73,7 +73,7 @@ extension WhenCase {
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .currentState)),
                 value: .reference(variable: .variable(
-                    reference: .variable(name: .readAddress)
+                    reference: .variable(name: .readAddressState)
                 ))
             )),
             .statement(statement: .assignment(
@@ -85,7 +85,7 @@ extension WhenCase {
 
     static let bramTxReadAddress = WhenCase(
         condition: .expression(expression: .reference(
-            variable: .variable(reference: .variable(name: .readAddress))
+            variable: .variable(reference: .variable(name: .readAddressState))
         )),
         code: .blocks(blocks: [
             .statement(statement: .assignment(
@@ -100,6 +100,10 @@ extension WhenCase {
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .ready)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .finishedTx)),
                 value: .literal(value: .bit(value: .low))
             )),
             .ifStatement(block: .ifElse(
@@ -122,10 +126,6 @@ extension WhenCase {
                         reference: .variable(name: .finishedTransmission)
                     ))
                 ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .finishedTx)),
-                value: .literal(value: .bit(value: .low))
             ))
         ])
     )

@@ -62,7 +62,9 @@ extension VHDLFile {
         self.init(
             architectures: [Architecture(bramTransmitterFor: representation)],
             entities: [.bramTransmitter],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+            includes: [
+                .library(value: .ieee), .include(statement: .stdLogic1164), .include(statement: .numericStd)
+            ]
         )
     }
 

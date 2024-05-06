@@ -77,7 +77,13 @@ extension ArchitectureHead {
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .txReady))),
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .baudPulse))),
             .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .currentData))),
-            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .currentAddress))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .unsigned32bit,
+                name: .currentAddress,
+                defaultValue: .literal(value: .vector(value: .hexademical(value: HexVector(
+                    values: [HexLiteral](repeating: .zero, count: 8)
+                ))))
+            ))),
             .definition(value: .signal(value: LocalSignal(
                 type: .ranged(type: .integer(size: .to(
                     lower: .literal(value: .integer(value: -1)), upper: .literal(value: .integer(value: 3))
@@ -88,7 +94,7 @@ extension ArchitectureHead {
             .definition(value: .type(value: .enumeration(value: EnumerationDefinition(
                 name: .bramTransmitterCurrentStateType,
                 nonEmptyValues: [
-                    .initial, .waitForFinish, .startReadAddress, .readAddress, .waitForButton, .waitForFree,
+                    .initial, .waitForFinish, .startReadAddress, .readAddressState, .waitForButton, .waitForFree,
                     .waitForBusy, .finishedTransmission
                 ]
             )!))),

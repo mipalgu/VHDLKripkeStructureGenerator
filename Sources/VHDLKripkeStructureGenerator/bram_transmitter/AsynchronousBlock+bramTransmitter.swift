@@ -67,13 +67,34 @@ extension AsynchronousBlock {
             )
         }
         let interfaceMap = PortMap(variables: mappings)
-        let uart = Entity.uartTransmitter
-        let uartMappings = uart.port.signals.map {
+        let uartMappings = [
             VariableMap(
-                lhs: .variable(reference: .variable(name: $0.name)),
-                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: $0.name))))
+                lhs: .variable(reference: .variable(name: .clk)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .clk))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .baudPulse)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(
+                    name: .baudPulse
+                ))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .word)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .word))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .ready)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .txReady))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .tx)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .tx))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .busy)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .txBusy))))
             )
-        }
+        ]
         self = .blocks(blocks: [
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .address)),
