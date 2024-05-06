@@ -59,7 +59,8 @@ import VHDLParsing
 extension Architecture {
 
     init(baudGeneratorWithClk clk: Clock, baudRate: UInt) {
-        let integerCount = Int(((Double(clk.frequency) / Double(baudRate)) / 2.0).rounded())
+        let baudPeriodns = 1.0 / Double(baudRate) * 1_000_000_000.0
+        let integerCount = Int((baudPeriodns / clk.period.nanoseconds / 2.0).rounded())
         let head = ArchitectureHead(statements: [
             .definition(value: .signal(value: LocalSignal(
                 type: .ranged(type: .integer(size: .to(
