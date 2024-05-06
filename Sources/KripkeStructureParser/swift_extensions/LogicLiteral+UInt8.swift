@@ -174,8 +174,9 @@ extension String {
                 return nil
             }
             let literals = (0..<numberOfBits / 2).compactMap {
-                let mask = UInt8(exp2(Double($0 * 2))) & UInt8(exp2(Double($0 * 2 + 1)))
-                return LogicLiteral(value: value & mask)
+                let index = $0 * 2
+                let mask = UInt8(exp2(Double(index))) | UInt8(exp2(Double(index + 1)))
+                return LogicLiteral(value: (value & mask) >> index)
             }
             guard literals.count == numberOfBits / 2 else {
                 return nil
@@ -231,7 +232,7 @@ extension String {
             }
             let literals = (0..<numberOfBits).compactMap {
                 let mask = UInt8(exp2(Double($0)))
-                return BitLiteral(value: value & mask)
+                return BitLiteral(value: (value & mask) >> $0)
             }
             guard literals.count == numberOfBits else {
                 return nil
