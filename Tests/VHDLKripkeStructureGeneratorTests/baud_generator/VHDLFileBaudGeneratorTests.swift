@@ -58,8 +58,10 @@ import VHDLMachines
 import VHDLParsing
 import XCTest
 
+/// Test class for `VHDLFile` extensions for baud generator.
 final class VHDLFileBaudGeneratorTests: XCTestCase {
 
+    /// Test VHDL code is correct.
     func testRawValue() {
         let clock = Clock(name: .clk, frequency: 5, unit: .MHz)
         let result = VHDLFile(baudGeneratorWithClk: clock, baudRate: 9600)
