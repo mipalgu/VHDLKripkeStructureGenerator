@@ -55,6 +55,7 @@
 
 import VHDLMachines
 import VHDLParsing
+import Utilities
 
 extension String {
 
@@ -123,10 +124,7 @@ extension String {
     }
     """
 
-    init?<T>(vhdlKripkeStructureFor representation: T) where T: MachineVHDLRepresentable {
-        guard let nameExtension = String(nameExtensionFor: representation) else {
-            return nil
-        }
+    init<T>(vhdlKripkeStructureFor representation: T) where T: MachineVHDLRepresentable {
         let includes = """
         import VHDLKripkeStructures
         import VHDLParsing
@@ -145,6 +143,7 @@ extension String {
         .joined(separator: "\n\n")
         let kripkeExtensions = String(kripkeStructureExtensionFor: representation)
         let dictionaryExtensions = String(dictionaryPropertiesFor: representation)
+        let nameExtension = String(nameExtensionFor: representation)
         self = """
         \(includes)
 
@@ -289,7 +288,7 @@ extension String {
         """
     }
 
-    init?<T>(nameExtensionFor representation: T) where T: MachineVHDLRepresentable {
+    init<T>(nameExtensionFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let stateDefinitions = machine.states.map {
             "static let \($0.name.rawValue) = VariableName(rawValue: \"\($0.name.rawValue)\")!"
@@ -312,16 +311,13 @@ extension String {
                     "_\($0.name.rawValue)\")!"
             }
         }
-        guard let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1) else {
-            return nil
-        }
-        let vectorCases = machine.states.enumerated().map {
-            let instantiation = BitVector(values: BitLiteral.bitVersion(of: $0.0, bitsRequired: bitsRequired))
+        let vectorCases = machine.states.map {
+            let instantiation = $0.representation(in: representation)
             return """
             case LogicVector(rawValue: \"\"\"
             \(instantiation.rawValue)
             \"\"\")!.values:
-                self = .\($0.1.name.rawValue)
+                self = .\($0.name.rawValue)
             """
         }
         self = """

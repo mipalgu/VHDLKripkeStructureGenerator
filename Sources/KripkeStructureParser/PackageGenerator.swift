@@ -115,7 +115,7 @@ public struct PackageGenerator {
             let kripkeParserData = String(kripkeParserFor: representation).data(using: .utf8),
             let kripkeStructureData = String(kripkeStructureFor: representation).data(using: .utf8),
             let parserData = String(parserFor: representation).data(using: .utf8),
-            let vhdlKripkeStructureData = String(vhdlKripkeStructureFor: representation)?.data(using: .utf8)
+            let vhdlKripkeStructureData = String(vhdlKripkeStructureFor: representation).data(using: .utf8)
         else {
             return nil
         }
