@@ -231,12 +231,20 @@ extension String {
             guard let defaultValue = $0.defaultValue else {
                 return (
                     "\($0.name.rawValue)",
-                    "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")!"
+                    """
+                    SignalLiteral(rawValue: \"\"\"
+                    \($0.type.signalType.defaultValue.rawValue)
+                    \"\"\")!
+                    """
                 )
             }
             return (
                 "\($0.name.rawValue)",
-                "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")!"
+                """
+                SignalLiteral(rawValue: \"\"\"
+                \(defaultValue.rawValue)
+                \"\"\")!
+                """
             )
         }
         let snapshots = externals.map {
@@ -246,12 +254,20 @@ extension String {
             guard let defaultValue = $0.defaultValue else {
                 return (
                     "\(representation.entity.name.rawValue)_\($0.name.rawValue)",
-                    "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")!"
+                    """
+                    SignalLiteral(rawValue: \"\"\"
+                    \($0.type.signalType.defaultValue.rawValue)
+                    \"\"\")!
+                    """
                 )
             }
             return (
                 "\(representation.entity.name.rawValue)_\($0.name.rawValue)",
-                "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")!"
+                """
+                SignalLiteral(rawValue:\"\"\"
+                \(defaultValue.rawValue)
+                \"\"\")!
+                """
             )
         }
         let stateSignals = machine.states.flatMap { state in
@@ -261,12 +277,20 @@ extension String {
                 guard let defaultValue = $0.defaultValue else {
                     return (
                         name,
-                        "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")!"
+                        """
+                        SignalLiteral(rawValue: \"\"\"
+                        \($0.type.signalType.defaultValue.rawValue)
+                        \"\"\")!
+                        """
                     )
                 }
                 return (
                     name,
-                    "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")!"
+                    """
+                    SignalLiteral(rawValue: \"\"\"
+                    \(defaultValue.rawValue)
+                    \"\"\")!
+                    """
                 )
             }
         }
@@ -318,7 +342,9 @@ extension String {
         let vectorCases = machine.states.enumerated().map {
             let instantiation = BitVector(values: BitLiteral.bitVersion(of: $0.0, bitsRequired: bitsRequired))
             return """
-            case LogicVector(rawValue: \(instantiation.rawValue))!.values:
+            case LogicVector(rawValue: \"\"\"
+            \(instantiation.rawValue)
+            \"\"\")!.values:
                 self = .\($0.1.name.rawValue)
             """
         }
