@@ -228,70 +228,46 @@ extension String {
     init<T>(dictionaryPropertiesFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let externals = machine.externalSignals.map {
-            guard let defaultValue = $0.defaultValue else {
+            guard let defaultValue = $0.defaultValue, case .literal(let literal) = defaultValue else {
                 return (
                     "\($0.name.rawValue)",
-                    """
-                    SignalLiteral(rawValue: \"\"\"
-                    \($0.type.signalType.defaultValue.rawValue)
-                    \"\"\")!
-                    """
+                    $0.type.signalType.defaultValueCreation
                 )
             }
             return (
                 "\($0.name.rawValue)",
-                """
-                SignalLiteral(rawValue: \"\"\"
-                \(defaultValue.rawValue)
-                \"\"\")!
-                """
+                literal.defaultValueCreation
             )
         }
         let snapshots = externals.map {
             ("\(representation.entity.name.rawValue)_\($0.0)", $0.1)
         }
         let machineSignals = machine.machineSignals.map {
-            guard let defaultValue = $0.defaultValue else {
+            guard let defaultValue = $0.defaultValue, case .literal(let literal) = defaultValue else {
                 return (
                     "\(representation.entity.name.rawValue)_\($0.name.rawValue)",
-                    """
-                    SignalLiteral(rawValue: \"\"\"
-                    \($0.type.signalType.defaultValue.rawValue)
-                    \"\"\")!
-                    """
+                    $0.type.signalType.defaultValueCreation
                 )
             }
             return (
                 "\(representation.entity.name.rawValue)_\($0.name.rawValue)",
-                """
-                SignalLiteral(rawValue:\"\"\"
-                \(defaultValue.rawValue)
-                \"\"\")!
-                """
+                literal.defaultValueCreation
             )
         }
         let stateSignals = machine.states.flatMap { state in
             state.signals.map {
                 let name = "\(representation.entity.name.rawValue)_STATE_\(state.name.rawValue)_" +
                     "\($0.name.rawValue)"
-                guard let defaultValue = $0.defaultValue else {
-                    return (
-                        name,
-                        """
-                        SignalLiteral(rawValue: \"\"\"
-                        \($0.type.signalType.defaultValue.rawValue)
-                        \"\"\")!
-                        """
-                    )
-                }
+                guard let defaultValue = $0.defaultValue, case .literal(let literal) = defaultValue else {
                 return (
                     name,
-                    """
-                    SignalLiteral(rawValue: \"\"\"
-                    \(defaultValue.rawValue)
-                    \"\"\")!
-                    """
+                    $0.type.signalType.defaultValueCreation
                 )
+            }
+            return (
+                name,
+                literal.defaultValueCreation
+            )
             }
         }
         let allSignals = externals + snapshots + machineSignals + stateSignals

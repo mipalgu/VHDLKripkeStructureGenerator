@@ -57,32 +57,66 @@ import VHDLParsing
 
 extension SignalType {
 
-    var defaultValue: SignalLiteral {
+    var defaultValueCreation: String {
         switch self {
         case .bit:
-            return .bit(value: .low)
+            return "SignalLiteral.bit(value: .low)"
         case .boolean:
-            return .boolean(value: false)
+            return "SignalLiteral.boolean(value: false)"
         case .integer, .natural:
-            return .integer(value: 0)
+            return "SignalLiteral.integer(value: 0)"
         case .positive:
-            return .integer(value: 1)
+            return "SignalLiteral.integer(value: 1)"
         case .real:
-            return .decimal(value: 0.0)
+            return "SignalLiteral.decimal(value: 0.0)"
         case .stdLogic, .stdULogic:
-            return .logic(value: .low)
+            return "SignalLiteral.logic(value: .low)"
         case .ranged(let type):
             switch type {
-            case .bitVector(let size), .signed(let size), .unsigned(let size), .stdLogicVector(let size),
-                .stdULogicVector(let size):
-                guard let size = size.size else {
-                    fatalError("Cannot determine default value for \(self.rawValue)")
-                }
-                return .vector(value: .bits(value: BitVector(
-                    values: [BitLiteral](repeating: .low, count: size)
-                )))
+            case .bitVector(let size), .signed(let size), .unsigned(let size):
+                return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
+                    "[BitLiteral](repeating: .low, count: \(size.size!))))"
+            case .stdLogicVector(let size), .stdULogicVector(let size):
+                return "SignalLiteral.vector(value: .logics(value: LogicVector(values: " +
+                    "[LogicLiteral](repeating: .low, count: \(size.size!))))"
             case .integer:
-                return .integer(value: 0)
+                return "SignalLiteral.integer(value: 0)"
+            }
+        }
+    }
+
+}
+
+extension SignalLiteral {
+
+    var defaultValueCreation: String {
+        switch self {
+        case .bit:
+            return SignalType.bit.defaultValueCreation
+        case .boolean:
+            return SignalType.boolean.defaultValueCreation
+        case .decimal:
+            return SignalType.real.defaultValueCreation
+        case .integer:
+            return SignalType.integer.defaultValueCreation
+        case .logic:
+            return SignalType.stdLogic.defaultValueCreation
+        case .vector(let literal):
+            switch literal {
+            case .bits(let value):
+                return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
+                    "[BitLiteral](repeating: .low, count: \(value.count))))"
+            case .logics(let value):
+                return "SignalLiteral.vector(value: .logics(value: LogicVector(values: " +
+                    "[LogicLiteral](repeating: .low, count: \(value.count))))"
+            case .octal(let value):
+                return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
+                    "[BitLiteral](repeating: .low, count: \(value.values.count * 3))))"
+            case .hexademical(let value):
+                return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
+                    "[BitLiteral](repeating: .low, count: \(value.values.count * 4))))"
+            case .indexed:
+                fatalError("Cannot create default value for indexed vector.")
             }
         }
     }
