@@ -271,7 +271,7 @@ extension String {
             }
         }
         let allSignals = externals + snapshots + machineSignals + stateSignals
-        let assignments = allSignals.map { "VariableName(rawValue: \"\($0.0)\"): \($0.1)" }
+        let assignments = allSignals.map { "VariableName(rawValue: \"\($0.0)\")!: \($0.1)" }
         let internalSignals = snapshots + machineSignals + stateSignals
         let internalDefinitions = internalSignals.map { "VariableName(rawValue: \"\($0.0)\")!" }
         self = """
@@ -314,9 +314,9 @@ extension String {
         self = """
         extension VariableName {
 
-        \(stateDefinitions.joined(separator: ",\n").indent(amount: 1))
+        \(stateDefinitions.joined(separator: "\n").indent(amount: 1))
 
-        \(externalDefinitions.joined(separator: ",\n").indent(amount: 1))
+        \(externalDefinitions.joined(separator: "\n").indent(amount: 1))
 
             init?(state: LogicVector) {
                 switch state.values {
