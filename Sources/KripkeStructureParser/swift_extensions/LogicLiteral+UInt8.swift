@@ -163,10 +163,11 @@ extension String {
                 let mask = UInt8(exp2(Double(byteIndex))) | UInt8(exp2(Double(byteIndex + 1)))
                 return LogicLiteral(value: (values[valueIndex] & mask) >> byteIndex)
             }
+            .reversed()
             guard literals.count == numberOfBits / 2 else {
                 return nil
             }
-            self.init(values: literals)
+            self.init(values: Array(literals))
         }
 
         init?(value: UInt8, numberOfBits: Int) {
@@ -220,10 +221,11 @@ extension String {
                 let mask = UInt8(exp2(Double(byteIndex)))
                 return BitLiteral(value: (values[valueIndex] & mask) >> byteIndex)
             }
+            .reversed()
             guard literals.count == numberOfBits else {
                 return nil
             }
-            self.init(values: literals)
+            self.init(values: Array(literals))
         }
 
         init?(value: UInt8, numberOfBits: Int) {
