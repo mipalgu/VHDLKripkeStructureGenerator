@@ -208,7 +208,8 @@ extension String {
                 ),
                 .executableTarget(name: "Parser", dependencies: [
                     .target(name: "\(name)"),
-                    .product(name: "ArgumentParser", package: "swift-argument-parser")
+                    .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                    .product(name: "VHDLKripkeStructures", package: "VHDLKripkeStructures")
                 ])
             ]
         )

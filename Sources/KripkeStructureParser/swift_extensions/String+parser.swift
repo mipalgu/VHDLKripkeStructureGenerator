@@ -63,6 +63,7 @@ extension String {
         import ArgumentParser
         import Foundation
         import \(name)
+        import VHDLKripkeStructures
 
         @main
         struct Parser: ParsableCommand {
@@ -74,10 +75,11 @@ extension String {
                 let parser = \(name)KripkeParser()
                 let url = URL(fileURLWithPath: path, isDirectory: false)
                 let kripkeStructure = try parser.parse(file: url)
+                let generalStructure = KripkeStructure(structure: kripkeStructure)
+                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
                 let encoder = JSONEncoder()
                 encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
+                let data = try encoder.encode(generalStructure)
                 try data.write(to: outputFile)
             }
 
