@@ -200,7 +200,11 @@ extension String {
                 ),
                 .target(
                     name: "\(name)",
-                    dependencies: ["C\(name)", "VHDLParsing"]
+                    dependencies: [
+                        .target(name: "C\(name)"),
+                        .product(name: "VHDLParsing", package: "VHDLParsing"),
+                        .product(name: "VHDLKripkeStructures", package: "VHDLKripkeStructures")
+                    ]
                 ),
                 .executableTarget(name: "Parser", dependencies: [
                     .target(name: "\(name)"),
