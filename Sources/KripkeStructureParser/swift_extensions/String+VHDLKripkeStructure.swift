@@ -271,9 +271,9 @@ extension String {
             }
         }
         let allSignals = externals + snapshots + machineSignals + stateSignals
-        let assignments = allSignals.map { "VariableName(rawValue: \($0.0)): \($0.1)" }
+        let assignments = allSignals.map { "VariableName(rawValue: \"\($0.0)\"): \($0.1)" }
         let internalSignals = snapshots + machineSignals + stateSignals
-        let internalDefinitions = internalSignals.map { "VariableName(rawValue: \($0.0))!" }
+        let internalDefinitions = internalSignals.map { "VariableName(rawValue: \"\($0.0)\")!" }
         self = """
         extension Dictionary where Key == VariableName, Value == SignalLiteral {
 
@@ -294,8 +294,12 @@ extension String {
         let stateDefinitions = machine.states.map {
             "static let \($0.name.rawValue) = VariableName(rawValue: \"\($0.name.rawValue)\")!"
         }
-        let externalDefinitions = machine.externalSignals.map {
-            "static let \($0.name.rawValue) = VariableName(rawValue: \"\($0.name.rawValue)\")!"
+        let externalDefinitions = machine.externalSignals.flatMap {
+            [
+                "static let \($0.name.rawValue) = VariableName(rawValue: \"\($0.name.rawValue)\")!",
+                "static let \(representation.entity.name)_\($0.name.rawValue) = " +
+                    "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!"
+            ]
         }
         guard let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1) else {
             return nil
@@ -303,7 +307,7 @@ extension String {
         let vectorCases = machine.states.enumerated().map {
             let instantiation = BitVector(values: BitLiteral.bitVersion(of: $0.0, bitsRequired: bitsRequired))
             return """
-            case LogicVector(rawValue: \"\(instantiation.rawValue)\")!.values:
+            case LogicVector(rawValue: \(instantiation.rawValue))!.values:
                 return .\($0.1.name.rawValue)
             """
         }
