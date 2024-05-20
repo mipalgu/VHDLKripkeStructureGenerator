@@ -231,12 +231,12 @@ extension String {
             guard let defaultValue = $0.defaultValue else {
                 return (
                     "\($0.name.rawValue)",
-                    "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")"
+                    "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")!"
                 )
             }
             return (
                 "\($0.name.rawValue)",
-                "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")"
+                "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")!"
             )
         }
         let snapshots = externals.map {
@@ -246,12 +246,12 @@ extension String {
             guard let defaultValue = $0.defaultValue else {
                 return (
                     "\(representation.entity.name.rawValue)_\($0.name.rawValue)",
-                    "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")"
+                    "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")!"
                 )
             }
             return (
                 "\(representation.entity.name.rawValue)_\($0.name.rawValue)",
-                "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")"
+                "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")!"
             )
         }
         let stateSignals = machine.states.flatMap { state in
@@ -261,12 +261,12 @@ extension String {
                 guard let defaultValue = $0.defaultValue else {
                     return (
                         name,
-                        "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")"
+                        "SignalLiteral(rawValue: \"\($0.type.signalType.defaultValue.rawValue)\")!"
                     )
                 }
                 return (
                     name,
-                    "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")"
+                    "SignalLiteral(rawValue: \"\(defaultValue.rawValue)\")!"
                 )
             }
         }
@@ -301,6 +301,17 @@ extension String {
                     "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!"
             ]
         }
+        let machineDefinitions = machine.machineSignals.map {
+            "static let \(representation.entity.name)_\($0.name.rawValue) = " +
+                    "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!"
+        }
+        let stateSignalDefinitions = machine.states.flatMap { state in
+            state.signals.map {
+                "static let \(representation.entity.name)_STATE_\(state.name.rawValue)_\($0.name.rawValue)" +
+                    " = VariableName(rawValue: \"\(representation.entity.name)_STATE_\(state.name.rawValue)" +
+                    "_\($0.name.rawValue)\")!"
+            }
+        }
         guard let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1) else {
             return nil
         }
@@ -308,7 +319,7 @@ extension String {
             let instantiation = BitVector(values: BitLiteral.bitVersion(of: $0.0, bitsRequired: bitsRequired))
             return """
             case LogicVector(rawValue: \(instantiation.rawValue))!.values:
-                return .\($0.1.name.rawValue)
+                self = .\($0.1.name.rawValue)
             """
         }
         self = """
@@ -317,6 +328,10 @@ extension String {
         \(stateDefinitions.joined(separator: "\n").indent(amount: 1))
 
         \(externalDefinitions.joined(separator: "\n").indent(amount: 1))
+
+        \(machineDefinitions.joined(separator: "\n").indent(amount: 1))
+
+        \(stateSignalDefinitions.joined(separator: "\n").indent(amount: 1))
 
             init?(state: LogicVector) {
                 switch state.values {
