@@ -61,18 +61,18 @@ extension Clock {
     var periodTime: (UInt, Int)? {
         let amount = 1.0 / (Double(self.frequency) * pow(10.0, Double(self.unit.exponent)))
         var newAmount = amount
-        var multiplier = 1.0
-        while amount < 1 {
-            newAmount = amount * multiplier
-            if amount > 1 {
+        var multiplier = 0.0
+        while newAmount.rounded(.down) != newAmount {
+            newAmount = amount * pow(10.0, multiplier)
+            if newAmount.rounded(.down) == newAmount {
                 break
             }
-            guard multiplier < 18 else {
+            guard multiplier <= 18.0 else {
                 return nil
             }
             multiplier += 1
         }
-        return (UInt(newAmount), Int(multiplier))
+        return (UInt(newAmount), Int(-multiplier))
     }
 
 }
