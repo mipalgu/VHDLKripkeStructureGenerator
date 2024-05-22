@@ -58,13 +58,21 @@ import VHDLMachines
 
 extension Clock {
 
-    var periodTime: (UInt, Int) {
+    var periodTime: (UInt, Int)? {
         let amount = 1.0 / (Double(self.frequency) * pow(10.0, Double(self.unit.exponent)))
-        let twoExponent = abs(amount.exponent)
-        let minValue = exp2(Double(twoExponent))
-        let nextBase10 = ceil(minValue / 10.0) * 10.0
-        let exponent = log10(nextBase10)
-        return (UInt(amount * pow(10.0, exponent)), Int(-exponent))
+        var newAmount = amount
+        var multiplier = 1.0
+        while amount < 1 {
+            newAmount = amount * multiplier
+            if amount > 1 {
+                break
+            }
+            guard multiplier < 18 else {
+                return nil
+            }
+            multiplier += 1
+        }
+        return (UInt(newAmount), Int(multiplier))
     }
 
 }
