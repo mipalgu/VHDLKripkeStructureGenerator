@@ -361,7 +361,8 @@ extension String {
         .joined(separator: " + ")
         let clock = representation.machine.clocks[representation.machine.drivingClock]
         let (amount, exponent) = clock.periodTime
-        let costString = "cost: ScientificQuantity(coefficient: \(amount * 5), exponent: \(exponent))"
+        let costString = "cost: Cost(time: ScientificQuantity(coefficient: \(amount * 5), " +
+            "exponent: \(exponent)), energy: ScientificQuantity(coefficient: 0, exponent: 0))"
         self = """
         extension KripkeStructure {
 
