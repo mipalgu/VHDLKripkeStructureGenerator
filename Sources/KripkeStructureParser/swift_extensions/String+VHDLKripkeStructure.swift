@@ -359,6 +359,9 @@ extension String {
             "structure.\($0.name.rawValue.lowercased())Ringlets"
         }
         .joined(separator: " + ")
+        let clock = representation.machine.clocks[representation.machine.drivingClock]
+        let (amount, exponent) = clock.periodTime
+        let costString = "cost: ScientificQuantity(coefficient: \(amount * 5), exponent: \(exponent))"
         self = """
         extension KripkeStructure {
 
@@ -409,9 +412,9 @@ extension String {
                         let writeNode = $1
                         let edge: [Edge]
                         if let currentReadEdges = edges[readNode] {
-                            edge = currentReadEdges + [Edge(target: writeNode, time: 0, energy: 0)]
+                            edge = currentReadEdges + [Edge(target: writeNode, \(costString))]
                         } else {
-                            edge = [Edge(target: writeNode, time: 0, energy: 0)]
+                            edge = [Edge(target: writeNode, \(costString))]
                         }
                         edges[readNode] = edge
                         guard !nodes.contains(writeNode) else {
@@ -469,7 +472,7 @@ extension String {
                         }
                         pendingRinglets += unseenRinglets
                         let newEdges = nextNodes.map {
-                            Edge(target: $0, time: 0, energy: 0)
+                            Edge(target: $0, \(costString))
                         }
                         if let currentEdges = edges[writeNode] {
                             edges[writeNode] = currentEdges + newEdges
