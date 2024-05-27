@@ -355,6 +355,14 @@ extension String {
             "$0 != .\($0.rawValue), $0 != VariableName(rawValue: \"\(representation.entity.name)_\($0.rawValue)\")!"
         }
         .joined(separator: ", ")
+        let externalPropertiesGuard = """
+        ringlet.read.properties.allSatisfy {
+            guard \(externalProperties) else {
+                return true
+            }
+            return defaultProperties[$0] == $1
+        }
+        """
         let stateRinglets = representation.machine.states.map {
             "structure.\($0.name.rawValue.lowercased())Ringlets"
         }
@@ -369,13 +377,8 @@ extension String {
             public convenience init(structure: \(representation.entity.name.rawValue)KripkeStructure) {
                 let defaultProperties = [VariableName: SignalLiteral].defaultProperties
                 let initialRinglets = structure.\(initialState.name.rawValue.lowercased())Ringlets.filter { ringlet in
-                    ringlet.read.currentState == .\(initialState.name.rawValue) && ringlet.read.executeOnEntry &&
-                        ringlet.read.properties.allSatisfy {
-                            guard \(externalProperties) else {
-                                return true
-                            }
-                            return defaultProperties[$0] == $1
-                        }
+                    ringlet.read.currentState == .\(initialState.name.rawValue) && ringlet.read.executeOnEntry
+        \(initialExternals.isEmpty ? "" : "&& \(externalPropertiesGuard.indent(amount: 4))")
                 }
                 let initialNodes: Set<Node> = Set(initialRinglets.map {
                     Node(
