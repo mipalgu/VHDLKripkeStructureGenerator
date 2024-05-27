@@ -74,7 +74,11 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
     ) -> [VHDLFile] where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
-            fatalError("The states require more than one memory address.")
+            let stateAddresses = machine.states.map {
+                "\($0.name.rawValue): \($0.encodedNumberOfAddresses(in: representation))"
+            }
+            .joined(separator: ", ")
+            fatalError("The states require more than one memory address.\n\(stateAddresses)")
         }
         guard
             let verifiedMachine = VHDLFile(verifiable: representation),
@@ -118,7 +122,11 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
 
     public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         guard representation.machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
-            fatalError("The states require more than one memory address.")
+            let stateAddresses = representation.machine.states.map {
+                "\($0.name.rawValue): \($0.encodedNumberOfAddresses(in: representation))"
+            }
+            .joined(separator: ", ")
+            fatalError("The states require more than one memory address.\n\(stateAddresses)")
         }
         let generator = PackageGenerator()
         return generator.swiftPackage(representation: representation)
