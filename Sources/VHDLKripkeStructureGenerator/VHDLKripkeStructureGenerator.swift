@@ -73,6 +73,9 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         representation: T, baudRate: UInt
     ) -> [VHDLFile] where T: MachineVHDLRepresentable {
         let machine = representation.machine
+        guard machine.states.allSatisfy({ $0.numberOfMemoryAddresses(for: $0, in: representation) == 1 }) else {
+            fatalError("The states require more than one memory address.")
+        }
         guard
             let verifiedMachine = VHDLFile(verifiable: representation),
             let runner = VHDLFile(runnerFor: representation),
@@ -114,6 +117,9 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
     }
 
     public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
+        guard representation.machine.states.allSatisfy({ $0.numberOfMemoryAddresses(for: $0, in: representation) == 1 }) else {
+            fatalError("The states require more than one memory address.")
+        }
         let generator = PackageGenerator()
         return generator.swiftPackage(representation: representation)
     }
