@@ -476,7 +476,7 @@ extension String {
                         }
                         pendingRinglets += unseenRinglets
                         let newEdges = nextNodes.map {
-                            Edge(target: $0, \(costString))
+                            Edge(target: $0, cost: .zero)
                         }
                         if let currentEdges = edges[writeNode] {
                             edges[writeNode] = currentEdges + newEdges
