@@ -416,7 +416,7 @@ extension String {
                         let writeNode = $1
                         let edge: [Edge]
                         if let currentReadEdges = edges[readNode] {
-                            edge = currentReadEdges + [Edge(target: writeNode, \(costString))]
+                            edge = Array(Set(currentReadEdges).union(Set([Edge(target: writeNode, \(costString))])))
                         } else {
                             edge = [Edge(target: writeNode, \(costString))]
                         }
@@ -479,7 +479,7 @@ extension String {
                             Edge(target: $0, cost: .zero)
                         }
                         if let currentEdges = edges[writeNode] {
-                            edges[writeNode] = currentEdges + newEdges
+                            edges[writeNode] = Array(Set(currentEdges).union(Set(newEdges)))
                         } else {
                             edges[writeNode] = newEdges
                         }
