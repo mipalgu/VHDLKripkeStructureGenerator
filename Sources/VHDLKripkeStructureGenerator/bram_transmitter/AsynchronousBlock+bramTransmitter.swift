@@ -59,7 +59,7 @@ import VHDLParsing
 extension AsynchronousBlock {
 
     init<T>(bramTransmitterFor representation: T) where T: MachineVHDLRepresentable {
-        let interface = Entity(bramInterfaceFor: representation)
+        let interface = Entity(bramInterfaceWrapperFor: representation)
         let mappings = interface.port.signals.map {
             VariableMap(
                 lhs: .variable(reference: .variable(name: $0.name)),

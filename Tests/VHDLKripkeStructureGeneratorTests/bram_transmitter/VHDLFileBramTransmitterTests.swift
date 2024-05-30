@@ -99,7 +99,7 @@ final class VHDLFileBramTransmitterTests: XCTestCase {
             signal currentByte: integer range -1 to 3 := 3;
             type BRAMTransmitter_CurrentState_t is (Initial, WaitForFinish, StartReadAddress, ReadAddress, WaitForButton, WaitForFree, WaitForBusy, FinishedTransmission);
             signal currentState: BRAMTransmitter_CurrentState_t := Initial;
-            component PingMachineBRAMInterface is
+            component BRAMInterface is
                 port(
                     clk: in std_logic;
                     address: in std_logic_vector(31 downto 0);
@@ -128,7 +128,7 @@ final class VHDLFileBramTransmitterTests: XCTestCase {
         begin
             address <= std_logic_vector(currentAddress);
             finishedGeneration <= finished;
-            bram_inst: component PingMachineBRAMInterface port map (
+            bram_inst: component BRAMInterface port map (
                 clk => clk,
                 address => address,
                 read => read,

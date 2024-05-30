@@ -59,7 +59,7 @@ import VHDLParsing
 extension ArchitectureHead {
 
     init<T>(bramTransmitterFor representation: T) where T: MachineVHDLRepresentable {
-        let bramInterface = Entity(bramInterfaceFor: representation)
+        let bramInterface = Entity(bramInterfaceWrapperFor: representation)
         self.init(statements: [
             .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .address))),
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .read))),
