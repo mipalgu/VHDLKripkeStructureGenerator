@@ -1,27 +1,25 @@
-name: API Stability CI
+name: Linux CI
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [development, main]
+  pull_request:
+    branches: [development, main]
 
 jobs:
   build_linux:
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04, ubuntu-20.04, macos-latest]
+        os: [ubuntu-latest, ubuntu-22.04, ubuntu-20.04]
         swift: ["5.9", "5.8", "5.7"]
-    name: Check Swift ${{ matrix.swift }} API Stability on ${{ matrix.os }}
+        build_mode: ["debug", "release"]
+    name: Swift ${{ matrix.swift }} ${{ matrix.build_mode }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     steps:
-      - if: ${{ runner.os == 'Linux' }}
-        uses: slashmo/install-swift@v0.4.0
+      - uses: slashmo/install-swift@v0.4.0
         with:
           version: ${{ matrix.swift }}
-
-      - if: ${{ runner.os == 'macOS' }}
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest
 
       - name: Setup SSH Key
         run: | 
@@ -34,13 +32,13 @@ jobs:
           ssh-add ~/.ssh/id_ed25519
 
       - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
+        uses: actions/checkout@v2
       
       #- name: Reconfigure Private Repo URLs
       #  run: sed -i 's/git@github.com:/https:\/\/${{ secrets.ACCESS_TOKEN }}@github.com\//g' Package.swift
 
-      - name: Check API Stability 
-        run: swift package diagnose-api-breaking-changes `git tag | sort --version-sort | tail -n1`
+      - name: build
+        run: swift build -c ${{ matrix.build_mode }}
+
+      - name: Test
+        run: swift test -c ${{ matrix.build_mode }}

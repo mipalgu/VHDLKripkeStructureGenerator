@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: swift-actions/setup-swift@v1
+      - uses: slashmo/install-swift@v0.4.0
         with:
-            swift-version: "5.7"
+          version: "5.9"
 
       - name: Setup SSH Key
         run: | 
@@ -30,7 +30,7 @@ jobs:
       - name: Generate Documentation
         uses: mipalgu/swiftpm-generate-documentation@main
         with:
-            swift-version: "5.7"
+            swift-version: "5.9"
 
       - name: Pages Deployment
         uses: peaceiris/actions-gh-pages@v3

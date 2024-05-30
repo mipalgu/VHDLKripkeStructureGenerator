@@ -4,9 +4,9 @@ on:
   pull_request:
     branches:
       - main
-      - develop
+      - development
   push:
-    branches: [develop, main]
+    branches: [development, main]
 
 jobs:
 
@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: swift-actions/setup-swift@v1
+      - uses: slashmo/install-swift@v0.4.0
         with:
-            swift-version: "5.7"
+          version: "5.9"
 
       - name: Setup SSH Key
         run: | 
