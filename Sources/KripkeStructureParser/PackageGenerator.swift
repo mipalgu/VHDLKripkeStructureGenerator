@@ -155,6 +155,7 @@ public struct PackageGenerator {
         let parserTargetFolder = FileWrapper(directoryWithFileWrappers: [
             "Parser.swift": FileWrapper(regularFileWithContents: parserData)
         ])
+        parserTargetFolder.preferredFilename = "Parser"
         let sourcesFolder = FileWrapper(
             directoryWithFileWrappers: [
                 "C\(name)": cTargetFolder, "\(name)": swiftTargetFolder, "Parser": parserTargetFolder
