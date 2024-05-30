@@ -1,4 +1,4 @@
-// String+parser.swift
+// ArchitectureHead+bramInterfaceWrapper.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,37 +54,13 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
 import VHDLMachines
+import VHDLParsing
 
-extension String {
+extension ArchitectureHead {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
-
-        @main
-        struct Parser: ParsableCommand {
-
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
-
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
-
-        }
-        """
+    init<T>(bramInterfaceWrapperFor representation: T) where T: MachineVHDLRepresentable {
+        let component = ComponentDefinition(entity: Entity(bramInterfaceFor: representation))
+        self.init(statements: [.definition(value: .component(value: component))])
     }
 
 }

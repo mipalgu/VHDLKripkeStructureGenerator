@@ -114,7 +114,8 @@ public struct PackageGenerator {
             let swiftExtensionsData = String.swiftExtensions.data(using: .utf8),
             let kripkeParserData = String(kripkeParserFor: representation).data(using: .utf8),
             let kripkeStructureData = String(kripkeStructureFor: representation).data(using: .utf8),
-            let parserData = String(parserFor: representation).data(using: .utf8)
+            let parserData = String(parserFor: representation).data(using: .utf8),
+            let vhdlKripkeStructureData = String(vhdlKripkeStructureFor: representation).data(using: .utf8)
         else {
             return nil
         }
@@ -142,6 +143,10 @@ public struct PackageGenerator {
                     (
                         "\(name)KripkeStructure.swift",
                         FileWrapper(regularFileWithContents: kripkeStructureData)
+                    ),
+                    (
+                        "KripkeStructure+init.swift",
+                        FileWrapper(regularFileWithContents: vhdlKripkeStructureData)
                     )
                 ] + stateFiles
             )
@@ -185,7 +190,8 @@ extension String {
             ],
             dependencies: [
                 .package(url: "https://github.com/mipalgu/VHDLParsing.git", from: "2.4.0"),
-                .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0")
+                .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
+                .package(url: "https://github.com/cpslabgu/VHDLKripkeStructures.git", from: "1.2.0")
             ],
             targets: [
                 .target(
@@ -194,11 +200,16 @@ extension String {
                 ),
                 .target(
                     name: "\(name)",
-                    dependencies: ["C\(name)", "VHDLParsing"]
+                    dependencies: [
+                        .target(name: "C\(name)"),
+                        .product(name: "VHDLParsing", package: "VHDLParsing"),
+                        .product(name: "VHDLKripkeStructures", package: "VHDLKripkeStructures")
+                    ]
                 ),
                 .executableTarget(name: "Parser", dependencies: [
                     .target(name: "\(name)"),
-                    .product(name: "ArgumentParser", package: "swift-argument-parser")
+                    .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                    .product(name: "VHDLKripkeStructures", package: "VHDLKripkeStructures")
                 ])
             ]
         )

@@ -83,6 +83,14 @@ final class StringTests: XCTestCase {
 
             public var executeOnEntry: Bool
 
+            var properties: [VariableName: SignalLiteral] {
+                [
+                    .PingMachine_pong: .logic(value: pong),
+                    .pong: .logic(value: pong),
+                    .PingMachine_ping: .logic(value: PingMachine_ping)
+                ]
+            }
+
             public init(PingMachine_ping: LogicLiteral, pong: LogicLiteral, executeOnEntry: Bool) {
                 self.PingMachine_ping = PingMachine_ping
                 self.pong = pong
@@ -130,6 +138,13 @@ final class StringTests: XCTestCase {
             public var nextState: LogicVector
 
             public var executeOnEntry: Bool
+
+            var properties: [VariableName: SignalLiteral] {
+                [
+                    .PingMachine_ping: .logic(value: ping),
+                    .ping: .logic(value: ping)
+                ]
+            }
 
             public init(ping: LogicLiteral, nextState: LogicVector, executeOnEntry: Bool) {
                 self.ping = ping

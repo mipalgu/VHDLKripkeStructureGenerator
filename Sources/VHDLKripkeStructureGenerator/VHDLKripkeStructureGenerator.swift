@@ -66,7 +66,20 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
     public init() {}
 
     public func generate<T>(representation: T) -> [VHDLFile] where T: MachineVHDLRepresentable {
+        self.generate(representation: representation, baudRate: 9600)
+    }
+
+    public func generate<T>(
+        representation: T, baudRate: UInt
+    ) -> [VHDLFile] where T: MachineVHDLRepresentable {
         let machine = representation.machine
+        guard machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
+            let stateAddresses = machine.states.map {
+                "\($0.name.rawValue): \($0.encodedNumberOfAddresses(in: representation))"
+            }
+            .joined(separator: ", ")
+            fatalError("The states require more than one memory address.\n\(stateAddresses)")
+        }
         guard
             let verifiedMachine = VHDLFile(verifiable: representation),
             let runner = VHDLFile(runnerFor: representation),
@@ -97,11 +110,25 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         guard stateFiles.count == states.count else {
             return []
         }
-        return [verifiedMachine, runner, ringletRunner, types, generator, bramInterface] +
-            stateFiles.flatMap { $0 }
+        let baudGenerator = VHDLFile(
+            baudGeneratorWithClk: machine.clocks[machine.drivingClock], baudRate: baudRate
+        )
+        let bramTransmitter = VHDLFile(bramTransmitterFor: representation)
+        let bramInterfaceWrapper = VHDLFile(bramInterfaceWrapperFor: representation)
+        return [
+            verifiedMachine, runner, ringletRunner, types, generator, bramInterface, .uartTransmitter,
+            baudGenerator, bramTransmitter, bramInterfaceWrapper
+        ] + stateFiles.flatMap { $0 }
     }
 
     public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
+        guard representation.machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
+            let stateAddresses = representation.machine.states.map {
+                "\($0.name.rawValue): \($0.encodedNumberOfAddresses(in: representation))"
+            }
+            .joined(separator: ", ")
+            fatalError("The states require more than one memory address.\n\(stateAddresses)")
+        }
         let generator = PackageGenerator()
         return generator.swiftPackage(representation: representation)
     }

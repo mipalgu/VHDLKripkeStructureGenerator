@@ -1,4 +1,4 @@
-// String+parser.swift
+// VariableParserSmallTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,38 +53,42 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+@testable import KripkeStructureParser
+import TestUtils
 import VHDLMachines
+import VHDLParsing
+import XCTest
 
-extension String {
+/// Test class for ``VariableParser`` small init.
+final class VariableParserSmallTests: XCTestCase {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
+    // swiftlint:disable force_unwrapping
 
-        @main
-        struct Parser: ParsableCommand {
+    /// A representation of the `PingMachine`.
+    let representation = MachineRepresentation(machine: .pingMachine, name: .pingMachine)!
 
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
+    // swiftlint:enable force_unwrapping
 
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
+    /// The parser under test.
+    lazy var parser = VariableParser(smallState: .waitForPong, in: representation)
 
-        }
+    /// Setup the parser before every test.
+    override func setUp() {
+        parser = VariableParser(smallState: .waitForPong, in: representation)
+    }
+
+    /// Test the definitions are correct.
+    func testDefinitions() {
+        let result = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
+        let expected = """
+        bool PingMachine_WaitForPong_READ_executeOnEntry(uint32_t data);
+        uint8_t PingMachine_WaitForPong_READ_PingMachine_ping(uint32_t data);
+        uint8_t PingMachine_WaitForPong_READ_pong(uint32_t data);
+        bool PingMachine_WaitForPong_WRITE_executeOnEntry(uint32_t data);
+        uint32_t PingMachine_WaitForPong_WRITE_nextState(uint32_t data);
+        uint8_t PingMachine_WaitForPong_WRITE_ping(uint32_t data);
         """
+        XCTAssertEqual(result, expected)
     }
 
 }

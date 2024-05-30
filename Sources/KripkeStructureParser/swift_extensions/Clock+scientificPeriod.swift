@@ -1,4 +1,4 @@
-// String+parser.swift
+// Clock+scientificPeriod.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,38 +53,45 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Foundation
 import VHDLMachines
 
-extension String {
+extension Clock {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
-
-        @main
-        struct Parser: ParsableCommand {
-
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
-
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
+    var periodTime: (UInt, Int)? {
+        let amount = 1.0 / (Double(self.frequency) * pow(10.0, Double(self.unit.exponent)))
+        var newAmount = amount
+        var multiplier = 0.0
+        while newAmount.rounded(.down) != newAmount {
+            newAmount = amount * pow(10.0, multiplier)
+            if newAmount.rounded(.down) == newAmount {
+                break
             }
-
+            guard multiplier <= 18.0 else {
+                return nil
+            }
+            multiplier += 1
         }
-        """
+        return (UInt(newAmount), Int(-multiplier))
+    }
+
+}
+
+extension Clock.FrequencyUnit {
+
+    var exponent: Int {
+        switch self {
+        case .Hz:
+            return 0
+        case .kHz:
+            return 3
+        case .MHz:
+            return 6
+        case .GHz:
+            return 9
+        case .THz:
+            return 12
+        }
     }
 
 }

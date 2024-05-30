@@ -1,4 +1,4 @@
-// String+parser.swift
+// VHDLFileBRAMInterfaceWrapperTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,38 +53,72 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import TestUtils
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
+import VHDLParsing
+import XCTest
 
-extension String {
+/// Test class for `VHDLFile` BRAMInterface wrapper.
+final class VHDLFileBRAMInterfaceWrapperTests: XCTestCase {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
+    // swiftlint:disable force_unwrapping
 
-        @main
-        struct Parser: ParsableCommand {
+    /// The representation to test.
+    let representation = MachineRepresentation(machine: .pingMachine, name: .pingMachine)!
 
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
+    // swiftlint:enable force_unwrapping
 
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
+    /// The wrapper to test.
+    lazy var wrapper = VHDLFile(bramInterfaceWrapperFor: representation)
 
-        }
+    /// Initialise the test data before every test.
+    override func setUp() {
+        wrapper = VHDLFile(bramInterfaceWrapperFor: representation)
+    }
+
+    /// Test that the raw value is correct.
+    func testRawValue() {
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+
+        entity BRAMInterface is
+            port(
+                clk: in std_logic;
+                address: in std_logic_vector(31 downto 0);
+                read: in std_logic;
+                ready: in std_logic;
+                data: out std_logic_vector(31 downto 0);
+                finished: out std_logic
+            );
+        end BRAMInterface;
+
+        architecture Behavioral of BRAMInterface is
+            component PingMachineBRAMInterface is
+                port(
+                    clk: in std_logic;
+                    address: in std_logic_vector(31 downto 0);
+                    read: in std_logic;
+                    ready: in std_logic;
+                    data: out std_logic_vector(31 downto 0);
+                    finished: out std_logic
+                );
+            end component;
+        begin
+            PingMachineBRAMInterface_inst: component PingMachineBRAMInterface port map (
+                clk => clk,
+                address => address,
+                read => read,
+                ready => ready,
+                data => data,
+                finished => finished
+            );
+        end Behavioral;
+
         """
+        XCTAssertEqual(wrapper.rawValue, expected)
     }
 
 }

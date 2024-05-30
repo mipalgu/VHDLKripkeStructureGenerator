@@ -22,7 +22,7 @@ let package = Package(
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
         .package(url: "https://github.com/mipalgu/VHDLMachines.git", from: "4.0.0"),
-        .package(url: "https://github.com/mipalgu/VHDLParsing.git", from: "2.4.0"),
+        .package(url: "https://github.com/mipalgu/VHDLParsing.git", from: "2.5.0"),
         .package(url: "https://github.com/CPSLabGU/SwiftUtils.git", from: "0.1.0")
     ],
     targets: [

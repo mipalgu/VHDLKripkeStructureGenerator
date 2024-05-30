@@ -1,8 +1,8 @@
-// String+parser.swift
+// VariableParser.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2024 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,39 +52,31 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
+// 
 
+import Foundation
+import Utilities
 import VHDLMachines
+import VHDLParsing
 
-extension String {
+struct VariableParser {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
+    let definitions: [NodeVariable: String]
 
-        @main
-        struct Parser: ParsableCommand {
+    let functions: [NodeVariable: String]
 
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
-
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
-
+    init<T>(state: State, in representation: T) where T: MachineVHDLRepresentable {
+        let numberOfAddresses = state.encodedNumberOfAddresses(in: representation)
+        guard numberOfAddresses > 1 else {
+            self.init(smallState: state, in: representation)
+            return
         }
-        """
+        self.init(largeState: state, in: representation)
+    }
+
+    init(definitions: [NodeVariable: String], functions: [NodeVariable: String]) {
+        self.definitions = definitions
+        self.functions = functions
     }
 
 }

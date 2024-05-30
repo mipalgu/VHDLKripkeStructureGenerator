@@ -1,4 +1,4 @@
-// String+parser.swift
+// VectorIndex+accrossBoundary.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,37 +54,80 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
 import VHDLMachines
+import VHDLParsing
 
-extension String {
+extension VectorIndex {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
-
-        @main
-        struct Parser: ParsableCommand {
-
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
-
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
-
+    var asRange: [Int] {
+        switch self {
+        case .index(let index):
+            return [index.integer]
+        case .others:
+            fatalError("Does not support others!")
+        case .range(let size):
+            return Array(size.min.integer...size.max.integer)
         }
-        """
+    }
+
+    var count: Int {
+        self.asRange.count
+    }
+
+    var max: Expression {
+        switch self {
+        case .index(let index):
+            return index
+        case .others:
+            fatalError("Does not support others!")
+        case .range(let size):
+            return size.max
+        }
+    }
+
+    var min: Expression {
+        switch self {
+        case .index(let index):
+            return index
+        case .others:
+            fatalError("Does not support others!")
+        case .range(let size):
+            return size.min
+        }
+    }
+
+    func isAccrossBoundary<T>(state: State, in representation: T) -> Bool where T: MachineVHDLRepresentable {
+        switch self {
+        case .index:
+            return false
+        case .others:
+            fatalError("Does not support others!")
+        case .range(let size):
+            let dataBits = representation.numberOfDataBitsPerAddress
+            return size.min.integer / dataBits != size.max.integer / dataBits
+        }
+    }
+
+    func mutateIndexes(_ f: @escaping (Int) -> Int) -> VectorIndex {
+        switch self {
+        case .index(let index):
+            return .index(value: .literal(value: .integer(value: f(index.integer))))
+        case .others:
+            fatalError("Does not support others!")
+        case .range(let size):
+            return .range(value: VectorSize.to(
+                lower: .literal(value: .integer(value: f(size.min.integer))),
+                upper: .literal(value: .integer(value: f(size.max.integer)))
+            ))
+        }
+    }
+
+}
+
+extension MachineVHDLRepresentable {
+
+    var numberOfDataBitsPerAddress: Int {
+        // swiftlint:disable:next force_unwrapping
+        32 - self.numberOfStateBits! - 1
     }
 
 }

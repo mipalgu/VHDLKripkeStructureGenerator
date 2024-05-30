@@ -1,4 +1,4 @@
-// String+parser.swift
+// VariableName+bramTransmitter.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,38 +53,48 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import VHDLMachines
+import VHDLParsing
 
-extension String {
+extension VariableName {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
+    static let bramInst = VariableName(rawValue: "bram_inst")!
 
-        @main
-        struct Parser: ParsableCommand {
+    static let bramTransmitter = VariableName(rawValue: "BRAMTransmitter")!
 
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
+    static let bramTransmitterCurrentStateType = VariableName(rawValue: "BRAMTransmitter_CurrentState_t")!
 
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
+    static let baudInst = VariableName(rawValue: "baud_inst")!
 
-        }
-        """
-    }
+    static let currentAddress = VariableName(rawValue: "currentAddress")!
+
+    static let currentByte = VariableName(rawValue: "currentByte")!
+
+    static let currentData = VariableName(rawValue: "currentData")!
+
+    static let finishedGeneration = VariableName(rawValue: "finishedGeneration")!
+
+    static let finishedTransmission = VariableName(rawValue: "FinishedTransmission")!
+
+    static let finishedTx = VariableName(rawValue: "finishedTx")!
+
+    static let rdy = VariableName(rawValue: "rdy")!
+
+    static let readAddressState = VariableName(rawValue: "ReadAddress")!
+
+    static let startReadAddress = VariableName(rawValue: "StartReadAddress")!
+
+    static let startTransmission = VariableName(rawValue: "startTransmission")!
+
+    static let txBusy = VariableName(rawValue: "txBusy")!
+
+    static let txReady = VariableName(rawValue: "txReady")!
+
+    static let uartInst = VariableName(rawValue: "uart_inst")!
+
+    static let waitForBusy = VariableName(rawValue: "WaitForBusy")!
+
+    static let waitForButton = VariableName(rawValue: "WaitForButton")!
+
+    static let waitForFree = VariableName(rawValue: "WaitForFree")!
 
 }

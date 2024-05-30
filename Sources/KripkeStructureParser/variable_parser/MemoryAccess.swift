@@ -1,4 +1,4 @@
-// String+parser.swift
+// MemoryAccess.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,37 +54,28 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
 import VHDLMachines
+import VHDLParsing
 
-extension String {
+struct MemoryAccess {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
+    let address: Int
 
-        @main
-        struct Parser: ParsableCommand {
+    let indexes: [Int]
 
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
-
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
-
+    static func getAccess<T>(
+        indexes: VectorIndex, in representation: T
+    ) -> [MemoryAccess] where T: MachineVHDLRepresentable {
+        let dataBits = representation.numberOfDataBitsPerAddress
+        let lowerMemoryIndex = Int((Double(indexes.min.integer) / Double(dataBits)))
+        let upperMemoryIndex = Int((Double(indexes.max.integer) / Double(dataBits)))
+        let memoryIndexes = lowerMemoryIndex...upperMemoryIndex
+        var validIndexes: [(Int, [Int])] = []
+        let indexArray = indexes.asRange
+        memoryIndexes.forEach { address in
+            let indexes = indexArray.filter { $0 / dataBits == address }
+            validIndexes.append((address, indexes.map { $0 - address * dataBits }))
         }
-        """
+        return validIndexes.map { MemoryAccess(address: $0, indexes: $1) }
     }
 
 }

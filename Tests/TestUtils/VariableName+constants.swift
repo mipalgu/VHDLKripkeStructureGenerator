@@ -63,7 +63,15 @@ public extension VariableName {
 
     static let clk = VariableName(rawValue: "clk")!
 
+    static let calculateIsEven = VariableName(rawValue: "CalculateIsEven")!
+
+    static let count = VariableName(rawValue: "count")!
+
     static let ieee = VariableName(rawValue: "IEEE")!
+
+    static let isEven = VariableName(rawValue: "isEven")!
+
+    static let isEvenMachine = VariableName(rawValue: "IsEvenMachine")!
 
     static let initial = VariableName(rawValue: "Initial")!
 

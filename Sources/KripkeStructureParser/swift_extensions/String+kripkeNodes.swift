@@ -79,6 +79,7 @@ extension String {
         let encodedAssignments = readSnapshot.encodedAssignments.joined(separator: ",\n")
         let parameters = readSnapshot.literalAssignments.joined(separator: ",\n")
         let machineName = representation.entity.name.rawValue
+        let properties = String(readPropertiesFor: representation, state: state)
         self = """
         import C\(machineName)
         import VHDLParsing
@@ -86,6 +87,8 @@ extension String {
         public struct \(name): Equatable, Hashable, Codable, Sendable {
 
         \(definitions)
+
+        \(properties.indent(amount: 1))
 
             public init(\(initParameters)) {
         \(initAssignments.indent(amount: 2))
@@ -123,7 +126,10 @@ extension String {
         let initParameters = writeSnapshot.initParameters.joined(separator: ", ")
         let initAssignments = writeSnapshot.initAssignments.joined(separator: "\n")
         let encodedPreamble = writeSnapshot.valueAssignment(
-            state: state, representation: representation, type: .write
+            state: state,
+            representation: representation,
+            type: .write,
+            count: Record(readSnapshotFor: state, in: representation).bits
         )
         .joined(separator: "\n")
         let encodedAssignments = writeSnapshot.types.map {
@@ -137,6 +143,7 @@ extension String {
         }
         let machineName = representation.entity.name.rawValue
         let parameters = writeSnapshot.literalAssignments.joined(separator: ",\n")
+        let properties = String(writePropertiesFor: representation, state: state)
         self = """
         import C\(machineName)
         import VHDLParsing
@@ -144,6 +151,8 @@ extension String {
         public struct \(name): Equatable, Hashable, Codable, Sendable {
 
         \(definitions)
+
+        \(properties.indent(amount: 1))
 
             public init(\(initParameters)) {
         \(initAssignments.indent(amount: 2))
@@ -219,6 +228,109 @@ extension String {
     }
 
     // swiftlint:enable line_length
+
+    init<T>(readPropertiesFor representation: T, state: State) where T: MachineVHDLRepresentable {
+        let name = representation.entity.name
+        let machine = representation.machine
+        let readExternalVariables = machine.externalSignals.filter {
+            state.externalVariables.contains($0.name) && $0.mode != .output
+        }
+        let readAssignments = readExternalVariables.flatMap {
+            let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
+            return [
+                ".\(snapshotName): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))",
+                ".\($0.name.rawValue): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))"
+            ]
+        }
+        let writeExternals = machine.externalSignals.filter {
+            $0.mode == .output || (
+                !state.externalVariables.contains($0.name) && $0.mode != .output && $0.mode != .input
+            )
+        }
+        let writeAssignments = writeExternals.map {
+            let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
+            return ".\(snapshotName): \(String(literalType: $0.type.signalType, value: snapshotName))"
+        }
+        let machineAssignments = machine.machineSignals.map {
+            let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
+            return ".\(snapshotName): \(String(literalType: $0.type.signalType, value: snapshotName))"
+        }
+        let stateAssignments = state.signals.map {
+            let snapshotName = "\(name.rawValue)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
+            return ".\(snapshotName): \(String(literalType: $0.type.signalType, value: snapshotName))"
+        }
+        let assignments = readAssignments + writeAssignments + machineAssignments + stateAssignments
+        guard !assignments.isEmpty else {
+            self = "var properties: [VariableName: SignalLiteral] { [:] }"
+            return
+        }
+        self = """
+        var properties: [VariableName: SignalLiteral] {
+            [
+        \(assignments.joined(separator: ",\n").indent(amount: 2))
+            ]
+        }
+        """
+    }
+
+    init<T>(writePropertiesFor representation: T, state: State) where T: MachineVHDLRepresentable {
+        let name = representation.entity.name
+        let machine = representation.machine
+        let writeExternals = machine.externalSignals.filter {
+            state.externalVariables.contains($0.name) && $0.mode != .input
+        }
+        let writeAssignments = writeExternals.flatMap {
+            let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
+            return [
+                ".\(snapshotName): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))",
+                ".\($0.name.rawValue): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))"
+            ]
+        }
+        let machineAssignments = machine.machineSignals.map {
+            let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
+            return ".\(snapshotName): \(String(literalType: $0.type.signalType, value: snapshotName))"
+        }
+        let stateAssignments = state.signals.map {
+            let snapshotName = "\(name.rawValue)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
+            return ".\(snapshotName): \(String(literalType: $0.type.signalType, value: snapshotName))"
+        }
+        let assignments = writeAssignments + machineAssignments + stateAssignments
+        guard !assignments.isEmpty else {
+            self = "var properties: [VariableName: SignalLiteral] { [:] }"
+            return
+        }
+        self = """
+        var properties: [VariableName: SignalLiteral] {
+            [
+        \(assignments.joined(separator: ",\n").indent(amount: 2))
+            ]
+        }
+        """
+    }
+
+    init(literalType: SignalType, value: String) {
+        switch literalType {
+        case .bit:
+            self = ".bit(value: \(value))"
+        case .boolean:
+            self = ".boolean(value: \(value))"
+        case .integer, .natural, .positive:
+            self = ".integer(value: \(value))"
+        case .stdLogic, .stdULogic:
+            self = ".logic(value: \(value))"
+        case .real:
+            self = ".decimal(value: \(value))"
+        case .ranged(let type):
+            switch type {
+            case .bitVector, .signed, .unsigned:
+                self = ".vector(value: .bits(value: \(value)))"
+            case .integer:
+                self = ".integer(value: \(value))"
+            case .stdLogicVector, .stdULogicVector:
+                self = ".vector(value: .logics(value: \(value)))"
+            }
+        }
+    }
 
 }
 
@@ -303,16 +415,40 @@ extension Record {
     ///   - type: The type of the kripke node to create.
     /// - Returns: The code that creates the values of each record type.
     func valueAssignment<T>(
-        state: State, representation: T, type: NodeType
+        state: State, representation: T, type: NodeType, count: Int = 0
     ) -> [String] where T: MachineVHDLRepresentable {
-        self.types.map {
-            let functionName = String(
-                stateVariableAccessNameFor: state,
-                in: representation,
-                variable: NodeVariable(data: $0, type: type)
-            )
-            return "let \($0.name.rawValue)Value = \(functionName)(value)"
+        guard state.numberOfAddressesForRinglet(in: representation) > 1 else {
+            return self.types.map {
+                let functionName = String(
+                    stateVariableAccessNameFor: state,
+                    in: representation,
+                    variable: NodeVariable(data: $0, type: type)
+                )
+                return "let \($0.name.rawValue)Value = \(functionName)(value)"
+            }
         }
+        return self.encodedIndexes(ignoring: [.nextState])
+            .map { IndexedType(record: $0, index: $1.mutateIndexes { $0 + count }) }
+            .map {
+                let functionName = String(
+                    stateVariableAccessNameFor: state,
+                    in: representation,
+                    variable: NodeVariable(data: $0.record, type: type)
+                )
+                let valueName = "\($0.record.name.rawValue)Value"
+                guard $0.index.isAccrossBoundary(state: state, in: representation) else {
+                    return "let \(valueName) = \(functionName)(value)"
+                }
+                let access = MemoryAccess.getAccess(indexes: $0.index, in: representation)
+                let tupleTypes = [String](repeating: "UInt32", count: access.count).joined(separator: ", ")
+                let initialValues = [String](repeating: "0", count: access.count).joined(separator: ", ")
+                return """
+                var \(valueName): (\(tupleTypes)) = (\(initialValues))
+                withUnsafeMutablePointer(to: &\(valueName)) {
+                    \(functionName)(value, $0)
+                }
+                """
+            }
     }
 
 }

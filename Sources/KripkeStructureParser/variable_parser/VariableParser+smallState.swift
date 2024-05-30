@@ -1,8 +1,8 @@
-// VariableParser.swift
+// VariableParser+smallState.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,20 +52,14 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-import Foundation
 import Utilities
 import VHDLMachines
 import VHDLParsing
 
-struct VariableParser {
+extension VariableParser {
 
-    let definitions: [NodeVariable: String]
-
-    let functions: [NodeVariable: String]
-
-    init<T>(state: State, in representation: T) where T: MachineVHDLRepresentable {
+    init<T>(smallState state: State, in representation: T) where T: MachineVHDLRepresentable {
         let read = Record(readSnapshotFor: state, in: representation)
         let readIndexes = read.encodedIndexes
         let numberOfBits = read.encodedBits
@@ -101,11 +95,6 @@ struct VariableParser {
             definitions: Dictionary(uniqueKeysWithValues: definitions),
             functions: Dictionary(uniqueKeysWithValues: functions)
         )
-    }
-
-    init(definitions: [NodeVariable: String], functions: [NodeVariable: String]) {
-        self.definitions = definitions
-        self.functions = functions
     }
 
 }
@@ -252,9 +241,8 @@ extension String {
     ) where T: MachineVHDLRepresentable {
         let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
         guard numberOfAddresses == 1 else {
-            fatalError("Not supported!")
-            // self = "uint32_t *data"
-            // return
+            self = "uint32_t data[\(numberOfAddresses)]"
+            return
         }
         self = "uint32_t data"
     }
@@ -272,9 +260,10 @@ extension String {
 extension State {
 
     func numberOfAddressesForRinglet<T>(in representation: T) -> Int where T: MachineVHDLRepresentable {
-        let size = self.encodedSize(in: representation)
-        let dataSize = 32 - representation.numberOfStateBits! - 1
-        return Int(ceil(Double(size) / Double(dataSize)))
+        // let size = self.encodedSize(in: representation)
+        // let dataSize = 32 - representation.numberOfStateBits! - 1
+        // return Int(ceil(Double(size) / Double(dataSize)))
+        self.encodedNumberOfAddresses(in: representation)
     }
 
 }

@@ -1,4 +1,4 @@
-// String+parser.swift
+// VHDLFileBaudGeneratorTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,38 +53,49 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+@testable import VHDLKripkeStructureGenerator
 import VHDLMachines
+import VHDLParsing
+import XCTest
 
-extension String {
+/// Test class for `VHDLFile` extensions for baud generator.
+final class VHDLFileBaudGeneratorTests: XCTestCase {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
+    /// Test VHDL code is correct.
+    func testRawValue() {
+        let clock = Clock(name: .clk, frequency: 5, unit: .MHz)
+        let result = VHDLFile(baudGeneratorWithClk: clock, baudRate: 9600)
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
 
-        @main
-        struct Parser: ParsableCommand {
+        entity BaudGenerator is
+            port(
+                clk: in std_logic;
+                pulse: out std_logic
+            );
+        end BaudGenerator;
 
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
+        architecture Behavioral of BaudGenerator is
+            signal periodCounter: integer range 0 to 260 := 0;
+            signal baudPulse: std_logic := '0';
+        begin
+            pulse <= baudPulse;
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    if (periodCounter = 260) then
+                        baudPulse <= not baudPulse;
+                        periodCounter <= 1;
+                    else
+                        periodCounter <= periodCounter + 1;
+                    end if;
+                end if;
+            end process;
+        end Behavioral;
 
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
-
-        }
         """
+        XCTAssertEqual(result.rawValue, expected)
     }
 
 }

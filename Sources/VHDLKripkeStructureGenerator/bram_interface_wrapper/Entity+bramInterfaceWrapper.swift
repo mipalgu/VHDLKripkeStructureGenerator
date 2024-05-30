@@ -1,4 +1,4 @@
-// String+parser.swift
+// Entity+bramInterfaceWrapper.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,37 +54,24 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
 import VHDLMachines
+import VHDLParsing
 
-extension String {
+extension Entity {
 
-    init<T>(parserFor representation: T) where T: MachineVHDLRepresentable {
-        let name = representation.entity.name.rawValue
-        self = """
-        import ArgumentParser
-        import Foundation
-        import \(name)
-        import VHDLKripkeStructures
-
-        @main
-        struct Parser: ParsableCommand {
-
-            @Argument(help: "The path to the binary file to parse.")
-            var path: String
-
-            func run() throws {
-                let parser = \(name)KripkeParser()
-                let url = URL(fileURLWithPath: path, isDirectory: false)
-                let kripkeStructure = try parser.parse(file: url)
-                let generalStructure = KripkeStructure(structure: kripkeStructure)
-                let outputFile = URL(fileURLWithPath: "output.json", isDirectory: false)
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(generalStructure)
-                try data.write(to: outputFile)
-            }
-
-        }
-        """
+    init<T>(bramInterfaceWrapperFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let clk = machine.clocks[machine.drivingClock]
+        self.init(
+            name: .bramInterface,
+            port: PortBlock(signals: [
+                PortSignal(clock: clk),
+                PortSignal(type: .logicVector32, name: .address, mode: .input),
+                PortSignal(type: .stdLogic, name: .read, mode: .input),
+                PortSignal(type: .stdLogic, name: .ready, mode: .input),
+                PortSignal(type: .logicVector32, name: .data, mode: .output),
+                PortSignal(type: .stdLogic, name: .finished, mode: .output)
+            ])!
+        )
     }
 
 }
