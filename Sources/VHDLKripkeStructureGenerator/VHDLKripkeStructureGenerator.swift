@@ -167,10 +167,8 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             )
         )
         vhdlFolder.preferredFilename = "vhdl"
-        let packageFolder = FileWrapper(directoryWithFileWrappers: ["\(name)": package])
-        packageFolder.preferredFilename = "\(name)"
         let parent = FileWrapper(
-            directoryWithFileWrappers: ["vhdl": vhdlFolder, "\(name)": packageFolder]
+            directoryWithFileWrappers: ["vhdl": vhdlFolder, "\(name)": package]
         )
         return parent
     }
