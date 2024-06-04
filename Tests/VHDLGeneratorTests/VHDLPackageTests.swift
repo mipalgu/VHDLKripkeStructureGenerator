@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// PackageTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,32 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
-import VHDLMachines
+@testable import VHDLGenerator
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for ``Package`` extensions.
+final class VHDLPackageTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+    /// Test the `PrimitiveTypes` package is defined correctly.
+    func testPrimitiveTypesPackage() {
+        // swiftlint:disable line_length
+        let expected = """
+        package PrimitiveTypes is
+            type stdLogicTypes_t is array (0 to 8) of std_logic;
+            constant stdLogicTypes: stdLogicTypes_t := (0 => 'U', 1 => 'X', 2 => '0', 3 => '1', 4 => 'Z', 5 => 'W', 6 => 'L', 7 => 'H', 8 => '-');
+            type BitTypes_t is array (0 to 1) of bit;
+            constant bitTypes: BitTypes_t := (0 => '0', 1 => '1');
+            type BooleanTypes_t is array (0 to 1) of boolean;
+            constant booleanTypes: BooleanTypes_t := (0 => false, 1 => true);
+            function boolToStdLogic(value: boolean) return std_logic;
+            function stdLogicToBool(value: std_logic) return boolean;
+            function stdLogicEncoded(value: std_logic) return std_logic_vector(1 downto 0);
+            function stdULogicEncoded(value: std_ulogic) return std_logic_vector(1 downto 0);
+        end package PrimitiveTypes;
+        """
+        // swiftlint:enable line_length
+        // XCTAssertEqual(VHDLPackage.primitiveTypes.rawValue, expected)
     }
 
 }

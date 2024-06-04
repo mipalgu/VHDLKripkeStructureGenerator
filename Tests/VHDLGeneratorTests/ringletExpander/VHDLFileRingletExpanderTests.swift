@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VHDLFileRingletExpanderTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,76 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `VHDLFile` ringlet expander extensions.
+final class VHDLFileRingletExpanderTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use for testing.
+    var machine: Machine!
+
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Vector assignment.
+    let vector = "vector <= stdLogicEncoded(ringlet.readSnapshot.x) & " +
+        "stdLogicEncoded(ringlet.readSnapshot.M_y2) & stdLogicEncoded(ringlet.readSnapshot.M_y) & " +
+        "stdLogicEncoded(ringlet.readSnapshot.M_STATE_Initial_initialX) & " +
+        "boolToStdLogic(ringlet.readSnapshot.executeOnEntry) & stdLogicEncoded(ringlet.writeSnapshot.y2) & " +
+        "stdLogicEncoded(ringlet.writeSnapshot.M_y) & " +
+        "stdLogicEncoded(ringlet.writeSnapshot.M_STATE_Initial_initialX) & ringlet.writeSnapshot.nextState " +
+        "& boolToStdLogic(ringlet.writeSnapshot.executeOnEntry) & boolToStdLogic(ringlet.observed);"
+
+    /// The raw VHDL for the initial ringlet expander of `machine`.
+    var raw: String {
+        """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+        use work.MTypes.all;
+        use work.PrimitiveTypes.all;
+
+        entity InitialRingletExpander is
+            port(
+                ringlet: in Initial_Ringlet_t;
+                vector: out std_logic_vector(0 to 17)
+            );
+        end InitialRingletExpander;
+
+        architecture Behavioral of InitialRingletExpander is
+        \(String.tab)
+        begin
+            \(vector)
+        end Behavioral;
+
+        """
+    }
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+        machine.states[0].externalVariables = [.x, .y2]
+    }
+
+    /// Test ringlet expander is generated correctly.
+    func testRingletExpander() {
+        let result = VHDLFile(ringletExpanderFor: machine.states[0], in: representation)
+        XCTAssertEqual(result?.rawValue, raw)
     }
 
 }

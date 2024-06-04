@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// NullRepresentation.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -52,42 +52,71 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
-import VHDLGenerator
+import Foundation
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+/// A machine representation containing no code.
+public class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+    /// The implementation.
+    public let architectureBody: AsynchronousBlock
+
+    /// The architecture head.
+    public let architectureHead = ArchitectureHead(statements: [])
+
+    /// The name of the architecture.
+    public let architectureName = VariableName.behavioral
+
+    // swiftlint:disable force_unwrapping
+
+    /// The entity for the machine.
+    public let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
+
+    // swiftlint:enable force_unwrapping
+
+    /// The includes of the machine.
+    public let includes: [VHDLParsing.Include] = []
+
+    /// The machine this representation is for.
+    public let machine: Machine
+
+    /// Create a null representation for a machine.
+    /// - Parameters:
+    ///   - body: A parameterisable body for the machine.
+    ///   - machine: The machine this representation is for.
+    public init(
+        body: AsynchronousBlock = AsynchronousBlock.statement(
+            // swiftlint:disable:next force_unwrapping
+            statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
+        ),
+        machine: Machine = Machine(
+            actions: [],
+            includes: [],
+            externalSignals: [],
+            clocks: [],
+            drivingClock: 0,
+            machineSignals: [],
+            isParameterised: false,
+            parameterSignals: [],
+            returnableSignals: [],
+            states: [],
+            transitions: [],
+            initialState: 0,
+            suspendedState: nil
+        )
+    ) {
+        self.architectureBody = body
+        self.machine = machine
+    }
+
+    /// Equality conformance.
+    public static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
+        lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
+            lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
+            lhs.includes == rhs.includes && lhs.machine == rhs.machine
     }
 
 }

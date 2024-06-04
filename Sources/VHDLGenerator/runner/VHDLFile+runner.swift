@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VHDLFile+runner.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,34 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+/// Add init for runner.
+extension VHDLFile {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+    /// Create a machine runner for the given machine representation. A machine runner is a VHDL entity that
+    /// controls when a machine starts and stops executing. Typically, the machine runner is programmed to
+    /// observe the internal states of the machine and start or stop the machine based on that internal state.
+    /// The runner is also able to change the internal state and set variable values for running specific
+    /// scenarios and states.
+    /// - Parameter representation: The representation to create the runner for.
+    @inlinable
+    public init?<T>(runnerFor representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let port = PortBlock(runnerFor: representation),
+            let head = ArchitectureHead(runner: representation),
+            let body = AsynchronousBlock(runnerFor: representation),
+            let entityName = VariableName(rawValue: "\(representation.entity.name.rawValue)MachineRunner")
+        else {
+            return nil
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        self.init(
+            architectures: [Architecture(body: body, entity: entityName, head: head, name: .behavioral)],
+            entities: [Entity(name: entityName, port: port)],
+            includes: representation.includes
+        )
     }
 
 }

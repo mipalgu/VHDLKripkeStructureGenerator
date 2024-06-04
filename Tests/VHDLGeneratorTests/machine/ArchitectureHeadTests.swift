@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// ArchitectureHeadTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,62 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+import TestUtils
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `ArchitectureHead` extensions.
+final class ArchitectureHeadTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use as test data.
+    var machine: Machine!
+
+    /// The representation of the machine.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialises the machine before each test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+    }
+
+    /// Test `init(runner:)` returns nil for invalid representation.
+    func testRunnerInitReturnsNil() {
+        XCTAssertNil(ArchitectureHead(runner: NullRepresentation()))
+    }
+
+    /// Test `init(runner:)` creates the correct signals.
+    func testInit() {
+        let raw = """
+        signal stateTracker: std_logic_vector(1 downto 0) := "00";
+        constant WaitToStart: std_logic_vector(1 downto 0) := "00";
+        constant StartExecuting: std_logic_vector(1 downto 0) := "01";
+        constant Executing: std_logic_vector(1 downto 0) := "10";
+        constant WaitForFinish: std_logic_vector(1 downto 0) := "11";
+        signal internalState: std_logic_vector(2 downto 0);
+        signal rst: std_logic := '0';
+        signal setInternalSignals: std_logic := '0';
+        signal goalInternal: std_logic_vector(2 downto 0);
+        """
+        guard
+            let representation,
+            let signals = ArchitectureHead(rawValue: raw),
+            let component = ComponentDefinition(verifiable: representation)
+        else {
+            XCTFail("Failed to create architecture head from raw signals.")
+            return
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        let expected = ArchitectureHead(
+            statements: signals.statements + [.definition(value: .component(value: component))]
+        )
+        XCTAssertEqual(ArchitectureHead(runner: representation), expected)
     }
 
 }

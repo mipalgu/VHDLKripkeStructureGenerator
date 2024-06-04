@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// EntityStateRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,64 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `Entity` state runner extensions.
+final class EntityStateRunnerTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use for testing.
+    var machine: Machine!
+
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// The raw VHDL for the initial kripke generator of `machine`.
+    var raw: String {
+        """
+        entity InitialStateRunner is
+            port(
+                clk: in std_logic;
+                y2: in std_logic;
+                M_y: in std_logic;
+                M_STATE_Initial_initialX: in std_logic;
+                executeOnEntry: in boolean;
+                ready: in std_logic;
+                ringlets: out Initial_State_Execution_t;
+                busy: out std_logic := '0';
+                working_y2: out std_logic;
+                working_M_y: out std_logic;
+                working_M_STATE_Initial_initialX: out std_logic;
+                working_executeOnEntry: out boolean
+            );
+        end InitialStateRunner;
+        """
+    }
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+        machine.states[0].externalVariables = [.x, .y2]
+    }
+
+    /// Test state runner entity is created correctly.
+    func testStateRunner() {
+        let entity = Entity(stateRunnerFor: machine.states[0], in: representation)
+        XCTAssertEqual(entity?.rawValue, raw)
     }
 
 }

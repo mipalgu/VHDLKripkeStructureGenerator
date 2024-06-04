@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// AsynchronousBlockRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,60 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `AsynchronousBlock` runner extensions.
+final class AsynchronousBlockRunnerTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use as test data.
+    var machine: Machine!
+
+    /// The representation of the machine.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialises the machine before each test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test init returns correct behaviour.
+    func testInit() {
+        let result = AsynchronousBlock(runnerFor: representation)
+        guard
+            let map = PortMap(runnerMachineInst: representation),
+            let label = VariableName(rawValue: "m_inst")
+        else {
+            XCTFail("Failed to create map.")
+            return
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
+        let expected = AsynchronousBlock.blocks(blocks: [
+            .component(
+                block: ComponentInstantiation(label: label, name: representation.entity.name, port: map)
+            ),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalStateOut)),
+                value: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .internalState))
+                ))
+            )),
+            .process(block: .runnerLogic)
         ])
+        XCTAssertEqual(result, expected)
     }
 
 }

@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// EntityRingletRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,61 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `Entity` ringlet runner extensions.
+final class EntityRingletRunnerTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use for testing.
+    var machine: Machine!
+
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// The raw VHDL for the ringlet runner of `machine`.
+    let raw = """
+    entity MRingletRunner is
+        port(
+            clk: in std_logic;
+            reset: in std_logic := '0';
+            state: in std_logic_vector(0 downto 0) := "0";
+            x: in std_logic;
+            y2: in std_logic;
+            M_y: in std_logic;
+            M_STATE_Initial_initialX: in std_logic;
+            previousRinglet: in std_logic_vector(0 downto 0) := "Z";
+            readSnapshotState: out ReadSnapshot_t;
+            writeSnapshotState: out WriteSnapshot_t;
+            nextState: out std_logic_vector(0 downto 0);
+            finished: out boolean := true
+        );
+    end MRingletRunner;
+    """
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test entity generates ringlet runner correctly.
+    func testEntityRingletRunner() {
+        let result = Entity(ringletRunnerFor: representation)
+        XCTAssertEqual(result?.rawValue, raw)
     }
 
 }

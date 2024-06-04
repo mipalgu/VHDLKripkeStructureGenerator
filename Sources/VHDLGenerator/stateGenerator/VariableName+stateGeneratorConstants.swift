@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VariableName+stateGeneratorConstants.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,62 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
-import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+extension VariableName {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
-    }
+    /// The `AddToStates` constant.
+    @usableFromInline static let addToStates = VariableName(rawValue: "AddToStates")!
+
+    /// The `cacheBusy` signal.
+    @usableFromInline static let cacheBusy = VariableName(rawValue: "cacheBusy")!
+
+    /// The `cacheRead` signal.
+    @usableFromInline static let cacheRead = VariableName(rawValue: "cacheRead")!
+
+    /// The `CheckForDuplicates` constant.
+    @usableFromInline static let checkForDuplicates = VariableName(rawValue: "CheckForDuplicates")!
+
+    /// The `CheckForJob` constant.
+    @usableFromInline static let checkForJob = VariableName(rawValue: "CheckForJob")!
+
+    /// The `genRead` signal.
+    @usableFromInline static let genRead = VariableName(rawValue: "genRead")!
+
+    /// The `genReady` signal.
+    @usableFromInline static let genReady = VariableName(rawValue: "genReady")!
+
+    /// The `hasDuplicate` signal.
+    @usableFromInline static let hasDuplicate = VariableName(rawValue: "hasDuplicate")!
+
+    /// The `runnerBusy` signal.
+    @usableFromInline static let runnerBusy = VariableName(rawValue: "runnerBusy")!
+
+    /// The `startCache` signal.
+    @usableFromInline static let startCache = VariableName(rawValue: "startCache")!
+
+    /// The `startGeneration` signal.
+    @usableFromInline static let startGeneration = VariableName(rawValue: "startGeneration")!
+
+    /// The `states` signal.
+    @usableFromInline static let states = VariableName(rawValue: "states")!
+
+    /// The `statesIndex` signal.
+    @usableFromInline static let statesIndex = VariableName(rawValue: "statesIndex")!
+
+    /// The `targetStates` signal.
+    @usableFromInline static let targetStates = VariableName(rawValue: "targetStates")!
+
+    /// The `WaitForCacheToEnd` constant.
+    @usableFromInline static let waitForCacheToEnd = VariableName(rawValue: "WaitForCacheToEnd")!
+
+    /// The `WaitForCacheToStart` constant.
+    @usableFromInline static let waitForCacheToStart = VariableName(rawValue: "WaitForCacheToStart")!
+
+    // The `WaitForRunnerToFinish` constant.
+    @usableFromInline static let waitForRunnerToFinish = VariableName(rawValue: "WaitForRunnerToFinish")!
+
+    /// The `WaitForRunnerToStart` constant.
+    @usableFromInline static let waitForRunnerToStart = VariableName(rawValue: "WaitForRunnerToStart")!
 
 }

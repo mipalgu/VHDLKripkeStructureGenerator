@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// Entity+generator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,38 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+extension Entity {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
+    public init<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
+        let signals = machine.states.flatMap {
             let name = $0.name.rawValue
             return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
+                PortSignal(
+                    type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!, mode: .input
                 ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
+                PortSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!, mode: .input),
+                PortSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!, mode: .input),
+                PortSignal(
+                    type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!, mode: .output
+                ),
+                PortSignal(
+                    type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!, mode: .output
+                )
             ]
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        let clk = machine.clocks[machine.drivingClock]
+        self.init(
+            name: VariableName(rawValue: "\(representation.entity.name.rawValue)Generator")!,
+            port: PortBlock(
+                signals: [PortSignal(clock: clk)] + signals + [
+                    PortSignal(type: .stdLogic, name: .finished, mode: .output)
+                ]
+            )!
+        )
     }
 
 }

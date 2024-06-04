@@ -58,6 +58,7 @@ import Foundation
 import KripkeStructureParser
 import SwiftUtils
 import VHDLKripkeStructureGeneratorProtocols
+import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 
