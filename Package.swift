@@ -32,18 +32,29 @@ let package = Package(
         .target(
             name: "VHDLKripkeStructureGenerator",
             dependencies: [
-                "VHDLMachines", "VHDLParsing", "VHDLKripkeStructureGeneratorProtocols", "Utilities",
-                "KripkeStructureParser", .product(name: "SwiftUtils", package: "SwiftUtils")
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "VHDLKripkeStructureGeneratorProtocols"),
+                .target(name: "Utilities"),
+                .target(name: "KripkeStructureParser"),
+                .product(name: "SwiftUtils", package: "SwiftUtils")
             ]
         ),
         .target(name: "VHDLKripkeStructureGeneratorProtocols", dependencies: ["VHDLParsing", "VHDLMachines"]),
-        .target(name: "Utilities", dependencies: ["VHDLMachines", "VHDLParsing"]),
+        .target(
+            name: "Utilities",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+            ]
+        ),
         .target(
             name: "KripkeStructureParser",
             dependencies: [
-                "VHDLMachines",
-                "VHDLParsing",
-                "Utilities",
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .product(name: "StringHelpers", package: "VHDLParsing"),
+                .target(name: "Utilities"),
                 .product(name: "SwiftUtils", package: "SwiftUtils")
             ]
         ),
@@ -58,26 +69,31 @@ let package = Package(
         .testTarget(
             name: "VHDLKripkeStructureGeneratorTests",
             dependencies: [
-                "VHDLKripkeStructureGenerator",
-                "VHDLMachines",
-                "VHDLParsing",
-                "Utilities",
-                "KripkeStructureParser",
+                .target(name: "VHDLKripkeStructureGenerator"),
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities"),
+                .target(name: "KripkeStructureParser"),
                 .product(name: "SwiftUtils", package: "SwiftUtils"),
                 .target(name: "TestUtils")
             ]
         ),
         .testTarget(
             name: "UtilitiesTests",
-            dependencies: ["Utilities", "VHDLMachines", "VHDLParsing", .target(name: "TestUtils")]
+            dependencies: [
+                .target(name: "Utilities"),
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "TestUtils")
+            ]
         ),
         .testTarget(
             name: "KripkeStructureParserTests",
             dependencies: [
-                "KripkeStructureParser",
-                "VHDLMachines",
-                "VHDLParsing",
-                "Utilities",
+                .target(name: "KripkeStructureParser"),
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities"),
                 .target(name: "TestUtils")
             ]
         )
