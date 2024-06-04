@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// PortBlockRingletRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,69 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `PortBlock` extensions containing ringlet runner code.
+final class PortBlockRingletRunnerTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+    // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use for testing.
+    var machine: Machine!
+
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test that the ringlet runner port block is created correctly.
+    func testRingletRunnerInit() {
+        let expectedRaw = """
+        port(
+            clk: in std_logic;
+            reset: in std_logic := '0';
+            state: in std_logic_vector(0 downto 0) := "0";
+            x: in std_logic;
+            y2: out std_logic;
+            y: in std_logic;
+            STATE_Initial_initialX: in std_logic;
+            previousRinglet: in std_logic_vector(0 downto 0) := "Z";
+            readSnapshotState: out ReadSnapshot_t;
+            writeSnapshotState: out WriteSnapshot_t;
+            nextState: out std_logic_vector(0 downto 0);
+            finished: out boolean := true
+        );
+        """
+        guard let expected = PortBlock(rawValue: expectedRaw) else {
+            XCTFail("Failed to create expected code.")
+            return
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        let result = PortBlock(ringletRunnerFor: representation)
+        XCTAssertEqual(result, expected)
+        XCTAssertNil(PortBlock(
+            externals: [],
+            machineSignals: [],
+            stateSignals: [],
+            stateSize: .to(
+                lower: .literal(value: .boolean(value: false)), upper: .literal(value: .boolean(value: true))
+            )
+        ))
     }
 
 }

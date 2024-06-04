@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VHDLFile+initForMachine.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,40 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+/// Add helpers for kripke structure generation.
+extension VHDLFile {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
-    }
+    /// The `PrimitiveTypes` package.
+    public static let primitiveTypes = VHDLFile(
+        architectures: [],
+        entities: [],
+        includes: [
+            // swiftlint:disable force_unwrapping
+            .library(value: VariableName(rawValue: "IEEE")!),
+            .include(statement: UseStatement(rawValue: "use IEEE.std_logic_1164.all;")!)
+            // swiftlint:enable force_unwrapping
+        ],
+        packages: [.primitiveTypes],
+        packageBodies: [.primitiveTypes]
+    )
+
+    // init?(kripke machine: Machine) {
+    //     guard let representation = MachineRepresentation(machine: machine) else {
+    //         return nil
+    //     }
+    //     let existingFormat = VHDLFile(representation: representation)
+    //     guard
+    //         existingFormat.entities.count == 1,
+    //         let entity = existingFormat.entities.first,
+    //         existingFormat.architectures.count == 1,
+    //         let architecture = existingFormat.architectures.first
+    //     else {
+    //         return nil
+    //     }
+    //     let includes = existingFormat.includes
+    // }
 
 }

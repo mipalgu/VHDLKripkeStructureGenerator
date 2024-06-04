@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VHDLFile+ringletExpander.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,40 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+/// Add ringlet expander.
+extension VHDLFile {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+    /// Create a ringlet expander for a state.
+    /// - Parameters:
+    ///   - state: The state to create the ringlet expander for.
+    ///   - representation: The machine representation to use.
+    @inlinable
+    public init?<T>(ringletExpanderFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let typesInclude = UseStatement(rawValue: "use work.\(representation.entity.name)Types.all;"),
+            let entity = Entity(ringletExpanderFor: state, in: representation),
+            let body = AsynchronousBlock(ringletExpanderFor: state, in: representation)
+        else {
+            return nil
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        self.init(
+            architectures: [
+                Architecture(
+                    body: body, entity: entity.name, head: ArchitectureHead(statements: []), name: .behavioral
+                )
+            ],
+            entities: [entity],
+            includes: [
+                .library(value: .ieee),
+                .include(statement: .stdLogic1164),
+                .include(statement: .numericStd),
+                .include(statement: typesInclude),
+                .include(statement: .primitiveTypes)
+            ]
+        )
     }
 
 }

@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VectorSizeTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,55 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
-import VHDLMachines
+@testable import VHDLGenerator
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `VectorSize` extensions.
+final class VectorSizeTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
-        }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+    /// Test init creates the correct number of bits.
+    func testNumberOfBitsInit() {
+        XCTAssertEqual(
+            VectorSize(numberOfBits: 1),
+            .downto(upper: .literal(value: .integer(value: 0)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(numberOfBits: 0),
+            .downto(upper: .literal(value: .integer(value: 0)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(numberOfBits: -1),
+            .downto(upper: .literal(value: .integer(value: 0)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(numberOfBits: 2),
+            .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
+        )
+    }
+
+    /// Test that the size created supports the number of elements.
+    func testSupportingInit() {
+        XCTAssertEqual(
+            VectorSize(supporting: [1, 2, 3]),
+            .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(supporting: []),
+            .downto(upper: .literal(value: .integer(value: 0)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(supporting: [1, 2]),
+            .downto(upper: .literal(value: .integer(value: 0)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(supporting: [1, 2, 3, 4]),
+            .downto(upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0)))
+        )
+        XCTAssertEqual(
+            VectorSize(supporting: [1, 2, 3, 4, 5]),
+            .downto(upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0)))
+        )
     }
 
 }

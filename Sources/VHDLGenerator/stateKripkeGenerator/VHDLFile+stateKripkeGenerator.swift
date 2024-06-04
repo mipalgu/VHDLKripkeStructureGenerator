@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// VHDLFile+stateGenerator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,42 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+/// Add state kripke generator.
+extension VHDLFile {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+    /// Create a state kripke generator. This file computes the next state to search from observing a states
+    /// read snapshot and write snapshot.
+    /// - Parameters:
+    ///   - state: The state to generate this file for.
+    ///   - representation: The representation of the machine.
+    @inlinable
+    public init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let typesInclude = UseStatement(
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
+            ),
+            let entity = Entity(stateKripkeGeneratorFor: state, in: representation),
+            let body = AsynchronousBlock(stateKripkeGeneratorFor: state, in: representation)
+        else {
+            return nil
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        let architecture = Architecture(
+            body: body,
+            entity: entity.name,
+            head: ArchitectureHead(statements: []),
+            name: .behavioral
+        )
+        let includes = [
+            Include.library(value: .ieee),
+            .include(statement: .stdLogic1164),
+            .include(statement: typesInclude),
+            .include(statement: .primitiveTypes),
+            .include(statement: .numericStd)
+        ]
+        self.init(architectures: [architecture], entities: [entity], includes: includes)
     }
 
 }

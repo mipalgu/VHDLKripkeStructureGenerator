@@ -1,4 +1,4 @@
-// ArchitectureHead+bramInterface.swift
+// ComponentInstantiationRingletRunnerTests.swfit
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,40 +54,76 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for ringlet runner extensions on `ComponentInstantiation`.
+final class ComponentInstantiationRingletRunnerTests: XCTestCase {
 
-    init<T>(bramInterfaceFor representation: T) where T: MachineVHDLRepresentable {
-        let machine = representation.machine
-        let stateSignals = machine.states.flatMap {
-            let name = $0.name.rawValue
-            return [
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Address")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Read")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)ReadReady")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)Value")!),
-                LocalSignal(type: .logicVector32, name: VariableName(rawValue: "\(name)LastAddress")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Reset")!),
-                LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Finished")!),
-                LocalSignal(
-                    type: .unsigned32bit, name: VariableName(rawValue: "unsigned\(name)LastAddress")!
-                ),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "is\(name)")!),
-                LocalSignal(type: .boolean, name: VariableName(rawValue: "isPrevious\(name)")!)
-            ]
+        // swiftlint:disable implicitly_unwrapped_optional
+
+    /// A machine to use for testing.
+    var machine: Machine!
+
+    /// The equivalent representation for `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// The raw VHDL for the ringlet runner of `machine`.
+    let raw = """
+    M_inst: component MMachineRunner port map (
+        clk => clk,
+        internalStateIn => machine.internalStateIn,
+        internalStateOut => machine.internalStateOut,
+        currentStateIn => machine.currentStateIn,
+        currentStateOut => machine.currentStateOut,
+        previousRingletIn => machine.previousRingletIn,
+        previousRingletOut => machine.previousRingletOut,
+        targetStateIn => machine.targetStateIn,
+        targetStateOut => machine.targetStateOut,
+        x => machine.x,
+        y2 => machine.y2,
+        M_x => machine.M_x,
+        M_y2 => machine.M_y2,
+        M_y2In => machine.M_y2In,
+        M_y => machine.M_y,
+        M_yIn => machine.M_yIn,
+        M_STATE_Initial_initialX => machine.M_STATE_Initial_initialX,
+        M_STATE_Initial_initialXIn => machine.M_STATE_Initial_initialXIn,
+        reset => machine.reset,
+        goalInternalState => machine.goalInternalState,
+        finished => machine.finished
+    );
+    """
+
+    /// Initialise the machine before every test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
+    }
+
+    /// Test rawValue is the same.
+    func testRawValue() {
+        guard
+            let expected = ComponentInstantiation(rawValue: raw), let label = VariableName(rawValue: "M_inst")
+        else {
+            XCTFail("Expected is incorrect!")
+            return
         }
-        .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let generatorEntity = Entity(generatorFor: representation)
-        let component = ComponentDefinition(entity: generatorEntity)
-        self.init(statements: stateSignals + [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .generatorFinished))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .previousAddress))),
-            .definition(value: .component(value: component))
-        ])
+        let result = ComponentInstantiation(
+            machineRunnerInvocationFor: representation, record: .machine, label: label
+        )
+        XCTAssertEqual(result?.rawValue, expected.rawValue)
     }
 
 }

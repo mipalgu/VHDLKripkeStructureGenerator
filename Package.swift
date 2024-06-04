@@ -37,15 +37,33 @@ let package = Package(
                 .target(name: "VHDLKripkeStructureGeneratorProtocols"),
                 .target(name: "Utilities"),
                 .target(name: "KripkeStructureParser"),
+                .target(name: "VHDLGenerator"),
                 .product(name: "SwiftUtils", package: "SwiftUtils")
             ]
         ),
-        .target(name: "VHDLKripkeStructureGeneratorProtocols", dependencies: ["VHDLParsing", "VHDLMachines"]),
+        .target(
+            name: "VHDLGenerator",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "VHDLKripkeStructureGeneratorProtocols"),
+                .target(name: "Utilities"),
+                .target(name: "KripkeStructureParser"),
+                .product(name: "SwiftUtils", package: "SwiftUtils")
+            ]
+        ),
+        .target(
+            name: "VHDLKripkeStructureGeneratorProtocols",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing")
+            ]
+        ),
         .target(
             name: "Utilities",
             dependencies: [
                 .product(name: "VHDLMachines", package: "VHDLMachines"),
-                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .product(name: "VHDLParsing", package: "VHDLParsing")
             ]
         ),
         .target(
@@ -70,6 +88,19 @@ let package = Package(
             name: "VHDLKripkeStructureGeneratorTests",
             dependencies: [
                 .target(name: "VHDLKripkeStructureGenerator"),
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities"),
+                .target(name: "KripkeStructureParser"),
+                .product(name: "SwiftUtils", package: "SwiftUtils"),
+                .target(name: "TestUtils"),
+                .target(name: "VHDLGenerator")
+            ]
+        ),
+        .testTarget(
+            name: "VHDLGeneratorTests",
+            dependencies: [
+                .target(name: "VHDLGenerator"),
                 .product(name: "VHDLMachines", package: "VHDLMachines"),
                 .product(name: "VHDLParsing", package: "VHDLParsing"),
                 .target(name: "Utilities"),
