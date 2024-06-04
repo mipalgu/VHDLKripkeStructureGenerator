@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -66,7 +67,9 @@ extension VHDLFile {
     ///   - state: The state to generate this file for.
     ///   - representation: The representation of the machine.
     @inlinable
-    public init?<T>(stateKripkeGeneratorFor state: State, in representation: T) where T: MachineVHDLRepresentable {
+    public init?<T>(
+        stateKripkeGeneratorFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
         guard
             let typesInclude = UseStatement(
                 rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
