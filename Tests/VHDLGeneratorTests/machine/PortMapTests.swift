@@ -1,4 +1,4 @@
-// ComponentDefinitionTests.swift
+// PortMapTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,45 +54,87 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLKripkeStructureGenerator
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 import XCTest
 
-/// Test class for `ComponentDefinition` inits.
-final class ComponentDefinitionTests: XCTestCase {
+/// Test class for `PortMap` extensions.
+final class PortMapTests: XCTestCase {
 
     // swiftlint:disable implicitly_unwrapped_optional
 
-    /// A machine to test.
+    /// A machine to use as test data.
     var machine: Machine!
 
-    /// The representation of `machine`.
+    /// The representation of the machine.
     var representation: MachineRepresentation! {
         MachineRepresentation(machine: machine, name: .M)
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
-    /// Initialise the test data before every test.
+    /// Initialises the machine before each test.
     override func setUp() {
         machine = Machine.initialSuspensible
+        machine.externalSignals = [
+            PortSignal(type: .stdLogic, name: .x, mode: .input),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+        ]
+        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
+        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
-    /// Test that `ComponentDefinition.init(runner:)` returns nil for an invalid representation.
-    func testRunnerInitReturnsNilForInvalidRepresentation() {
-        XCTAssertNil(ComponentDefinition(verifiable: NullRepresentation()))
+    /// Test [VariableMap].init(runner:) creates the correct constants.
+    func testArrayInitConstants() {
+        let result = [VariableMap](runner: representation)
+        let expected = [
+            "M_currentStateIn => currentStateIn",
+            "M_previousRingletIn => previousRingletIn",
+            "M_internalStateIn => internalStateIn",
+            "M_targetStateIn => targetStateIn",
+            "M_currentStateOut => currentStateOut",
+            "M_previousRingletOut => previousRingletOut",
+            "M_internalStateOut => internalState",
+            "M_targetStateOut => targetStateOut",
+            "setInternalSignals => setInternalSignals",
+            "reset => rst"
+        ]
+        XCTAssertEqual(result.map(\.rawValue), expected)
     }
 
-    /// Test that the `ComponentDefinition.init(runner:)` initialises correctly.
-    func testRunnerInit() {
-        guard let representation, let port = PortBlock(verifiable: representation) else {
-            XCTFail("Failed to initialise PortBlock.")
+    /// Test that `PortMap.init(runnerMachineInst:)` generates the correct mapping.
+    func testPortMapInit() {
+        let expectedRaw = """
+        port map (
+            clk => clk,
+            EXTERNAL_x => x,
+            EXTERNAL_y2 => y2,
+            M_x => M_x,
+            M_y2 => M_y2,
+            M_y2In => M_y2In,
+            M_y => M_y,
+            M_yIn => M_yIn,
+            M_STATE_Initial_initialX => M_STATE_Initial_initialX,
+            M_STATE_Initial_initialXIn => M_STATE_Initial_initialXIn,
+            M_currentStateIn => currentStateIn,
+            M_previousRingletIn => previousRingletIn,
+            M_internalStateIn => internalStateIn,
+            M_targetStateIn => targetStateIn,
+            M_currentStateOut => currentStateOut,
+            M_previousRingletOut => previousRingletOut,
+            M_internalStateOut => internalState,
+            M_targetStateOut => targetStateOut,
+            setInternalSignals => setInternalSignals,
+            reset => rst
+        );
+        """
+        guard let expected = PortMap(rawValue: expectedRaw) else {
+            XCTFail("Failed to create expected port map.")
             return
         }
-        let expected = ComponentDefinition(name: representation.entity.name, port: port)
-        let result = ComponentDefinition(verifiable: representation)
-        XCTAssertEqual(expected, result)
+        let result = PortMap(runnerMachineInst: representation)
+        XCTAssertEqual(result, expected)
     }
 
 }

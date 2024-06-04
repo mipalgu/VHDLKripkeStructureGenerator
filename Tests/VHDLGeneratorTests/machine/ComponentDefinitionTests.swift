@@ -1,4 +1,4 @@
-// TestNames.swift
+// ComponentDefinitionTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,46 +54,46 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import TestUtils
+@testable import VHDLGenerator
+import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Adds common test variable names.
-extension VariableName {
+/// Test class for `ComponentDefinition` inits.
+final class ComponentDefinitionTests: XCTestCase {
 
-    // swiftlint:disable force_unwrapping
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    /// The `Behavioral` name for an architecture.
-    static let behavioral = VariableName(rawValue: "Behavioral")!
+    /// A machine to test.
+    var machine: Machine!
 
-    /// A variable `initialX`.
-    static let initialX = VariableName(rawValue: "initialX")!
+    /// The representation of `machine`.
+    var representation: MachineRepresentation! {
+        MachineRepresentation(machine: machine, name: .M)
+    }
 
-    /// A variable `initialY`.
-    static let initialY = VariableName(rawValue: "initialY")!
+    // swiftlint:enable implicitly_unwrapped_optional
 
-    /// A variable `M`.
-    static let M = VariableName(rawValue: "M")!
+    /// Initialise the test data before every test.
+    override func setUp() {
+        machine = Machine.initialSuspensible
+    }
 
-    /// The name of `Machine1`.
-    static let machine1 = VariableName(rawValue: "Machine1")!
+    /// Test that `ComponentDefinition.init(runner:)` returns nil for an invalid representation.
+    func testRunnerInitReturnsNilForInvalidRepresentation() {
+        XCTAssertNil(ComponentDefinition(verifiable: NullRepresentation()))
+    }
 
-    /// A variable name `NullRepresentation`.
-    static let nullRepresentation = VariableName(rawValue: "NullRepresentation")!
-
-    /// A variable `S0`.
-    static let s0 = VariableName(rawValue: "S0")!
-
-    /// A variable `suspendedX`.
-    static let suspendedX = VariableName(rawValue: "suspendedX")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `y2`
-    static let y2 = VariableName(rawValue: "y2")!
-
-    // swiftlint:enable force_unwrapping
+    /// Test that the `ComponentDefinition.init(runner:)` initialises correctly.
+    func testRunnerInit() {
+        guard let representation, let port = PortBlock(verifiable: representation) else {
+            XCTFail("Failed to initialise PortBlock.")
+            return
+        }
+        let expected = ComponentDefinition(name: representation.entity.name, port: port)
+        let result = ComponentDefinition(verifiable: representation)
+        XCTAssertEqual(expected, result)
+    }
 
 }

@@ -1,4 +1,4 @@
-// ArchitectureHeadTests.swift
+// TestNames.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,61 +54,40 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLKripkeStructureGenerator
-import VHDLMachines
 import VHDLParsing
-import XCTest
 
-/// Test class for `ArchitectureHead` extensions.
-final class ArchitectureHeadTests: XCTestCase {
+/// Adds common test variable names.
+public extension VariableName {
 
-    // swiftlint:disable implicitly_unwrapped_optional
+    // swiftlint:disable force_unwrapping
 
-    /// A machine to use as test data.
-    var machine: Machine!
+    /// The `Behavioral` name for an architecture.
+    static let behavioral = VariableName(rawValue: "Behavioral")!
 
-    /// The representation of the machine.
-    var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine, name: .M)
-    }
+    /// A variable `initialX`.
+    static let initialX = VariableName(rawValue: "initialX")!
 
-    // swiftlint:enable implicitly_unwrapped_optional
+    /// A variable `initialY`.
+    static let initialY = VariableName(rawValue: "initialY")!
 
-    /// Initialises the machine before each test.
-    override func setUp() {
-        machine = Machine.initialSuspensible
-    }
+    /// A variable `M`.
+    static let M = VariableName(rawValue: "M")!
 
-    /// Test `init(runner:)` returns nil for invalid representation.
-    func testRunnerInitReturnsNil() {
-        XCTAssertNil(ArchitectureHead(runner: NullRepresentation()))
-    }
+    /// The name of `Machine1`.
+    static let machine1 = VariableName(rawValue: "Machine1")!
 
-    /// Test `init(runner:)` creates the correct signals.
-    func testInit() {
-        let raw = """
-        signal stateTracker: std_logic_vector(1 downto 0) := "00";
-        constant WaitToStart: std_logic_vector(1 downto 0) := "00";
-        constant StartExecuting: std_logic_vector(1 downto 0) := "01";
-        constant Executing: std_logic_vector(1 downto 0) := "10";
-        constant WaitForFinish: std_logic_vector(1 downto 0) := "11";
-        signal internalState: std_logic_vector(2 downto 0);
-        signal rst: std_logic := '0';
-        signal setInternalSignals: std_logic := '0';
-        signal goalInternal: std_logic_vector(2 downto 0);
-        """
-        guard
-            let representation,
-            let signals = ArchitectureHead(rawValue: raw),
-            let component = ComponentDefinition(verifiable: representation)
-        else {
-            XCTFail("Failed to create architecture head from raw signals.")
-            return
-        }
-        let expected = ArchitectureHead(
-            statements: signals.statements + [.definition(value: .component(value: component))]
-        )
-        XCTAssertEqual(ArchitectureHead(runner: representation), expected)
-    }
+    /// A variable name `NullRepresentation`.
+    static let nullRepresentation = VariableName(rawValue: "NullRepresentation")!
+
+    /// A variable `S0`.
+    static let s0 = VariableName(rawValue: "S0")!
+
+    /// A variable `suspendedX`.
+    static let suspendedX = VariableName(rawValue: "suspendedX")!
+
+    /// A variable `y2`
+    static let y2 = VariableName(rawValue: "y2")!
+
+    // swiftlint:enable force_unwrapping
 
 }

@@ -1,4 +1,4 @@
-// PortMapTests.swift
+// ArchitectureHeadTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -54,13 +54,14 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLKripkeStructureGenerator
+import TestUtils
+@testable import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
 import XCTest
 
-/// Test class for `PortMap` extensions.
-final class PortMapTests: XCTestCase {
+/// Test class for `ArchitectureHead` extensions.
+final class ArchitectureHeadTests: XCTestCase {
 
     // swiftlint:disable implicitly_unwrapped_optional
 
@@ -77,64 +78,38 @@ final class PortMapTests: XCTestCase {
     /// Initialises the machine before each test.
     override func setUp() {
         machine = Machine.initialSuspensible
-        machine.externalSignals = [
-            PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output)
-        ]
-        machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
-        machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
-    /// Test [VariableMap].init(runner:) creates the correct constants.
-    func testArrayInitConstants() {
-        let result = [VariableMap](runner: representation)
-        let expected = [
-            "M_currentStateIn => currentStateIn",
-            "M_previousRingletIn => previousRingletIn",
-            "M_internalStateIn => internalStateIn",
-            "M_targetStateIn => targetStateIn",
-            "M_currentStateOut => currentStateOut",
-            "M_previousRingletOut => previousRingletOut",
-            "M_internalStateOut => internalState",
-            "M_targetStateOut => targetStateOut",
-            "setInternalSignals => setInternalSignals",
-            "reset => rst"
-        ]
-        XCTAssertEqual(result.map(\.rawValue), expected)
+    /// Test `init(runner:)` returns nil for invalid representation.
+    func testRunnerInitReturnsNil() {
+        XCTAssertNil(ArchitectureHead(runner: NullRepresentation()))
     }
 
-    /// Test that `PortMap.init(runnerMachineInst:)` generates the correct mapping.
-    func testPortMapInit() {
-        let expectedRaw = """
-        port map (
-            clk => clk,
-            EXTERNAL_x => x,
-            EXTERNAL_y2 => y2,
-            M_x => M_x,
-            M_y2 => M_y2,
-            M_y2In => M_y2In,
-            M_y => M_y,
-            M_yIn => M_yIn,
-            M_STATE_Initial_initialX => M_STATE_Initial_initialX,
-            M_STATE_Initial_initialXIn => M_STATE_Initial_initialXIn,
-            M_currentStateIn => currentStateIn,
-            M_previousRingletIn => previousRingletIn,
-            M_internalStateIn => internalStateIn,
-            M_targetStateIn => targetStateIn,
-            M_currentStateOut => currentStateOut,
-            M_previousRingletOut => previousRingletOut,
-            M_internalStateOut => internalState,
-            M_targetStateOut => targetStateOut,
-            setInternalSignals => setInternalSignals,
-            reset => rst
-        );
+    /// Test `init(runner:)` creates the correct signals.
+    func testInit() {
+        let raw = """
+        signal stateTracker: std_logic_vector(1 downto 0) := "00";
+        constant WaitToStart: std_logic_vector(1 downto 0) := "00";
+        constant StartExecuting: std_logic_vector(1 downto 0) := "01";
+        constant Executing: std_logic_vector(1 downto 0) := "10";
+        constant WaitForFinish: std_logic_vector(1 downto 0) := "11";
+        signal internalState: std_logic_vector(2 downto 0);
+        signal rst: std_logic := '0';
+        signal setInternalSignals: std_logic := '0';
+        signal goalInternal: std_logic_vector(2 downto 0);
         """
-        guard let expected = PortMap(rawValue: expectedRaw) else {
-            XCTFail("Failed to create expected port map.")
+        guard
+            let representation,
+            let signals = ArchitectureHead(rawValue: raw),
+            let component = ComponentDefinition(verifiable: representation)
+        else {
+            XCTFail("Failed to create architecture head from raw signals.")
             return
         }
-        let result = PortMap(runnerMachineInst: representation)
-        XCTAssertEqual(result, expected)
+        let expected = ArchitectureHead(
+            statements: signals.statements + [.definition(value: .component(value: component))]
+        )
+        XCTAssertEqual(ArchitectureHead(runner: representation), expected)
     }
 
 }

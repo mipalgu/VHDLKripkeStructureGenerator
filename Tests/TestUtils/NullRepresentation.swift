@@ -59,35 +59,35 @@ import VHDLMachines
 import VHDLParsing
 
 /// A machine representation containing no code.
-class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
+public class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
 
     /// The implementation.
-    let architectureBody: AsynchronousBlock
+    public let architectureBody: AsynchronousBlock
 
     /// The architecture head.
-    let architectureHead = ArchitectureHead(statements: [])
+    public let architectureHead = ArchitectureHead(statements: [])
 
     /// The name of the architecture.
-    let architectureName = VariableName.behavioral
+    public let architectureName = VariableName.behavioral
 
     // swiftlint:disable force_unwrapping
 
     /// The entity for the machine.
-    let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
+    public let entity = Entity(name: .nullRepresentation, port: PortBlock(signals: [])!)
 
     // swiftlint:enable force_unwrapping
 
     /// The includes of the machine.
-    let includes: [VHDLParsing.Include] = []
+    public let includes: [VHDLParsing.Include] = []
 
     /// The machine this representation is for.
-    let machine: Machine
+    public let machine: Machine
 
     /// Create a null representation for a machine.
     /// - Parameters:
     ///   - body: A parameterisable body for the machine.
     ///   - machine: The machine this representation is for.
-    init(
+    public init(
         body: AsynchronousBlock = AsynchronousBlock.statement(
             // swiftlint:disable:next force_unwrapping
             statement: .comment(value: Comment(rawValue: "-- This is a comment")!)
@@ -113,7 +113,7 @@ class NullRepresentation: MachineVHDLRepresentable, Identifiable, Equatable {
     }
 
     /// Equality conformance.
-    static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
+    public static func == (lhs: NullRepresentation, rhs: NullRepresentation) -> Bool {
         lhs.architectureBody == rhs.architectureBody && lhs.architectureHead == rhs.architectureHead &&
             lhs.architectureName == rhs.architectureName && lhs.entity == rhs.entity &&
             lhs.includes == rhs.includes && lhs.machine == rhs.machine

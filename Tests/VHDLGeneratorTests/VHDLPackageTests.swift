@@ -54,7 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLKripkeStructureGenerator
+@testable import VHDLGenerator
 import VHDLParsing
 import XCTest
 
