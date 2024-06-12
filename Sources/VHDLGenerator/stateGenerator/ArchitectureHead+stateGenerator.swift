@@ -55,6 +55,7 @@
 // 
 
 import VHDLMachines
+import VHDLMemoryStructures
 import VHDLParsing
 
 extension ArchitectureHead {

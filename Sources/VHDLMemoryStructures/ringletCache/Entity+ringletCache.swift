@@ -66,7 +66,7 @@ extension Entity {
     ///   - state: The state to create the cache for.
     ///   - representation: The machine representation to use.
     @inlinable
-    init<T>(ringletCacheFor state: State, representation: T) where T: MachineVHDLRepresentable {
+    public init<T>(ringletCacheFor state: State, representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let clk = machine.clocks[machine.drivingClock]
         let name = VariableName(rawValue: "\(state.name)RingletCache")!

@@ -62,70 +62,70 @@ import VHDLParsing
 extension VariableName {
 
     /// The `cacheValue` signal.
-    @usableFromInline static let cacheValue = VariableName(rawValue: "cacheValue")!
+    public static let cacheValue = VariableName(rawValue: "cacheValue")!
 
     /// The `CheckPreviousRinglets` constant.
-    @usableFromInline static let checkPreviousRinglets = VariableName(rawValue: "CheckPreviousRinglets")!
+    public static let checkPreviousRinglets = VariableName(rawValue: "CheckPreviousRinglets")!
 
     /// The `currentRinglet` signal.
-    @usableFromInline static let currentRinglet = VariableName(rawValue: "currentRinglet")!
+    public static let currentRinglet = VariableName(rawValue: "currentRinglet")!
 
     /// The `currentRingletAddress` signal.
-    @usableFromInline static let currentRingletAddress = VariableName(rawValue: "currentRingletAddress")!
+    public static let currentRingletAddress = VariableName(rawValue: "currentRingletAddress")!
 
     /// The `currentRingletIndex` signal.
-    @usableFromInline static let currentRingletIndex = VariableName(rawValue: "currentRingletIndex")!
+    public static let currentRingletIndex = VariableName(rawValue: "currentRingletIndex")!
 
     /// The `CurrentRinglet_t` type.
-    @usableFromInline static let currentRingletType = VariableName(rawValue: "CurrentRinglet_t")!
+    public static let currentRingletType = VariableName(rawValue: "CurrentRinglet_t")!
 
     /// The `Error` constant.
-    @usableFromInline static let error = VariableName(rawValue: "Error")!
+    public static let error = VariableName(rawValue: "Error")!
 
     /// The `genIndex` signal.
-    @usableFromInline static let genIndex = VariableName(rawValue: "genIndex")!
+    public static let genIndex = VariableName(rawValue: "genIndex")!
 
     /// The `genValue` signal.
-    @usableFromInline static let genValue = VariableName(rawValue: "genValue")!
+    public static let genValue = VariableName(rawValue: "genValue")!
 
     /// The `index` signal.
-    @usableFromInline static let index = VariableName(rawValue: "index")!
+    public static let index = VariableName(rawValue: "index")!
 
     /// The `isDuplicate` signal.
-    @usableFromInline static let isDuplicate = VariableName(rawValue: "isDuplicate")!
+    public static let isDuplicate = VariableName(rawValue: "isDuplicate")!
 
     /// The `isInitial` signal.
-    @usableFromInline static let isInitial = VariableName(rawValue: "isInitial")!
+    public static let isInitial = VariableName(rawValue: "isInitial")!
 
     /// The `lastAccessibleAddress` constant.
-    @usableFromInline static let lastAccessibleAddress = VariableName(rawValue: "lastAccessibleAddress")!
+    public static let lastAccessibleAddress = VariableName(rawValue: "lastAccessibleAddress")!
 
     /// The `memoryIndex` signal.
-    @usableFromInline static let memoryIndex = VariableName(rawValue: "memoryIndex")!
+    public static let memoryIndex = VariableName(rawValue: "memoryIndex")!
 
     /// The `previousReadAddress` signal.
-    @usableFromInline static let previousReadAddress = VariableName(rawValue: "previousReadAddress")!
+    public static let previousReadAddress = VariableName(rawValue: "previousReadAddress")!
 
     /// The `ringletIndex` signal.
-    @usableFromInline static let ringletIndex = VariableName(rawValue: "ringletIndex")!
+    public static let ringletIndex = VariableName(rawValue: "ringletIndex")!
 
     /// The `SetRingletRAMValue` constant.
-    @usableFromInline static let setRingletRAMValue = VariableName(rawValue: "SetRingletRAMValue")!
+    public static let setRingletRAMValue = VariableName(rawValue: "SetRingletRAMValue")!
 
     /// The `SetRingletValue` constant.
-    @usableFromInline static let setRingletValue = VariableName(rawValue: "SetRingletValue")!
+    public static let setRingletValue = VariableName(rawValue: "SetRingletValue")!
 
     /// The `topIndex` signals.
-    @usableFromInline static let topIndex = VariableName(rawValue: "topIndex")!
+    public static let topIndex = VariableName(rawValue: "topIndex")!
 
     /// The `WaitForNewRinglets` constant.
-    @usableFromInline static let waitForNewRinglets = VariableName(rawValue: "WaitForNewRinglets")!
+    public static let waitForNewRinglets = VariableName(rawValue: "WaitForNewRinglets")!
 
     /// The `WriteElement` constant.
-    @usableFromInline static let writeElement = VariableName(rawValue: "WriteElement")!
+    public static let writeElement = VariableName(rawValue: "WriteElement")!
 
     /// The `workingRinglets` signal.
-    @usableFromInline static let workingRinglets = VariableName(rawValue: "workingRinglets")!
+    public static let workingRinglets = VariableName(rawValue: "workingRinglets")!
 
 }
 
