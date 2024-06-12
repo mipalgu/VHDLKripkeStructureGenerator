@@ -108,6 +108,16 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "VHDLMemoryStructuresTests",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities"),
+                .target(name: "TestUtils"),
+                .target(name: "VHDLMemoryStructures")
+            ]
+        ),
+        .testTarget(
             name: "VHDLGeneratorTests",
             dependencies: [
                 .target(name: "VHDLGenerator"),
