@@ -57,6 +57,32 @@ import VHDLParsing
 
 extension VariableName {
 
+    static let currentValue = VariableName(rawValue: "currentValue")!
+
+    static let enables = VariableName(rawValue: "enables")!
+
+    static let incrementIndex = VariableName(rawValue: "IncrementIndex")!
+
+    static let memoryAddress = VariableName(rawValue: "memoryAddress")!
+
+    static let memoryOffset = VariableName(rawValue: "memoryOffset")!
+
+    static let readEnables = VariableName(rawValue: "readEnables")!
+
+    static let readStates = VariableName(rawValue: "readStates")!
+
+    static let resetEnables = VariableName(rawValue: "ResetEnables")!
+
+    static let stateIndex = VariableName(rawValue: "stateIndex")!
+
     static let targetStatesCache = VariableName(rawValue: "TargetStatesCache")!
+
+    static let targetStatesCacheInternalStateType = VariableName(
+        rawValue: "TargetStatesCache_InternalState_t"
+    )!
+
+    static let weBRAM = VariableName(rawValue: "weBRAM")!
+
+    static let workingStates = VariableName(rawValue: "workingStates")!
 
 }
