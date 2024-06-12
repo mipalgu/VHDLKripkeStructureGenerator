@@ -71,6 +71,9 @@ public extension VariableName {
     /// The `currentStateOut` signal.
     static let currentStateOut = VariableName(rawValue: "currentStateOut")!
 
+    /// The `data` signal.
+    static let data = VariableName(rawValue: "data")!
+
     /// The `executeOnEntry` signal.
     static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
 

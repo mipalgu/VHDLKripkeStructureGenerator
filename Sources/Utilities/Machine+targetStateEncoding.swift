@@ -116,6 +116,8 @@ public extension Machine {
             self.stateVariables.values.flatMap {
                 $0.map { $0.type.signalType.bits }
             }
+        // <execute_on_entry> + <state_bits> + <external_signals> + <machine_signals> + <state_signals> 
+        //     + <observed>
         return bits.reduce(self.numberOfStateBits + 2, +)
     }
 

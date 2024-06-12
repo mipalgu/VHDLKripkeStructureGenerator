@@ -1,8 +1,8 @@
-// MachineVHDLRepresentable+helpers.swift
+// Entity+targetStateEncoder.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,69 +52,44 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
 import VHDLMachines
 import VHDLParsing
+import Utilities
 
-public extension MachineVHDLRepresentable {
+extension Entity {
 
-    /// The number of encoded target states within a 32-bit address.
-    @inlinable var targetStatesPerAddress: Int {
-        31 / self.machine.targetStateBits
-    }
+    // swiftlint:disable force_unwrapping
 
-    /// Find all constants in the architecture head.
-    @inlinable var allConstants: [HeadStatement] {
-        self.architectureHead.statements.filter {
-            guard case .definition(let def) = $0, case .constant = def else {
-                return false
-            }
-            return true
-        }
-    }
-
-    /// Returns all the external variables in the representation.
-    @inlinable var externalVariables: [PortSignal] {
-        self.entity.port.signals.filter {
-            $0.name.rawValue.lowercased().hasPrefix("external_")
-        }
-    }
-
-    /// Get type of state array.
-    @inlinable var stateType: SignalType? {
-        let currentStateSignal: LocalSignal? = self.architectureHead.statements.lazy
-            .compactMap { (statement: HeadStatement) -> LocalSignal? in
-                guard
-                    case .definition(let def) = statement,
-                    case .signal(let signal) = def
-                else {
-                    return nil
-                }
-                return signal
-            }
-            .first { $0.name == .currentState }
-        guard case .signal(let type) = currentStateSignal?.type else {
+    public init?<T>(targetStatesEncoderFor representation: T) where T: MachineVHDLRepresentable {
+        let numberOfStates = representation.machine.numberOfTargetStates
+        let bits = representation.machine.targetStateBits - 1
+        guard bits > 0 else {
             return nil
         }
-        return type
+        let encoding = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: bits - 1)), lower: .literal(value: .integer(value: 0))
+        )))
+        let variables = (0..<numberOfStates).flatMap {
+            let name = VariableName(rawValue: "state\($0)")!
+            let enable = VariableName(rawValue: "state\($0)en")!
+            return [
+                PortSignal(type: encoding, name: name, mode: .input),
+                PortSignal(type: .stdLogic, name: enable, mode: .input)
+            ]
+        }
+        self.init(
+            name: VariableName(rawValue: "TargetStatesEncoder")!,
+            port: PortBlock(
+                signals: [
+                    PortSignal(clock: representation.machine.clocks[representation.machine.drivingClock])
+                ] + variables + [
+                    PortSignal(type: .logicVector32, name: .data, mode: .output)
+                ]
+            )!
+        )
     }
 
-    /// The number of bits in the state encoding.
-    @inlinable var numberOfStateBits: Int? {
-        self.architectureHead.statements.lazy.compactMap {
-            guard
-                case .definition(let def) = $0,
-                case .signal(let signal) = def,
-                signal.name == .currentState,
-                case .signal(let type) = signal.type,
-                case .ranged(let vec) = type
-            else {
-                return nil
-            }
-            return vec.size.size
-        }
-        .first
-    }
+    // swiftlint:enable force_unwrapping
 
 }
