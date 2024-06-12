@@ -1,8 +1,8 @@
-// ArchitectureHead+bram.swift
+// VHDLFile+targetStateBRAM.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,28 +52,35 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+extension VHDLFile {
 
-    init(bramFor state: State) {
-        self.init(
-            bramUsing: VariableName(
-                rawValue: "STATE_\(state.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
-            )!
+    public init<T>(targetStatesBRAMFor representation: T) where T: MachineVHDLRepresentable {
+        let type = VariableName(rawValue: "\(representation.entity.name)Types")!
+        let work = VariableName(rawValue: "work")!
+        let entity = Entity(targetStatesBRAMFor: representation)
+        let architecture = Architecture(
+            body: AsynchronousBlock(bramFor: representation),
+            entity: entity.name,
+            head: ArchitectureHead(bramUsing: .targetStatesBRAMType),
+            name: .behavioral
         )
-    }
-
-    init(bramUsing ram: VariableName) {
-        self.init(statements: [
-            .definition(value: .signal(value: LocalSignal(
-                type: .alias(name: ram),
-                name: .ram
-            )))
-        ])
+        self.init(
+            architectures: [architecture],
+            entities: [entity],
+            includes: [
+                .library(value: .ieee),
+                .include(statement: .stdLogic1164),
+                .include(statement: .numericStd),
+                .include(statement: UseStatement(
+                    nonEmptyComponents: [.module(name: work), .module(name: type), .all]
+                )!)
+            ]
+        )
     }
 
 }

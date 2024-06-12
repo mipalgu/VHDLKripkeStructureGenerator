@@ -1,8 +1,8 @@
-// ArchitectureHead+bram.swift
+// VariableName+targetStateBRAM.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,28 +52,11 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-import VHDLMachines
 import VHDLParsing
 
-extension ArchitectureHead {
+extension VariableName {
 
-    init(bramFor state: State) {
-        self.init(
-            bramUsing: VariableName(
-                rawValue: "STATE_\(state.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
-            )!
-        )
-    }
-
-    init(bramUsing ram: VariableName) {
-        self.init(statements: [
-            .definition(value: .signal(value: LocalSignal(
-                type: .alias(name: ram),
-                name: .ram
-            )))
-        ])
-    }
+    static let targetStatesBRAM = VariableName(rawValue: "TargetStatesBRAM")!
 
 }

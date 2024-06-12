@@ -128,6 +128,15 @@ public extension VariableName {
     /// The `targetStateIn` signal.
     static let targetStateIn = VariableName(rawValue: "targetStateIn")!
 
+    /// The `TargetStatesBRAM_t` type.
+    static let targetStatesBRAMType = VariableName(rawValue: "TargetStatesBRAM_t")!
+
+    /// The `TargetStatesBRAMElement_t` type.
+    static let targetStatesBRAMElementType = VariableName(rawValue: "TargetStatesBRAMElement_t")!
+
+    /// The `TargetStatesBRAMEnabled_t` type.
+    static let targetStatesBRAMEnabledType = VariableName(rawValue: "TargetStatesBRAMEnabled_t")!
+
     /// The `targetStateOut` signal.
     static let targetStateOut = VariableName(rawValue: "targetStateOut")!
 

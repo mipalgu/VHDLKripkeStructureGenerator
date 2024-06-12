@@ -1,8 +1,8 @@
-// ArchitectureHead+bram.swift
+// TargetStatesBRAMTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,28 +52,60 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
+import TestUtils
 import VHDLMachines
+@testable import VHDLMemoryStructures
 import VHDLParsing
+import XCTest
 
-extension ArchitectureHead {
+/// Test class for `TargetStatesBRAM`.
+final class TargetStatesBRAMTests: XCTestCase {
 
-    init(bramFor state: State) {
-        self.init(
-            bramUsing: VariableName(
-                rawValue: "STATE_\(state.name.rawValue)_Ringlets_\(VariableName.rawType.rawValue)"
-            )!
-        )
-    }
+    // swiftlint:disable implicitly_unwrapped_optional
 
-    init(bramUsing ram: VariableName) {
-        self.init(statements: [
-            .definition(value: .signal(value: LocalSignal(
-                type: .alias(name: ram),
-                name: .ram
-            )))
-        ])
+    /// A test machine.
+    let representation: MachineRepresentation! = MachineRepresentation(
+        machine: .pingMachine, name: .pingMachine
+    )
+
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    /// Test TargetStateBRAM generation.
+    func testGeneration() {
+        let result = VHDLFile(targetStatesBRAMFor: representation)
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+        use work.PingMachineTypes.all;
+
+        entity TargetStatesBRAM is
+            port(
+                clk: in std_logic;
+                we: in std_logic;
+                addr: in std_logic_vector(31 downto 0);
+                di: in std_logic_vector(31 downto 0);
+                do: out std_logic_vector(31 downto 0)
+            );
+        end TargetStatesBRAM;
+
+        architecture Behavioral of TargetStatesBRAM is
+            signal ram: TargetStatesBRAM_t;
+        begin
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    if (we = '1') then
+                        ram(to_integer(unsigned(addr))) <= di;
+                    end if;
+                    do <= ram(to_integer(unsigned(addr)));
+                end if;
+            end process;
+        end Behavioral;
+
+        """
+        XCTAssertEqual(result.rawValue, expected)
     }
 
 }
