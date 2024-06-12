@@ -100,6 +100,11 @@ public extension MachineVHDLRepresentable {
         31 / self.machine.targetStateBits
     }
 
+    /// The number of target state addresses.
+    @inlinable var targetStateAddresses: Int {
+        self.machine.numberOfTargetStates / self.targetStatesPerAddress
+    }
+
     /// The number of bits in the state encoding.
     @inlinable var numberOfStateBits: Int? {
         self.architectureHead.statements.lazy.compactMap {
