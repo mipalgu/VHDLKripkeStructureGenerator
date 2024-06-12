@@ -1,4 +1,4 @@
-// Entity+targetStateEncoder.swift
+// VHDLFile+targetStateEncoder.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,43 +53,24 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
-import Utilities
 
-extension Entity {
-
-    // swiftlint:disable force_unwrapping
+extension VHDLFile {
 
     public init?<T>(targetStatesEncoderFor representation: T) where T: MachineVHDLRepresentable {
-        let numberOfStates = representation.machine.numberOfTargetStates
-        let bits = representation.machine.targetStateBits - 1
-        guard bits > 0 else {
+        guard
+            let entity = Entity(targetStatesEncoderFor: representation),
+            let architecture = Architecture(targetStateEncoderFor: representation)
+        else {
             return nil
         }
-        let encoding = SignalType.ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: bits - 1)), lower: .literal(value: .integer(value: 0))
-        )))
-        let variables = (0..<numberOfStates).flatMap {
-            let name = VariableName(rawValue: "state\($0)")!
-            let enable = VariableName(rawValue: "state\($0)en")!
-            return [
-                PortSignal(type: encoding, name: name, mode: .input),
-                PortSignal(type: .stdLogic, name: enable, mode: .input)
-            ]
-        }
         self.init(
-            name: .targetStatesEncoder,
-            port: PortBlock(
-                signals: [
-                    PortSignal(clock: representation.machine.clocks[representation.machine.drivingClock])
-                ] + variables + [
-                    PortSignal(type: .logicVector32, name: .data, mode: .output)
-                ]
-            )!
+            architectures: [architecture],
+            entities: [entity],
+            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
         )
     }
-
-    // swiftlint:enable force_unwrapping
 
 }

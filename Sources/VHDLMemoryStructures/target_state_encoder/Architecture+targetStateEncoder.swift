@@ -1,4 +1,4 @@
-// Entity+targetStateEncoder.swift
+// Architecture+targetStateEncoder.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,43 +53,57 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
-import Utilities
 
-extension Entity {
+extension Architecture {
 
-    // swiftlint:disable force_unwrapping
-
-    public init?<T>(targetStatesEncoderFor representation: T) where T: MachineVHDLRepresentable {
-        let numberOfStates = representation.machine.numberOfTargetStates
-        let bits = representation.machine.targetStateBits - 1
-        guard bits > 0 else {
+    init?<T>(targetStateEncoderFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let indexes = machine.numberOfTargetStates
+        guard indexes > 0 else {
             return nil
         }
-        let encoding = SignalType.ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: bits - 1)), lower: .literal(value: .integer(value: 0))
-        )))
-        let variables = (0..<numberOfStates).flatMap {
-            let name = VariableName(rawValue: "state\($0)")!
-            let enable = VariableName(rawValue: "state\($0)en")!
-            return [
-                PortSignal(type: encoding, name: name, mode: .input),
-                PortSignal(type: .stdLogic, name: enable, mode: .input)
+        let variables = (0..<indexes).flatMap {
+            [
+                Expression.reference(variable: .variable(
+                    reference: .variable(name: VariableName(rawValue: "state\($0)")!)
+                )),
+                Expression.reference(variable: .variable(
+                    reference: .variable(name: VariableName(rawValue: "state\($0)en")!)
+                ))
             ]
         }
+        let remainder = 31 - machine.numberOfTargetStates * machine.targetStateBits
+        let suffix: Expression
+        let enable = Expression.reference(variable: .variable(
+            reference: .variable(name: VariableName(rawValue: "state0en")!)
+        ))
+        if remainder > 0 {
+            let zeros = SignalLiteral.vector(value: .bits(
+                value: BitVector(values: [BitLiteral](repeating: .low, count: remainder))
+            ))
+            suffix = Expression.binary(operation: .concatenate(
+                lhs: .literal(value: zeros),
+                rhs: enable
+            ))
+        } else {
+            suffix = enable
+        }
+        let concatenation = (variables + [suffix]).joined {
+            Expression.binary(operation: .concatenate(lhs: $0, rhs: $1))
+        }
+        let assignment = AsynchronousBlock.statement(statement: .assignment(
+            name: .variable(reference: .variable(name: .data)),
+            value: .expression(value: concatenation)
+        ))
         self.init(
-            name: .targetStatesEncoder,
-            port: PortBlock(
-                signals: [
-                    PortSignal(clock: representation.machine.clocks[representation.machine.drivingClock])
-                ] + variables + [
-                    PortSignal(type: .logicVector32, name: .data, mode: .output)
-                ]
-            )!
+            body: assignment,
+            entity: .targetStatesEncoder,
+            head: ArchitectureHead(statements: []),
+            name: .behavioral
         )
     }
-
-    // swiftlint:enable force_unwrapping
 
 }
