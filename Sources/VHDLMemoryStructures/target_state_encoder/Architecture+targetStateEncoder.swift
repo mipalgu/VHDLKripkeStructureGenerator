@@ -61,7 +61,7 @@ extension Architecture {
 
     init?<T>(targetStateEncoderFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
-        let indexes = machine.numberOfTargetStates
+        let indexes = representation.targetStatesPerAddress
         guard indexes > 0 else {
             return nil
         }
@@ -75,7 +75,7 @@ extension Architecture {
                 ))
             ]
         }
-        let remainder = 31 - machine.numberOfTargetStates * machine.targetStateBits
+        let remainder = 31 - representation.targetStatesPerAddress * machine.targetStateBits
         let suffix: Expression
         let enable = Expression.reference(variable: .variable(
             reference: .variable(name: VariableName(rawValue: "state0en")!)

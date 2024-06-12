@@ -53,16 +53,16 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
-import Utilities
 
 extension Entity {
 
     // swiftlint:disable force_unwrapping
 
     public init?<T>(targetStatesEncoderFor representation: T) where T: MachineVHDLRepresentable {
-        let numberOfStates = representation.machine.numberOfTargetStates
+        let numberOfStates = representation.targetStatesPerAddress
         let bits = representation.machine.targetStateBits - 1
         guard bits > 0 else {
             return nil

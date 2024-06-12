@@ -59,11 +59,6 @@ import VHDLParsing
 
 public extension MachineVHDLRepresentable {
 
-    /// The number of encoded target states within a 32-bit address.
-    @inlinable var targetStatesPerAddress: Int {
-        31 / self.machine.targetStateBits
-    }
-
     /// Find all constants in the architecture head.
     @inlinable var allConstants: [HeadStatement] {
         self.architectureHead.statements.filter {
@@ -98,6 +93,11 @@ public extension MachineVHDLRepresentable {
             return nil
         }
         return type
+    }
+
+    /// The number of encoded target states within a 32-bit address.
+    @inlinable var targetStatesPerAddress: Int {
+        31 / self.machine.targetStateBits
     }
 
     /// The number of bits in the state encoding.
