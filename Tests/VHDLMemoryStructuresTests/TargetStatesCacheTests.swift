@@ -112,6 +112,56 @@ final class TargetStatesCacheTests: XCTestCase {
             signal currentValue: std_logic_vector(31 downto 0);
             signal readStates: TargetStatesBRAMElement_t;
             signal readEnables: TargetStatesBRAMEnabled_t;
+            component TargetStatesBRAM is
+                port(
+                    clk: in std_logic;
+                    we: in std_logic;
+                    addr: in std_logic_vector(31 downto 0);
+                    di: in std_logic_vector(31 downto 0);
+                    do: out std_logic_vector(31 downto 0)
+                );
+            end component;
+            component TargetStatesEncoder is
+                port(
+                    clk: in std_logic;
+                    state0: in std_logic_vector(2 downto 0);
+                    state0en: in std_logic;
+                    state1: in std_logic_vector(2 downto 0);
+                    state1en: in std_logic;
+                    state2: in std_logic_vector(2 downto 0);
+                    state2en: in std_logic;
+                    state3: in std_logic_vector(2 downto 0);
+                    state3en: in std_logic;
+                    state4: in std_logic_vector(2 downto 0);
+                    state4en: in std_logic;
+                    state5: in std_logic_vector(2 downto 0);
+                    state5en: in std_logic;
+                    state6: in std_logic_vector(2 downto 0);
+                    state6en: in std_logic;
+                    data: out std_logic_vector(31 downto 0)
+                );
+            end component;
+            component TargetStatesDecoder is
+                port(
+                    data: in std_logic_vector(31 downto 0);
+                    state0: out std_logic_vector(2 downto 0);
+                    state0en: out std_logic;
+                    state1: out std_logic_vector(2 downto 0);
+                    state1en: out std_logic;
+                    state2: out std_logic_vector(2 downto 0);
+                    state2en: out std_logic;
+                    state3: out std_logic_vector(2 downto 0);
+                    state3en: out std_logic;
+                    state4: out std_logic_vector(2 downto 0);
+                    state4en: out std_logic;
+                    state5: out std_logic_vector(2 downto 0);
+                    state5en: out std_logic;
+                    state6: out std_logic_vector(2 downto 0);
+                    state6en: out std_logic
+                );
+            end component;
+        begin
+            
         end Behavioral;
 
         """
