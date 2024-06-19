@@ -193,6 +193,10 @@ extension WhenCase {
                 ))
             )),
             .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .stateIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .internalState)),
                 value: .reference(variable: .variable(reference: .variable(name: .waitForNewRinglets)))
             )),

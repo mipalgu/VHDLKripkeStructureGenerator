@@ -255,6 +255,7 @@ final class TargetStatesCacheTests: XCTestCase {
                             workingStates <= (others => (others => '0'));
                             busy <= '1';
                             memoryIndex <= memoryIndex + 1;
+                            stateIndex <= 0;
                             internalState <= WaitForNewRinglets;
                         when others =>
                             null;
