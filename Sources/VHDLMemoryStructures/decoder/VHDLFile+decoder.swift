@@ -76,7 +76,8 @@ extension VHDLFile {
     ///   - name: The name of the decoder.
     ///   - elements: The number of elements in the decoder.
     ///   - size: The size of each element in the decoder.
-    /// - Warning: The `numberOfElements` and `elementSize` parameters must be greater than 0.
+    /// - Warning: The `numberOfElements` and `elementSize` parameters must be greater than 0 and fit within
+    /// a 32-bit encoded value.
     @inlinable
     public init?(decoderName name: VariableName, numberOfElements elements: Int, elementSize size: Int) {
         guard
