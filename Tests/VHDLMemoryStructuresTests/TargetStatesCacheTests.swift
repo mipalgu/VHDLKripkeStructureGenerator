@@ -98,12 +98,12 @@ final class TargetStatesCacheTests: XCTestCase {
 
         architecture Behavioral of TargetStatesCache is
             signal workingStates: TargetStatesBRAMElement_t;
-            signal memoryIndex: integer range 0 to 8;
+            signal memoryIndex: integer range 0 to 2;
             signal di: std_logic_vector(31 downto 0);
             signal index: std_logic_vector(31 downto 0);
             signal weBRAM: std_logic;
             signal enables: TargetStatesBRAMEnabled_t;
-            signal genIndex: std_logic_vector(31 downto 0);
+            signal genIndex: std_logic_vector(3 downto 0);
             type TargetStatesCache_InternalState_t is (Initial, WaitForNewRinglets, WriteElement, Error, ResetEnables, IncrementIndex);
             signal internalState: TargetStatesCache_InternalState_t := Initial;
             signal stateIndex: integer range 0 to 6;
@@ -161,11 +161,110 @@ final class TargetStatesCacheTests: XCTestCase {
                 );
             end component;
         begin
-            
+            bram_inst: component TargetStatesBRAM port map (
+                clk => clk,
+                we => weBRAM,
+                addr => index,
+                di => di,
+                do => currentValue
+            );
+            encoder_inst: component TargetStatesEncoder port map (
+                clk => clk,
+                state0 => workingStates(0),
+                state0en => enables(0),
+                state1 => workingStates(1),
+                state1en => enables(1),
+                state2 => workingStates(2),
+                state2en => enables(2),
+                state3 => workingStates(3),
+                state3en => enables(3),
+                state4 => workingStates(4),
+                state4en => enables(4),
+                state5 => workingStates(5),
+                state5en => enables(5),
+                state6 => workingStates(6),
+                state6en => enables(6),
+                data => di
+            );
+            decoder_inst: component TargetStatesDecoder port map (
+                data => currentValue,
+                state0 => readStates(0),
+                state0en => readEnables(0),
+                state1 => readStates(1),
+                state1en => readEnables(1),
+                state2 => readStates(2),
+                state2en => readEnables(2),
+                state3 => readStates(3),
+                state3en => readEnables(3),
+                state4 => readStates(4),
+                state4en => readEnables(4),
+                state5 => readStates(5),
+                state5en => readEnables(5),
+                state6 => readStates(6),
+                state6en => readEnables(6)
+            );
+            memoryAddress <= "0000000000000000000000000000" & std_logic_vector(unsigned(address) / 7);
+            memoryOffset <= to_integer(unsigned(address) - unsigned(address) / 7 * 7);
+            value <= readStates(memoryOffset) & readEnables(memoryOffset);
+            index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewRinglets else genIndex;
+            genIndex <= std_logic_vector(to_unsigned(memoryIndex, 4) * 7 + to_unsigned(stateIndex, 4));
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    case internalState is
+                        when Initial =>
+                            busy <= '0';
+                            internalState <= WaitForNewRinglets;
+                            memoryIndex <= 0;
+                            weBRAM <= '0';
+                            di <= (others => '0');
+                            stateIndex <= 0;
+                            enables <= (others => '0');
+                        when WaitForNewRinglets =>
+                            if (ready = '1' and we = '1') then
+                                internalState <= WriteElement;
+                                busy <= '1';
+                                workingStates(stateIndex) <= state;
+                            else
+                                busy <= '0';
+                            end if;
+                            weBRAM <= '0';
+                        when WriteElement =>
+                            if (memoryIndex = 2) then
+                                internalState <= Error;
+                                weBRAM <= '0';
+                            elsif (stateIndex = 6) then
+                                internalState <= ResetEnables;
+                                weBRAM <= '1';
+                            else
+                                internalState <= IncrementIndex;
+                                weBRAM <= '1';
+                            end if;
+                            lastAddress <= genIndex;
+                            enables(stateIndex) <= '1';
+                            workingStates(stateIndex) <= state;
+                            busy <= '1';
+                        when IncrementIndex =>
+                            weBRAM <= '0';
+                            stateIndex <= stateIndex + 1;
+                            busy <= '1';
+                            internalState <= WaitForNewRinglets;
+                        when ResetEnables =>
+                            weBRAM <= '0';
+                            enables <= (others => '0');
+                            workingStates <= (others => (others => '0'));
+                            busy <= '1';
+                            memoryIndex <= memoryIndex + 1;
+                            internalState <= WaitForNewRinglets;
+                        when others =>
+                            null;
+                    end case;
+                end if;
+            end process;
         end Behavioral;
 
         """
-        XCTAssertEqual(result.rawValue, expected)
+        XCTAssertEqual(expected, result.rawValue)
     }
 
 }

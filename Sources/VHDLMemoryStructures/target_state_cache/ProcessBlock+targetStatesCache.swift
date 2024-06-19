@@ -255,7 +255,7 @@ extension WhenCase {
                 .ifStatement(block: .ifElse(
                     condition: .conditional(condition: .comparison(value: .equality(
                         lhs: .reference(variable: .variable(reference: .variable(name: .memoryIndex))),
-                        rhs: .literal(value: .integer(value: representation.targetStateAddresses))
+                        rhs: .literal(value: .integer(value: representation.targetStateAddresses + 1))
                     ))),
                     ifBlock: .blocks(blocks: [
                         .statement(statement: .assignment(

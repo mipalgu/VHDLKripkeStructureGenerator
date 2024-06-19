@@ -63,12 +63,13 @@ extension AsynchronousBlock {
         guard
             let encoderInst = AsynchronousBlock(targetStatesCacheEncoderInstFor: representation),
             let decoderInst = AsynchronousBlock(targetStatesCacheDecoderInstFor: representation),
-            let addressBits = BitLiteral.bitsRequired(for: representation.machine.numberOfTargetStates - 1)
+            let addressBits = BitLiteral.bitsRequired(for: representation.machine.numberOfTargetStates - 1),
+            addressBits <= 32
         else {
             return nil
         }
         let bramInst = AsynchronousBlock(targetStatesCacheBRAMInstFor: representation)
-        let padding = 31 - representation.machine.targetStateBits * representation.targetStatesPerAddress
+        let padding = 32 - addressBits
         let addressCast = Expression.cast(operation: .stdLogicVector(expression: .binary(operation: .division(
             lhs: .cast(operation: .unsigned(expression: .reference(variable: .variable(
                 reference: .variable(name: .address)
@@ -216,7 +217,7 @@ extension AsynchronousBlock {
     }
 
     init?<T>(targetStatesCacheDecoderInstFor representation: T) where T: MachineVHDLRepresentable {
-        guard let decoder = Entity(targetStatesEncoderFor: representation) else {
+        guard let decoder = Entity(targetStatesDecoderFor: representation) else {
             return nil
         }
         let dataMap = VariableMap(

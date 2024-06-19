@@ -62,7 +62,10 @@ extension ArchitectureHead {
     init?<T>(targetStatesCacheFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let encoder = Entity(targetStatesEncoderFor: representation),
-            let decoder = Entity(targetStatesDecoderFor: representation)
+            let decoder = Entity(targetStatesDecoderFor: representation),
+            let numberOfStateBits = BitLiteral.bitsRequired(
+                for: representation.machine.numberOfTargetStates - 1
+            )
         else {
             return nil
         }
@@ -74,7 +77,7 @@ extension ArchitectureHead {
             .definition(value: .signal(value: LocalSignal(
                 type: .ranged(type: .integer(size: .to(
                     lower: .literal(value: .integer(value: 0)),
-                    upper: .literal(value: .integer(value: max(representation.targetStateAddresses, 1)))
+                    upper: .literal(value: .integer(value: max(representation.targetStateAddresses + 1, 1)))
                 ))),
                 name: .memoryIndex
             ))),
@@ -84,7 +87,13 @@ extension ArchitectureHead {
             .definition(value: .signal(value: LocalSignal(
                 type: .alias(name: .targetStatesBRAMEnabledType), name: .enables
             ))),
-            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .genIndex))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: numberOfStateBits - 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .genIndex
+            ))),
             .definition(value: .type(value: .enumeration(value: EnumerationDefinition(
                 name: .targetStatesCacheInternalStateType,
                 nonEmptyValues: [
