@@ -57,6 +57,7 @@
 import VHDLMachines
 import VHDLParsing
 
+/// Add constants.
 public extension VariableName {
 
     /// The `boolToStdLogic` function.
