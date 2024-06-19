@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
 /// Create a generic decoder.
@@ -76,7 +77,8 @@ extension VHDLFile {
     ///   - elements: The number of elements in the decoder.
     ///   - size: The size of each element in the decoder.
     /// - Warning: The `numberOfElements` and `elementSize` parameters must be greater than 0.
-    init?(decoderName name: VariableName, numberOfElements elements: Int, elementSize size: Int) {
+    @inlinable
+    public init?(decoderName name: VariableName, numberOfElements elements: Int, elementSize size: Int) {
         guard
             let entity = Entity(decoderName: name, numberOfElements: elements, elementSize: size),
             let architecture = Architecture(decoderName: name, numberOfElements: elements, elementSize: size)

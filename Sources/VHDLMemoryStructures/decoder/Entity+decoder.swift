@@ -53,12 +53,14 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
 /// Add decoder creation.
 extension Entity {
 
     /// Create a generic decoder.
+    @inlinable
     init?(decoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
         guard numberOfElements > 0, elementSize > 0, (elementSize + 1) * numberOfElements <= 32 else {
             return nil
