@@ -56,13 +56,17 @@
 import Utilities
 import VHDLParsing
 
+/// Add encoder creation.
 extension Architecture {
 
+    /// Create a generic encoder.
+    @inlinable
     init?(encoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
         guard numberOfElements > 0, elementSize > 0, (elementSize + 1) * numberOfElements <= 32 else {
             return nil
         }
         let paddingAmount = 32 - (elementSize + 1) * numberOfElements
+        // swiftlint:disable force_unwrapping
         let expressions = (0..<numberOfElements).flatMap {
             [
                 Expression.reference(variable: .variable(reference: .variable(
@@ -73,6 +77,7 @@ extension Architecture {
                 )))
             ]
         }
+        // swiftlint:enable force_unwrapping
         let elements: [Expression]
         if paddingAmount > 0 {
             elements = expressions + [

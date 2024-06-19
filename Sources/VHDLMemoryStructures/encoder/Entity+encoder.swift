@@ -56,8 +56,11 @@
 import Utilities
 import VHDLParsing
 
+/// Add encoder creation.
 extension Entity {
 
+    /// Create a generic encoder.
+    @inlinable
     init?(encoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
         guard numberOfElements > 0, elementSize > 0, (elementSize + 1) * numberOfElements <= 32 else {
             return nil

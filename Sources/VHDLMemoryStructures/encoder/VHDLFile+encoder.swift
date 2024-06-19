@@ -56,9 +56,22 @@
 import Utilities
 import VHDLParsing
 
+/// Add encoder creation.
 extension VHDLFile {
 
-    init?(encoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
+    /// Creates an encoder for the elements specified.
+    /// 
+    /// This encoder takes each element as input and encodes it into a 32-bit `std_logic_vector`. Each element
+    /// is accompanied by an enable bit that will be encoded at the elements suffix within the encoded data.
+    /// The most-significant bit in the encoded value represents the first element (i.e. element 0).
+    /// - Parameters:
+    ///   - name: The name of the encoder.
+    ///   - numberOfElements: The number of elements to encode.
+    ///   - elementSize: The size of each elements as the number of bits.
+    /// - Warning: The `numberOfElements` and `elementSize` parameters must be greater than 0, and all the
+    /// elements must be able to fit within 32-bits.
+    @inlinable
+    public init?(encoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
         guard
             let entity = Entity(
                 encoderName: name, numberOfElements: numberOfElements, elementSize: elementSize
