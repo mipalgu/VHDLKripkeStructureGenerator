@@ -75,6 +75,9 @@ public extension VariableName {
     /// The `data` signal.
     static let data = VariableName(rawValue: "data")!
 
+    /// The `denominator` signal.
+    static let denominator = VariableName(rawValue: "denominator")!
+
     /// The `executeOnEntry` signal.
     static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
 
@@ -96,6 +99,9 @@ public extension VariableName {
     /// The `nextState` signal.
     static let nextState = VariableName(rawValue: "nextState")!
 
+    /// The `numerator` signal.
+    static let numerator = VariableName(rawValue: "numerator")!
+
     /// The `observed` signal.
     static let observed = VariableName(rawValue: "observed")!
 
@@ -108,8 +114,14 @@ public extension VariableName {
     /// The `ReadSnapshot_t` type.
     static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
 
+    /// The `remainder` signal.
+    static let remainder = VariableName(rawValue: "remainder")!
+
     /// The `reset` signal.
     static let reset = VariableName(rawValue: "reset")!
+
+    /// The `result` signal.
+    static let result = VariableName(rawValue: "result")!
 
     /// The `ringlet_counter` signal.
     static let ringletCounter = VariableName(rawValue: "ringlet_counter")!
