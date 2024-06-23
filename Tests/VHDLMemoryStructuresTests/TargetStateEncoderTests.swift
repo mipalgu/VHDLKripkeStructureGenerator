@@ -111,7 +111,7 @@ final class TargetStateEncoderTests: XCTestCase {
 
         """
         // swiftlint:enable line_length
-        XCTAssertEqual(result.rawValue, expected, "\(result.rawValue.difference(from: expected))")
+        XCTAssertEqual(result.rawValue, expected)
     }
 
 }

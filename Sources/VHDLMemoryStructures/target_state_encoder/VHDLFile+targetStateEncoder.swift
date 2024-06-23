@@ -60,17 +60,22 @@ import VHDLParsing
 extension VHDLFile {
 
     public init?<T>(targetStatesEncoderFor representation: T) where T: MachineVHDLRepresentable {
-        guard
-            let entity = Entity(targetStatesEncoderFor: representation),
-            let architecture = Architecture(targetStateEncoderFor: representation)
-        else {
-            return nil
-        }
         self.init(
-            architectures: [architecture],
-            entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+            encoderName: .targetStatesEncoder,
+            numberOfElements: representation.targetStatesPerAddress,
+            elementSize: representation.machine.targetStateBits - 1
         )
+        // guard
+        //     let entity = Entity(targetStatesEncoderFor: representation),
+        //     let architecture = Architecture(targetStateEncoderFor: representation)
+        // else {
+        //     return nil
+        // }
+        // self.init(
+        //     architectures: [architecture],
+        //     entities: [entity],
+        //     includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+        // )
     }
 
 }
