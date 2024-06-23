@@ -1,8 +1,8 @@
-// Entity+bram.swift
+// Architecture+bram.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,71 +52,19 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-import VHDLMachines
 import VHDLParsing
 
-extension Entity {
-
-    init<T>(bramFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let clock = representation.machine.clocks[representation.machine.drivingClock]
-        self.init(
-            name: VariableName(rawValue: "\(state.name.rawValue)BRAM")!,
-            port: PortBlock(bramWith: clock)
-        )
-    }
+extension Architecture {
 
     init?(bramName name: VariableName, numberOfAddresses: Int) {
-        guard numberOfAddresses > 0, Int64(numberOfAddresses) <= Int64(UInt32.max) + 1 else {
+        guard
+            let head = ArchitectureHead(bramName: name, numberOfAddresses: numberOfAddresses),
+            let body = AsynchronousBlock(bramName: name, numberOfAddresses: numberOfAddresses)
+        else {
             return nil
         }
-        let signals = [
-            PortSignal(type: .stdLogic, name: .clk, mode: .input),
-            PortSignal(type: .stdLogic, name: .we, mode: .input),
-            PortSignal(type: .logicVector32, name: .addr, mode: .input),
-            PortSignal(type: .logicVector32, name: .di, mode: .input),
-            PortSignal(type: .logicVector32, name: .do, mode: .output)
-        ]
-        guard let block = PortBlock(signals: signals) else {
-            return nil
-        }
-        self.init(name: name, port: block)
-    }
-
-}
-
-extension PortBlock {
-
-    init(bramWith clock: Clock) {
-        self.init(signals: [
-            PortSignal(clock: clock),
-            PortSignal(type: .stdLogic, name: .we, mode: .input),
-            PortSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 31)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .addr,
-                mode: .input
-            ),
-            PortSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 31)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .di,
-                mode: .input
-            ),
-            PortSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 31)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .do,
-                mode: .output
-            )
-        ])!
+        self.init(body: body, entity: name, head: head, name: .behavioral)
     }
 
 }

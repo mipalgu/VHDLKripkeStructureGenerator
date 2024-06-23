@@ -110,4 +110,56 @@ extension AsynchronousBlock {
         ))
     }
 
+    init?(bramName name: VariableName, numberOfAddresses: Int) {
+        guard numberOfAddresses > 0, Int64(numberOfAddresses) <= Int64(UInt32.max) + 1 else {
+            return nil
+        }
+        self = .process(block: ProcessBlock(
+            sensitivityList: [.clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: .clk))
+                )))),
+                ifBlock: .blocks(blocks: [
+                    .ifStatement(block: .ifStatement(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .we))),
+                            rhs: .literal(value: .bit(value: .high))
+                        ))),
+                        ifBlock: .statement(statement: .assignment(
+                            name: .indexed(
+                                name: .reference(variable: .variable(reference: .variable(name: .ram))),
+                                index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
+                                    name: .toInteger,
+                                    parameters: [
+                                        Argument(argument: .cast(operation: .unsigned(
+                                            expression: .reference(variable: .variable(
+                                                reference: .variable(name: .addr)
+                                            ))
+                                        )))
+                                    ]
+                                ))))
+                            ),
+                            value: .reference(variable: .variable(reference: .variable(name: .di)))
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .do)),
+                        value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .ram))),
+                            index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
+                                name: .toInteger,
+                                parameters: [
+                                    Argument(argument: .cast(operation: .unsigned(expression: .reference(
+                                        variable: .variable(reference: .variable(name: .addr))
+                                    ))))
+                                ]
+                            ))))
+                        ))
+                    ))
+                ])
+            ))
+        ))
+    }
+
 }

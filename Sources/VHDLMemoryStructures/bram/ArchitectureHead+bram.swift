@@ -76,4 +76,29 @@ extension ArchitectureHead {
         ])
     }
 
+    init?(bramName name: VariableName, numberOfAddresses: Int) {
+        guard
+            numberOfAddresses > 0,
+            Int64(numberOfAddresses) <= Int64(UInt32.max) + 1,
+            let typeName = VariableName(rawValue: name.rawValue + "RAM_t")
+        else {
+            return nil
+        }
+        let ramDefinition = HeadStatement.definition(value: .type(value: .array(value: ArrayDefinition(
+            name: typeName,
+            size: [
+                .to(
+                    lower: .literal(value: .integer(value: 0)),
+                    upper: .literal(value: .integer(value: numberOfAddresses - 1))
+                )
+            ],
+            elementType: .signal(type: .logicVector32)
+        ))))
+        let statements = [
+            ramDefinition,
+            .definition(value: .signal(value: LocalSignal(type: .alias(name: typeName), name: .ram)))
+        ]
+        self.init(statements: statements)
+    }
+
 }

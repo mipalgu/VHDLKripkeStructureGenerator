@@ -77,4 +77,18 @@ extension VHDLFile {
         )
     }
 
+    public init?(bramName name: VariableName, numberOfAddresses: Int) {
+        guard
+            let entity = Entity(bramName: name, numberOfAddresses: numberOfAddresses),
+            let architecture = Architecture(bramName: name, numberOfAddresses: numberOfAddresses)
+        else {
+            return nil
+        }
+        self.init(
+            architectures: [architecture],
+            entities: [entity],
+            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+        )
+    }
+
 }
