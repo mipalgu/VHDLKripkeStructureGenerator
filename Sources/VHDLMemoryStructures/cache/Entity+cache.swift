@@ -1,8 +1,8 @@
-// Entity+bram.swift
+// Entity+cache.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,71 +52,43 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
-import VHDLMachines
 import VHDLParsing
 
 extension Entity {
 
-    init<T>(bramFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let clock = representation.machine.clocks[representation.machine.drivingClock]
-        self.init(
-            name: VariableName(rawValue: "\(state.name.rawValue)BRAM")!,
-            port: PortBlock(bramWith: clock)
-        )
-    }
-
-    init?(bramName name: VariableName, numberOfAddresses: Int) {
-        guard numberOfAddresses > 0, Int64(numberOfAddresses) <= Int64(UInt32.max) else {
+    init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        guard size > 0, numberOfElements > 0 else {
             return nil
         }
+        guard size <= 31 else {
+            fatalError("Caches containing large elements are not yet supported!")
+        }
+        let numberOfAddresses = max(1, numberOfElements * size / 31)
+        guard let addressBits = BitLiteral.bitsRequired(for: numberOfAddresses - 1) else {
+            return nil
+        }
+        let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: addressBits - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let elementType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: size - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
         let signals = [
             PortSignal(type: .stdLogic, name: .clk, mode: .input),
+            PortSignal(type: addressType, name: .address, mode: .input),
+            PortSignal(type: elementType, name: .data, mode: .input),
             PortSignal(type: .stdLogic, name: .we, mode: .input),
-            PortSignal(type: .logicVector32, name: .addr, mode: .input),
-            PortSignal(type: .logicVector32, name: .di, mode: .input),
-            PortSignal(type: .logicVector32, name: .do, mode: .output)
+            PortSignal(type: .stdLogic, name: .busy, mode: .output),
+            PortSignal(type: elementType, name: .value, mode: .output),
+            PortSignal(type: addressType, name: .lastAddress, mode: .output)
         ]
         guard let block = PortBlock(signals: signals) else {
             return nil
         }
         self.init(name: name, port: block)
-    }
-
-}
-
-extension PortBlock {
-
-    init(bramWith clock: Clock) {
-        self.init(signals: [
-            PortSignal(clock: clock),
-            PortSignal(type: .stdLogic, name: .we, mode: .input),
-            PortSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 31)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .addr,
-                mode: .input
-            ),
-            PortSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 31)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .di,
-                mode: .input
-            ),
-            PortSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: 31)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .do,
-                mode: .output
-            )
-        ])!
     }
 
 }
