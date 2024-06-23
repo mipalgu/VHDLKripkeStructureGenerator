@@ -62,32 +62,121 @@ extension ArchitectureHead {
         guard size > 0, numberOfElements > 0 else {
             return nil
         }
-        guard size <= 31 else {
+        guard size <= 30 else {
             fatalError("Large element sizes are currently not supported!")
         }
-        let numberOfAddresses = max(1, numberOfElements * size / 31)
+        let elementsPerAddress = 31 / (size + 1)
+        let numberOfAddresses = max(1, numberOfElements * (size + 1) / 31)
         guard
-            let addressBits = BitLiteral.bitsRequired(for: numberOfAddresses - 1),
+            let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1),
             addressBits <= 32,
             let decoderName = VariableName(rawValue: name.rawValue + "Decoder"),
             let encoderName = VariableName(rawValue: name.rawValue + "Encoder"),
             let dividerName = VariableName(rawValue: name.rawValue + "Divider"),
             let bramName = VariableName(rawValue: name.rawValue + "BRAM"),
             let encoder = Entity(
-                encoderName: encoderName, numberOfElements: numberOfElements, elementSize: size
+                encoderName: encoderName, numberOfElements: elementsPerAddress, elementSize: size
             ),
             let decoder = Entity(
-                decoderName: decoderName, numberOfElements: numberOfElements, elementSize: size
+                decoderName: decoderName, numberOfElements: elementsPerAddress, elementSize: size
             ),
             let divider = Entity(dividerName: dividerName, size: addressBits),
-            let bram = Entity(bramName: bramName, numberOfAddresses: numberOfAddresses)
+            let bram = Entity(bramName: bramName, numberOfAddresses: numberOfAddresses),
+            let cacheTypeName = VariableName(rawValue: name.rawValue + "Cache_t"),
+            let enablesTypeName = VariableName(rawValue: name.rawValue + "Enables_t"),
+            let internalType = VariableName(rawValue: name.rawValue + "InternalState_t")
         else {
             return nil
         }
+        let elementType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: size - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let arraySize = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: elementsPerAddress - 1))
+        )
+        let cacheType = HeadStatement.definition(value: .type(value: .array(value: ArrayDefinition(
+            name: cacheTypeName,
+            size: [arraySize],
+            elementType: .signal(type: elementType)
+        ))))
+        let cache = HeadStatement.definition(value: .signal(
+            value: LocalSignal(type: .alias(name: cacheTypeName), name: .cache)
+        ))
+        let cacheIndex = HeadStatement.definition(value: .signal(value: LocalSignal(
+            type: .signal(type: .ranged(type: .integer(size: arraySize))),
+            name: .cacheIndex
+        )))
+        let cacheSignals = [cacheType, cache, cacheIndex]
+        let expanderTypes = [
+            HeadStatement.definition(value: .type(value: .array(value: ArrayDefinition(
+                name: enablesTypeName,
+                size: [arraySize],
+                elementType: .signal(type: .stdLogic)
+            )))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: enablesTypeName), name: .enables
+            )))
+        ]
+        let decoderTypes = [
+            HeadStatement.definition(value: .signal(value: LocalSignal(
+                type: .alias(name: enablesTypeName), name: .readEnables
+            ))),
+            .definition(value: .signal(
+                value: LocalSignal(type: .alias(name: cacheTypeName), name: .readCache)
+            ))
+        ]
+        let ramSignals = [
+            HeadStatement.definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .di))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .index))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .weBRAM))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .currentValue))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .memoryAddress)))
+        ]
+        let unsignedAddressType = SignalType.ranged(type: .unsigned(size: .downto(
+            upper: .literal(value: .integer(value: addressBits - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        guard
+            let denominatorConstant = ConstantSignal(
+                name: .denominator,
+                type: unsignedAddressType,
+                value: .literal(value: .vector(value: .bits(value: BitVector(
+                    values: BitLiteral.bitVersion(of: elementsPerAddress, bitsRequired: addressBits)
+                ))))
+            ),
+            let internalStateType = EnumerationDefinition(
+                name: internalType,
+                nonEmptyValues: [
+                    .initial, .waitForNewDataType, .writeElement, .incrementIndex, .resetEnables, .error
+                ]
+            )
+        else {
+            return nil
+        }
+        let dividerTypes = [
+            HeadStatement.definition(value: .signal(value: LocalSignal(
+                type: unsignedAddressType, name: .unsignedAddress
+            ))),
+            .definition(value: .constant(value: denominatorConstant)),
+            .definition(value: .signal(value: LocalSignal(
+                type: unsignedAddressType, name: .remainder
+            )))
+        ]
+        let logicSignals = [
+            HeadStatement.definition(value: .type(value: .enumeration(value: internalStateType))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: internalType), name: .internalState
+            )))
+        ]
         let components = [encoder, decoder, divider, bram].map {
             HeadStatement.definition(value: .component(value: ComponentDefinition(entity: $0)))
         }
-        self.init(statements: components)
+        self.init(
+            statements: cacheSignals + ramSignals + expanderTypes + decoderTypes + dividerTypes
+                + logicSignals + components
+        )
     }
 
 }

@@ -1,4 +1,4 @@
-// Entity+cache.swift
+// VHDLFile+cache.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -55,40 +55,24 @@
 
 import VHDLParsing
 
-extension Entity {
+extension VHDLFile {
 
-    init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
-        guard size > 0, numberOfElements > 0 else {
+    public init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        guard
+            let entity = Entity(cacheName: name, elementSize: size, numberOfElements: numberOfElements),
+            let head = ArchitectureHead(
+                cacheName: name, elementSize: size, numberOfElements: numberOfElements
+            )
+        else {
             return nil
         }
-        guard size <= 30 else {
-            fatalError("Caches containing large elements are not yet supported!")
-        }
-        guard let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1), addressBits <= 32 else {
-            return nil
-        }
-        let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: addressBits - 1)),
-            lower: .literal(value: .integer(value: 0))
-        )))
-        let elementType = SignalType.ranged(type: .stdLogicVector(size: .downto(
-            upper: .literal(value: .integer(value: size - 1)),
-            lower: .literal(value: .integer(value: 0))
-        )))
-        let signals = [
-            PortSignal(type: .stdLogic, name: .clk, mode: .input),
-            PortSignal(type: addressType, name: .address, mode: .input),
-            PortSignal(type: elementType, name: .data, mode: .input),
-            PortSignal(type: .stdLogic, name: .we, mode: .input),
-            PortSignal(type: .stdLogic, name: .ready, mode: .input),
-            PortSignal(type: .stdLogic, name: .busy, mode: .output),
-            PortSignal(type: elementType, name: .value, mode: .output),
-            PortSignal(type: addressType, name: .lastAddress, mode: .output)
-        ]
-        guard let block = PortBlock(signals: signals) else {
-            return nil
-        }
-        self.init(name: name, port: block)
+        self.init(
+            architectures: [
+                Architecture(body: .blocks(blocks: []), entity: name, head: head, name: .behavioral)
+            ],
+            entities: [entity],
+            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+        )
     }
 
 }

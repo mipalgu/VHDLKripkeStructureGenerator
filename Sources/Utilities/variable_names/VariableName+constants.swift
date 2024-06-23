@@ -63,6 +63,12 @@ public extension VariableName {
     /// The `boolToStdLogic` function.
     static let boolToStdLogic = VariableName(rawValue: "boolToStdLogic")!
 
+    /// The `cache` signal.
+    static let cache = VariableName(rawValue: "cache")!
+
+    /// The `cacheIndex` signal.
+    static let cacheIndex = VariableName(rawValue: "cacheIndex")!
+
     /// The `currentState` signal.
     static let currentState = VariableName(rawValue: "currentState")!
 
@@ -110,6 +116,9 @@ public extension VariableName {
 
     /// The `previousRingletOut` signal.
     static let previousRingletOut = VariableName(rawValue: "previousRingletOut")!
+
+    /// The `readCache` signal.
+    static let readCache = VariableName(rawValue: "readCache")!
 
     /// The `ReadSnapshot_t` type.
     static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
@@ -164,6 +173,12 @@ public extension VariableName {
 
     /// The `to_unsigned` function.
     static let toUnsigned = VariableName(rawValue: "to_unsigned")!
+
+    /// The `unsignedAddress` signal.
+    static let unsignedAddress = VariableName(rawValue: "unsignedAddress")!
+
+    /// The `WaitForNewData` type.
+    static let waitForNewDataType = VariableName(rawValue: "WaitForNewData")!
 
     /// The `WriteSnapshot_t` type.
     static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
