@@ -65,7 +65,7 @@ extension Entity {
             fatalError("Caches containing large elements are not yet supported!")
         }
         let numberOfAddresses = max(1, numberOfElements * size / 31)
-        guard let addressBits = BitLiteral.bitsRequired(for: numberOfAddresses - 1) else {
+        guard let addressBits = BitLiteral.bitsRequired(for: numberOfAddresses - 1), addressBits <= 32 else {
             return nil
         }
         let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(

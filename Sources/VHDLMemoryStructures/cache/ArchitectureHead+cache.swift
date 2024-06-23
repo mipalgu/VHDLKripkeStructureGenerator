@@ -59,9 +59,16 @@ import VHDLParsing
 extension ArchitectureHead {
 
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        guard size > 0, numberOfElements > 0 else {
+            return nil
+        }
+        guard size <= 31 else {
+            fatalError("Large element sizes are currently not supported!")
+        }
         let numberOfAddresses = max(1, numberOfElements * size / 31)
         guard
             let addressBits = BitLiteral.bitsRequired(for: numberOfAddresses - 1),
+            addressBits <= 32,
             let decoderName = VariableName(rawValue: name.rawValue + "Decoder"),
             let encoderName = VariableName(rawValue: name.rawValue + "Encoder"),
             let dividerName = VariableName(rawValue: name.rawValue + "Divider"),
