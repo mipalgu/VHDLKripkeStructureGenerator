@@ -86,7 +86,8 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             let runner = VHDLFile(runnerFor: representation),
             let ringletRunner = VHDLFile(ringletRunnerFor: representation),
             let types = VHDLFile(typesFor: representation),
-            let generator = VHDLFile(generatorFor: representation)
+            let generator = VHDLFile(generatorFor: representation),
+            let targetStatesCache = VHDLFile(targetStatesCacheFor: representation)
         else {
             return []
         }
@@ -118,7 +119,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         let bramInterfaceWrapper = VHDLFile(bramInterfaceWrapperFor: representation)
         return [
             verifiedMachine, runner, ringletRunner, types, generator, bramInterface, .uartTransmitter,
-            baudGenerator, bramTransmitter, bramInterfaceWrapper
+            baudGenerator, bramTransmitter, bramInterfaceWrapper, targetStatesCache
         ] + stateFiles.flatMap { $0 }
     }
 
