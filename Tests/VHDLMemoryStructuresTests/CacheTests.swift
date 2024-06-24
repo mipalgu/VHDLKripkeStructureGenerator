@@ -164,7 +164,7 @@ final class CacheTests: XCTestCase {
                 );
             end component;
         begin
-            TargetStatesCacheEncoder_inst: TargetStatesCacheEncoder port map (
+            TargetStatesCacheEncoder_inst: component TargetStatesCacheEncoder port map (
                 in0 => cache(0),
                 in0en => enables(0),
                 in1 => cache(1),
@@ -181,7 +181,7 @@ final class CacheTests: XCTestCase {
                 in6en => enables(6),
                 data => di
             );
-            TargetStatesCacheDecoder_inst: TargetStatesCacheDecoder port map (
+            TargetStatesCacheDecoder_inst: component TargetStatesCacheDecoder port map (
                 data => currentValue,
                 out0 => readCache(0),
                 out0en => readEnables(0),
@@ -198,13 +198,13 @@ final class CacheTests: XCTestCase {
                 out6 => readCache(6),
                 out6en => readEnables(6)
             );
-            TargetStatesCacheDivider_inst: TargetStatesCacheDivider port map (
+            TargetStatesCacheDivider_inst: component TargetStatesCacheDivider port map (
                 numerator => unsignedAddress,
                 denominator => denominator,
                 result => result,
                 remainder => remainder
             );
-            TargetStatesCacheBRAM_inst: TargetStatesCacheBRAM port map (
+            TargetStatesCacheBRAM_inst: component TargetStatesCacheBRAM port map (
                 clk => clk,
                 we => weBRAM,
                 addr => index,

@@ -59,7 +59,238 @@ import VHDLParsing
 extension AsynchronousBlock {
 
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
-        nil
+        guard size <= 30 else {
+            fatalError("Caches containing large elements are not yet supported!")
+        }
+        guard
+            size > 0,
+            numberOfElements > 0,
+            // let process = ProcessBlock(
+            //     cacheName: name, elementSize: size, numberOfElements: numberOfElements
+            // ),
+            let decoder = VariableName(rawValue: name.rawValue + "Decoder"),
+            let decoderInst = VariableName(rawValue: decoder.rawValue + "_inst"),
+            let encoder = VariableName(rawValue: name.rawValue + "Encoder"),
+            let encoderInst = VariableName(rawValue: encoder.rawValue + "_inst"),
+            let divider = VariableName(rawValue: name.rawValue + "Divider"),
+            let dividerInst = VariableName(rawValue: divider.rawValue + "_inst"),
+            let bram = VariableName(rawValue: name.rawValue + "BRAM"),
+            let bramInst = VariableName(rawValue: bram.rawValue + "_inst")
+        else {
+            return nil
+        }
+        let encodedSize = size + 1
+        let elementsPerAddress = 31 / encodedSize
+        let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
+        guard addressBits <= 32 else {
+            fatalError("The number of addresses in \(name.rawValue) exceeds a 32-bit resolution!")
+        }
+        let encoderMappings = (0..<elementsPerAddress).flatMap {
+            [
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "in\($0)")!)),
+                    rhs: .expression(value: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .cache))),
+                        index: .index(value: .literal(value: .integer(value: $0)))
+                    )))
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "in\($0)en")!)),
+                    rhs: .expression(value: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .enables))),
+                        index: .index(value: .literal(value: .integer(value: $0)))
+                    )))
+                )
+            ]
+        }
+        let encoderData = VariableMap(
+            lhs: .variable(reference: .variable(name: .data)),
+            rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .di))))
+        )
+        let encoderInstantiation = AsynchronousBlock.component(block: ComponentInstantiation(
+            label: encoderInst,
+            name: encoder,
+            port: PortMap(variables: encoderMappings + [encoderData])
+        ))
+        let decoderMappings = (0..<elementsPerAddress).flatMap {
+            [
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "out\($0)")!)),
+                    rhs: .expression(value: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .readCache))),
+                        index: .index(value: .literal(value: .integer(value: $0)))
+                    )))
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "out\($0)en")!)),
+                    rhs: .expression(value: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .readEnables))),
+                        index: .index(value: .literal(value: .integer(value: $0)))
+                    )))
+                )
+            ]
+        }
+        let decoderData = VariableMap(
+            lhs: .variable(reference: .variable(name: .data)),
+            rhs: .expression(
+                value: .reference(variable: .variable(reference: .variable(name: .currentValue)))
+            )
+        )
+        let decoderInstantiation = AsynchronousBlock.component(block: ComponentInstantiation(
+            label: decoderInst,
+            name: decoder,
+            port: PortMap(variables: [decoderData] + decoderMappings)
+        ))
+        let dividerMappings = [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .numerator)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .unsignedAddress))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .denominator)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .denominator))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .result)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .result))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .remainder)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .remainder))
+                ))
+            )
+        ]
+        let dividerInstantiation = AsynchronousBlock.component(block: ComponentInstantiation(
+            label: dividerInst,
+            name: divider,
+            port: PortMap(variables: dividerMappings)
+        ))
+        let bramMappings = [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .clk)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .clk))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .we)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .weBRAM))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .addr)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .index))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .di)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .di))
+                ))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .do)),
+                rhs: .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: .currentValue))
+                ))
+            )
+        ]
+        let bramInstantiation = AsynchronousBlock.component(block: ComponentInstantiation(
+            label: bramInst,
+            name: bram,
+            port: PortMap(variables: bramMappings)
+        ))
+        let components = [encoderInstantiation, decoderInstantiation, dividerInstantiation, bramInstantiation]
+        let padding = 32 - addressBits
+        let resultsCast = Expression.cast(operation: .stdLogicVector(
+            expression: .reference(variable: .variable(reference: .variable(name: .result)))
+        ))
+        let memoryAddress: Expression = padding == 0 ? resultsCast : .binary(operation: .concatenate(
+            lhs: .literal(value: .vector(value: .bits(value: BitVector(
+                values: [BitLiteral](repeating: .low, count: padding)
+            )))),
+            rhs: resultsCast
+        ))
+        let statements = [
+            AsynchronousBlock.statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .unsignedAddress)),
+                value: .expression(value: .cast(operation: .unsigned(
+                    expression: .reference(variable: .variable(reference: .variable(name: .address)))
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .memoryAddress)),
+                value: .expression(value: memoryAddress)
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .value)),
+                value: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .readCache))),
+                    index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .toInteger,
+                        parameters: [
+                            Argument(argument: .reference(
+                                variable: .variable(reference: .variable(name: .remainder))
+                            ))
+                        ]
+                    ))))
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .index)),
+                value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                    value: .reference(variable: .variable(reference: .variable(name: .memoryAddress))),
+                    condition: .logical(operation: .and(
+                        lhs: .logical(operation: .and(
+                            lhs: .conditional(condition: .comparison(value: .equality(
+                                lhs: .reference(variable: .variable(reference: .variable(name: .read))),
+                                rhs: .literal(value: .bit(value: .high))
+                            ))),
+                            rhs: .conditional(condition: .comparison(value: .notEquals(
+                                lhs: .reference(variable: .variable(reference: .variable(name: .we))),
+                                rhs: .literal(value: .bit(value: .high))
+                            )))
+                        )),
+                        rhs: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                            rhs: .reference(variable: .variable(
+                                reference: .variable(name: .waitForNewDataType)
+                            ))
+                        )))
+                    )),
+                    elseBlock: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
+                    )
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .genIndex)),
+                value: .expression(value: .cast(operation: .stdLogicVector(
+                    expression: .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .toUnsigned,
+                        parameters: [
+                            Argument(argument: .reference(
+                                variable: .variable(reference: .variable(name: .memoryIndex))
+                            )),
+                            Argument(argument: .literal(value: .integer(value: 32)))
+                        ]
+                    )))
+                )))
+            ))
+        ]
+        self = .blocks(
+            blocks: components + statements
+                // + [.process(block: process)]
+        )
     }
 
 }

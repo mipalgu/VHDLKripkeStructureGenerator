@@ -1,4 +1,4 @@
-// VHDLFile+cache.swift
+// ProcessBlock+cache.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,24 +53,13 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
-extension VHDLFile {
+extension ProcessBlock {
 
-    public init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
-        guard
-            let entity = Entity(cacheName: name, elementSize: size, numberOfElements: numberOfElements),
-            let architecture = Architecture(
-                cacheName: name, elementSize: size, numberOfElements: numberOfElements
-            )
-        else {
-            return nil
-        }
-        self.init(
-            architectures: [architecture],
-            entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
-        )
+    init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        nil
     }
 
 }

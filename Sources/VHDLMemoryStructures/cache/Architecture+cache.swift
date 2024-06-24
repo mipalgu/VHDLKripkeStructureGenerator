@@ -1,4 +1,4 @@
-// VHDLFile+cache.swift
+// Architecture+cache.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -55,22 +55,20 @@
 
 import VHDLParsing
 
-extension VHDLFile {
+extension Architecture {
 
-    public init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+    init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard
-            let entity = Entity(cacheName: name, elementSize: size, numberOfElements: numberOfElements),
-            let architecture = Architecture(
+            let head = ArchitectureHead(
+                cacheName: name, elementSize: size, numberOfElements: numberOfElements
+            ),
+            let body = AsynchronousBlock(
                 cacheName: name, elementSize: size, numberOfElements: numberOfElements
             )
         else {
             return nil
         }
-        self.init(
-            architectures: [architecture],
-            entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
-        )
+        self.init(body: body, entity: name, head: head, name: .behavioral)
     }
 
 }
