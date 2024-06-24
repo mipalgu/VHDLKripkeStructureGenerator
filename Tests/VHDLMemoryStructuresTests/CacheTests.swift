@@ -220,7 +220,7 @@ final class CacheTests: XCTestCase {
             memoryAddress <= "0000000000000000000000000000" & std_logic_vector(result);
             value <= readCache(to_integer(remainder));
             value_en <= readEnables(to_integer(remainder));
-            index <= memoryAddress when read = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
+            index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
             genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
             process(clk)
             begin

@@ -272,7 +272,7 @@ extension AsynchronousBlock {
                     condition: .logical(operation: .and(
                         lhs: .logical(operation: .and(
                             lhs: .conditional(condition: .comparison(value: .equality(
-                                lhs: .reference(variable: .variable(reference: .variable(name: .read))),
+                                lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
                                 rhs: .literal(value: .bit(value: .high))
                             ))),
                             rhs: .conditional(condition: .comparison(value: .notEquals(
