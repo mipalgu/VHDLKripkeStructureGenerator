@@ -72,8 +72,8 @@ extension ArchitectureHead {
         }
         let encodedSize = size + 1
         let elementsPerAddress = 31 / encodedSize
-        let totalBits = numberOfElements * encodedSize
-        let numberOfAddresses = max(1, totalBits.isMultiple(of: 31) ? totalBits / 31 : totalBits / 31 + 1)
+        let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
+            ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
         let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
         guard
             addressBits <= 32,
