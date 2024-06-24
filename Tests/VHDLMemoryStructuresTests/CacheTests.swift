@@ -234,10 +234,12 @@ final class CacheTests: XCTestCase {
                                 internalState <= WriteElement;
                                 busy <= '1';
                                 cache(cacheIndex) <= data;
+                                enables(cacheIndex) <= '1';
                             else
                                 internalState <= WaitForNewData;
                                 busy <= '0';
                                 cache(cacheIndex) <= (others => '0');
+                                enables(cacheIndex) <= '0';
                             end if;
                             weBRAM <= '0';
                         when WriteElement =>
@@ -247,13 +249,12 @@ final class CacheTests: XCTestCase {
                             elsif (cacheIndex = 6) then
                                 weBRAM <= '1';
                                 internalState <= ResetEnables;
+                                lastAddress <= genIndex;
                             else
                                 weBRAM <= '1';
                                 internalState <= IncrementIndex;
+                                lastAddress <= genIndex;
                             end if;
-                            lastAddress <= genIndex;
-                            enables(cacheIndex) <= '1';
-                            cache(cacheIndex) <= data;
                             busy <= '1';
                         when IncrementIndex =>
                             weBRAM <= '0';

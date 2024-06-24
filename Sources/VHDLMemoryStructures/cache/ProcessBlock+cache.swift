@@ -59,7 +59,167 @@ import VHDLParsing
 extension ProcessBlock {
 
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
-        nil
+        self.init(
+            sensitivityList: [.clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(
+                    expression: .reference(variable: .variable(reference: .variable(name: .clk)))
+                ))),
+                ifBlock: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                    cases: [.cacheInitial, .cacheWaitForNewData]
+                ))
+            ))
+        )
     }
+
+}
+
+extension WhenCase {
+
+    static let cacheInitial = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .initial)))
+        ),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .cache)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [
+                        IndexedValue(
+                            index: .others,
+                            value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                values: [
+                                    IndexedValue(index: .others, value: .bit(value: .low))
+                                ]
+                            ))))
+                        )
+                    ]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .enables)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [
+                        IndexedValue(index: .others, value: .bit(value: .low))
+                    ]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .cacheIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .lastAddress)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [
+                        IndexedValue(index: .others, value: .bit(value: .low))
+                    ]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .memoryIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
+            ))
+        ])
+    )
+
+    static let cacheWaitForNewData = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
+        ),
+        code: .blocks(blocks: [
+            .ifStatement(block: .ifElse(
+                condition: .logical(operation: .and(
+                    lhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    rhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .we))),
+                        rhs: .literal(value: .bit(value: .high))
+                    )))
+                )),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .writeElement)))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .high))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .cache))),
+                            index: .index(value: .reference(
+                                variable: .variable(reference: .variable(name: .cacheIndex))
+                            ))
+                        ),
+                        value: .reference(variable: .variable(reference: .variable(name: .data)))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .enables))),
+                            index: .index(value: .reference(
+                                variable: .variable(reference: .variable(name: .cacheIndex))
+                            ))
+                        ),
+                        value: .literal(value: .bit(value: .high))
+                    ))
+                ]),
+                elseBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(
+                            variable: .variable(reference: .variable(name: .waitForNewDataType))
+                        )
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .cache))),
+                            index: .index(value: .reference(
+                                variable: .variable(reference: .variable(name: .cacheIndex))
+                            ))
+                        ),
+                        value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                            values: [
+                                IndexedValue(index: .others, value: .bit(value: .low))
+                            ]
+                        ))))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .enables))),
+                            index: .index(value: .reference(
+                                variable: .variable(reference: .variable(name: .cacheIndex))
+                            ))
+                        ),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ])
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
 
 }

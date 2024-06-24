@@ -65,9 +65,9 @@ extension AsynchronousBlock {
         guard
             size > 0,
             numberOfElements > 0,
-            // let process = ProcessBlock(
-            //     cacheName: name, elementSize: size, numberOfElements: numberOfElements
-            // ),
+            let process = ProcessBlock(
+                cacheName: name, elementSize: size, numberOfElements: numberOfElements
+            ),
             let decoder = VariableName(rawValue: name.rawValue + "Decoder"),
             let decoderInst = VariableName(rawValue: decoder.rawValue + "_inst"),
             let encoder = VariableName(rawValue: name.rawValue + "Encoder"),
@@ -287,10 +287,7 @@ extension AsynchronousBlock {
                 )))
             ))
         ]
-        self = .blocks(
-            blocks: components + statements
-                // + [.process(block: process)]
-        )
+        self = .blocks(blocks: components + statements + [.process(block: process)])
     }
 
 }
