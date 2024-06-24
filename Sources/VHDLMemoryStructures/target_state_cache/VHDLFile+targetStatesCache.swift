@@ -70,4 +70,57 @@ extension VHDLFile {
         self.init(cacheName: name, elementSize: elementSize, numberOfElements: numberOfElements)
     }
 
+    public init?<T>(targetStatesBRAMFor representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let name = VariableName(
+                rawValue: representation.entity.name.rawValue + "TargetStatesCacheBRAM"
+            )
+        else {
+            return nil
+        }
+        let numberOfElements = representation.machine.numberOfTargetStates
+        let elementsPerAddress = 31 / representation.machine.targetStateBits
+        let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
+            ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
+        self.init(bramName: name, numberOfAddresses: numberOfAddresses)
+    }
+
+    public init?<T>(targetStatesEncoderFor representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let name = VariableName(
+                rawValue: representation.entity.name.rawValue + "TargetStatesCacheEncoder"
+            )
+        else {
+            return nil
+        }
+        let numberOfElements = representation.machine.numberOfTargetStates
+        let elementSize = representation.machine.targetStateBits - 1
+        self.init(encoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
+    }
+
+    public init?<T>(targetStatesDecoderFor representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let name = VariableName(
+                rawValue: representation.entity.name.rawValue + "TargetStatesCacheDecoder"
+            )
+        else {
+            return nil
+        }
+        let numberOfElements = representation.machine.numberOfTargetStates
+        let elementSize = representation.machine.targetStateBits - 1
+        self.init(decoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
+    }
+
+    public init?<T>(targetStatesDividerFor representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let name = VariableName(
+                rawValue: representation.entity.name.rawValue + "TargetStatesCacheDivider"
+            )
+        else {
+            return nil
+        }
+        let bits = BitLiteral.bitsRequired(for: representation.machine.numberOfTargetStates - 1) ?? 1
+        self.init(dividerName: name, size: bits)
+    }
+
 }

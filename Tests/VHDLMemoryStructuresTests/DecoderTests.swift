@@ -131,3 +131,11 @@ final class DecoderTests: XCTestCase {
     // swiftlint:enable function_body_length
 
 }
+
+extension VariableName {
+
+    static let targetStatesDecoder = VariableName(rawValue: "TargetStatesDecoder")!
+
+    static let targetStatesEncoder = VariableName(rawValue: "TargetStatesEncoder")!
+
+}
