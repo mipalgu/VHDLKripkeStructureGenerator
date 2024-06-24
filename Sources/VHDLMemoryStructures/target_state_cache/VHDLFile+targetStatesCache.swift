@@ -93,8 +93,9 @@ extension VHDLFile {
         else {
             return nil
         }
-        let numberOfElements = representation.machine.numberOfTargetStates
-        let elementSize = representation.machine.targetStateBits - 1
+        let encodedSize = representation.machine.targetStateBits
+        let numberOfElements = 31 / encodedSize
+        let elementSize = encodedSize - 1
         self.init(encoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
     }
 
@@ -106,8 +107,9 @@ extension VHDLFile {
         else {
             return nil
         }
-        let numberOfElements = representation.machine.numberOfTargetStates
-        let elementSize = representation.machine.targetStateBits - 1
+        let encodedSize = representation.machine.targetStateBits
+        let numberOfElements = 31 / encodedSize
+        let elementSize = encodedSize - 1
         self.init(decoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
     }
 

@@ -71,6 +71,15 @@ final class TargetStatesCacheTests: XCTestCase {
 
     // swiftlint:enable implicitly_unwrapped_optional
 
+    /// Test generations create VHDL files.
+    func testAllGeneration() {
+        XCTAssertNotNil(VHDLFile(targetStatesBRAMFor: representation))
+        XCTAssertNotNil(VHDLFile(targetStatesCacheFor: representation))
+        XCTAssertNotNil(VHDLFile(targetStatesDecoderFor: representation))
+        XCTAssertNotNil(VHDLFile(targetStatesEncoderFor: representation))
+        XCTAssertNotNil(VHDLFile(targetStatesDividerFor: representation))
+    }
+
     // swiftlint:disable function_body_length
     // swiftlint:disable line_length
 
