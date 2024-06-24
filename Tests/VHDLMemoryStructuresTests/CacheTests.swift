@@ -111,6 +111,8 @@ final class CacheTests: XCTestCase {
             constant denominator: unsigned(3 downto 0) := "0111";
             signal result: unsigned(3 downto 0);
             signal remainder: unsigned(3 downto 0);
+            signal unsignedLastAddress: unsigned(3 downto 0);
+            signal currentIndex: unsigned(3 downto 0);
             type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, IncrementIndex, ResetEnables, Error);
             signal internalState: TargetStatesCacheInternalState_t;
             component TargetStatesCacheEncoder is
@@ -222,6 +224,8 @@ final class CacheTests: XCTestCase {
             value_en <= readEnables(to_integer(remainder));
             index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
             genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
+            lastAddress <= std_logic_vector(unsignedLastAddress);
+            currentIndex <= to_unsigned(memoryIndex, 4) * denominator + to_unsigned(cacheIndex, 4);
             process(clk)
             begin
                 if (rising_edge(clk)) then
@@ -231,7 +235,7 @@ final class CacheTests: XCTestCase {
                             enables <= (others => '0');
                             cacheIndex <= 0;
                             weBRAM <= '0';
-                            lastAddress <= (others => '0');
+                            unsignedLastAddress <= (others => '0');
                             busy <= '0';
                             memoryIndex <= 0;
                             internalState <= WaitForNewData;
@@ -255,11 +259,15 @@ final class CacheTests: XCTestCase {
                             elsif (cacheIndex = 6) then
                                 weBRAM <= '1';
                                 internalState <= ResetEnables;
-                                lastAddress <= genIndex;
+                                if (unsignedLastAddress < currentIndex) then
+                                    unsignedLastAddress <= currentIndex;
+                                end if;
                             else
                                 weBRAM <= '1';
                                 internalState <= IncrementIndex;
-                                lastAddress <= genIndex;
+                                if (unsignedLastAddress < currentIndex) then
+                                    unsignedLastAddress <= currentIndex;
+                                end if;
                             end if;
                             busy <= '1';
                         when IncrementIndex =>

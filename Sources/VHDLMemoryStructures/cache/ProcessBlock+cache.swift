@@ -161,7 +161,7 @@ extension WhenCase {
                 value: .literal(value: .bit(value: .low))
             )),
             .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .lastAddress)),
+                name: .variable(reference: .variable(name: .unsignedLastAddress)),
                 value: .literal(value: .vector(value: .indexed(values: IndexedVector(
                     values: [
                         IndexedValue(index: .others, value: .bit(value: .low))
@@ -395,9 +395,21 @@ extension WhenCase {
                                     variable: .variable(reference: .variable(name: .resetEnables))
                                 )
                             )),
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .lastAddress)),
-                                value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
+                            .ifStatement(block: .ifStatement(
+                                condition: .conditional(condition: .comparison(value: .lessThan(
+                                    lhs: .reference(
+                                        variable: .variable(reference: .variable(name: .unsignedLastAddress))
+                                    ),
+                                    rhs: .reference(
+                                        variable: .variable(reference: .variable(name: .currentIndex))
+                                    )
+                                ))),
+                                ifBlock: .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .unsignedLastAddress)),
+                                    value: .reference(
+                                        variable: .variable(reference: .variable(name: .currentIndex))
+                                    )
+                                ))
                             ))
                         ]),
                         elseBlock: .blocks(blocks: [
@@ -411,9 +423,21 @@ extension WhenCase {
                                     variable: .variable(reference: .variable(name: .incrementIndex))
                                 )
                             )),
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .lastAddress)),
-                                value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
+                            .ifStatement(block: .ifStatement(
+                                condition: .conditional(condition: .comparison(value: .lessThan(
+                                    lhs: .reference(
+                                        variable: .variable(reference: .variable(name: .unsignedLastAddress))
+                                    ),
+                                    rhs: .reference(
+                                        variable: .variable(reference: .variable(name: .currentIndex))
+                                    )
+                                ))),
+                                ifBlock: .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .unsignedLastAddress)),
+                                    value: .reference(
+                                        variable: .variable(reference: .variable(name: .currentIndex))
+                                    )
+                                ))
                             ))
                         ])
                     ))

@@ -305,6 +305,40 @@ extension AsynchronousBlock {
                         ]
                     )))
                 )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .lastAddress)),
+                value: .expression(value: .cast(operation: .stdLogicVector(
+                    expression: .reference(
+                        variable: .variable(reference: .variable(name: .unsignedLastAddress))
+                    )
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentIndex)),
+                value: .expression(value: .binary(operation: .addition(
+                    lhs: .binary(operation: .multiplication(
+                        lhs: .functionCall(call: .custom(function: CustomFunctionCall(
+                            name: .toUnsigned,
+                            parameters: [
+                                Argument(argument: .reference(
+                                    variable: .variable(reference: .variable(name: .memoryIndex))
+                                )),
+                                Argument(argument: .literal(value: .integer(value: addressBits)))
+                            ]
+                        ))),
+                        rhs: .reference(variable: .variable(reference: .variable(name: .denominator)))
+                    )),
+                    rhs: .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .toUnsigned,
+                        parameters: [
+                            Argument(argument: .reference(
+                                variable: .variable(reference: .variable(name: .cacheIndex))
+                            )),
+                            Argument(argument: .literal(value: .integer(value: addressBits)))
+                        ]
+                    )))
+                )))
             ))
         ]
         self = .blocks(blocks: components + statements + [.process(block: process)])

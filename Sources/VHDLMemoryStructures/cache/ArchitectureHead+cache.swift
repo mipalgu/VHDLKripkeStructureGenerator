@@ -183,6 +183,12 @@ extension ArchitectureHead {
             ))),
             .definition(value: .signal(value: LocalSignal(
                 type: unsignedAddressType, name: .remainder
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: unsignedAddressType, name: .unsignedLastAddress
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: unsignedAddressType, name: .currentIndex
             )))
         ]
         let logicSignals = [

@@ -96,7 +96,7 @@ extension VHDLFile {
     /// To perform a write, the write `address` and `data`` is set with the new element and the `we` and
     /// `ready` signals are set `high`. The write will only be initiated when the `busy` signal is `low`. When
     /// a write happens, the `busy` signal will go `high` until the write is complete. The `lastAddress`
-    /// signal will contain the address of the last write operation.
+    /// signal will contain the address of the last element in the cache.
     /// 
     /// To perform a read, the address signal is set to the read address, the `we` signal is set `low` and the
     /// `ready` signal is set `high`. The read will only be performed when the `busy` signal is `low`. The

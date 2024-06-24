@@ -69,6 +69,9 @@ public extension VariableName {
     /// The `cacheIndex` signal.
     static let cacheIndex = VariableName(rawValue: "cacheIndex")!
 
+    /// The `currentIndex` signal.
+    static let currentIndex = VariableName(rawValue: "currentIndex")!
+
     /// The `currentState` signal.
     static let currentState = VariableName(rawValue: "currentState")!
 
@@ -176,6 +179,9 @@ public extension VariableName {
 
     /// The `unsignedAddress` signal.
     static let unsignedAddress = VariableName(rawValue: "unsignedAddress")!
+
+    /// The `unsignedLastAddress` signal.
+    static let unsignedLastAddress = VariableName(rawValue: "unsignedLastAddress")!
 
     /// The `value_en` signal.
     static let valueEn = VariableName(rawValue: "value_en")!
