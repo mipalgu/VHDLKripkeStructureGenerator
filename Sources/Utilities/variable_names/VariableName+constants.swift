@@ -177,6 +177,9 @@ public extension VariableName {
     /// The `unsignedAddress` signal.
     static let unsignedAddress = VariableName(rawValue: "unsignedAddress")!
 
+    /// The `value_en` signal.
+    static let valueEn = VariableName(rawValue: "value_en")!
+
     /// The `WaitForNewData` type.
     static let waitForNewDataType = VariableName(rawValue: "WaitForNewData")!
 
