@@ -56,8 +56,11 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache creation.
 extension ProcessBlock {
 
+    /// Generate a cache.
+    @inlinable
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard size > 0, numberOfElements > 0 else {
             return nil
@@ -89,87 +92,11 @@ extension ProcessBlock {
 
 }
 
+/// Add cache process cases.
 extension WhenCase {
 
-    init?(cacheWriteElementSize size: Int, numberOfElements: Int) {
-        guard size > 0, numberOfElements > 0 else {
-            return nil
-        }
-        guard size <= 31 else {
-            fatalError("Currently cannot support element sizes greater than 31 bits")
-        }
-        let encodedSize = size + 1
-        let elementsPerAddress = 31 / encodedSize
-        let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
-            ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
-        self.init(
-            condition: .expression(expression: .reference(variable: .variable(
-                reference: .variable(name: .writeElement)
-            ))),
-            code: .blocks(blocks: [
-                .ifStatement(block: .ifElse(
-                    condition: .conditional(condition: .comparison(value: .equality(
-                        lhs: .reference(variable: .variable(reference: .variable(name: .memoryIndex))),
-                        rhs: .literal(value: .integer(value: numberOfAddresses))
-                    ))),
-                    ifBlock: .blocks(blocks: [
-                        .statement(statement: .assignment(
-                            name: .variable(reference: .variable(name: .internalState)),
-                            value: .reference(variable: .variable(reference: .variable(name: .error)))
-                        )),
-                        .statement(statement: .assignment(
-                            name: .variable(reference: .variable(name: .weBRAM)),
-                            value: .literal(value: .bit(value: .low))
-                        ))
-                    ]),
-                    elseBlock: .ifStatement(block: .ifElse(
-                        condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .variable(reference: .variable(name: .cacheIndex))),
-                            rhs: .literal(value: .integer(value: elementsPerAddress - 1))
-                        ))),
-                        ifBlock: .blocks(blocks: [
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .weBRAM)),
-                                value: .literal(value: .bit(value: .high))
-                            )),
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .internalState)),
-                                value: .reference(
-                                    variable: .variable(reference: .variable(name: .resetEnables))
-                                )
-                            )),
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .lastAddress)),
-                                value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
-                            ))
-                        ]),
-                        elseBlock: .blocks(blocks: [
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .weBRAM)),
-                                value: .literal(value: .bit(value: .high))
-                            )),
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .internalState)),
-                                value: .reference(
-                                    variable: .variable(reference: .variable(name: .incrementIndex))
-                                )
-                            )),
-                            .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .lastAddress)),
-                                value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
-                            ))
-                        ])
-                    ))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .busy)),
-                    value: .literal(value: .bit(value: .high))
-                ))
-            ])
-        )
-    }
-
-    static let cacheIncrementIndex = WhenCase(
+    /// The `IncrementIndex` case in the cache process.
+    @usableFromInline static let cacheIncrementIndex = WhenCase(
         condition: .expression(
             expression: .reference(variable: .variable(reference: .variable(name: .incrementIndex)))
         ),
@@ -196,7 +123,8 @@ extension WhenCase {
         ])
     )
 
-    static let cacheInitial = WhenCase(
+    /// The `Initial` case in the cache process.
+    @usableFromInline static let cacheInitial = WhenCase(
         condition: .expression(
             expression: .reference(variable: .variable(reference: .variable(name: .initial)))
         ),
@@ -255,7 +183,8 @@ extension WhenCase {
         ])
     )
 
-    static let cacheOthers = WhenCase(
+    /// The `others` case in the cache process.
+    @usableFromInline static let cacheOthers = WhenCase(
         condition: .others,
         code: .blocks(blocks: [
             .statement(statement: .assignment(
@@ -269,11 +198,12 @@ extension WhenCase {
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .weBRAM)),
                 value: .literal(value: .bit(value: .low))
-            )),
+            ))
         ])
     )
 
-    static let cacheResetEnables = WhenCase(
+    /// The `ResetEnables` case in the cache process.
+    @usableFromInline static let cacheResetEnables = WhenCase(
         condition: .expression(
             expression: .reference(variable: .variable(reference: .variable(name: .resetEnables)))
         ),
@@ -327,7 +257,8 @@ extension WhenCase {
         ])
     )
 
-    static let cacheWaitForNewData = WhenCase(
+    /// The `WaitForNewData` case in the cache process.
+    @usableFromInline static let cacheWaitForNewData = WhenCase(
         condition: .expression(
             expression: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
         ),
@@ -412,5 +343,89 @@ extension WhenCase {
             ))
         ])
     )
+
+    // swiftlint:disable function_body_length
+
+    /// The `WriteElement` case in the cache process.
+    @inlinable
+    init?(cacheWriteElementSize size: Int, numberOfElements: Int) {
+        guard size > 0, numberOfElements > 0 else {
+            return nil
+        }
+        guard size <= 31 else {
+            fatalError("Currently cannot support element sizes greater than 31 bits")
+        }
+        let encodedSize = size + 1
+        let elementsPerAddress = 31 / encodedSize
+        let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
+            ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .writeElement)
+            ))),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .memoryIndex))),
+                        rhs: .literal(value: .integer(value: numberOfAddresses))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(reference: .variable(name: .error)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .weBRAM)),
+                            value: .literal(value: .bit(value: .low))
+                        ))
+                    ]),
+                    elseBlock: .ifStatement(block: .ifElse(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .cacheIndex))),
+                            rhs: .literal(value: .integer(value: elementsPerAddress - 1))
+                        ))),
+                        ifBlock: .blocks(blocks: [
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .weBRAM)),
+                                value: .literal(value: .bit(value: .high))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .internalState)),
+                                value: .reference(
+                                    variable: .variable(reference: .variable(name: .resetEnables))
+                                )
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .lastAddress)),
+                                value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
+                            ))
+                        ]),
+                        elseBlock: .blocks(blocks: [
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .weBRAM)),
+                                value: .literal(value: .bit(value: .high))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .internalState)),
+                                value: .reference(
+                                    variable: .variable(reference: .variable(name: .incrementIndex))
+                                )
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .lastAddress)),
+                                value: .reference(variable: .variable(reference: .variable(name: .genIndex)))
+                            ))
+                        ])
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .busy)),
+                    value: .literal(value: .bit(value: .high))
+                ))
+            ])
+        )
+    }
+
+    // swiftlint:enable function_body_length
 
 }

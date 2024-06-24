@@ -53,10 +53,12 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
 extension Architecture {
 
+    @inlinable
     init?(bramName name: VariableName, numberOfAddresses: Int) {
         guard
             let head = ArchitectureHead(bramName: name, numberOfAddresses: numberOfAddresses),

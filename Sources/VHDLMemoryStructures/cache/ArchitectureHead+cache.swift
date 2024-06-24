@@ -56,8 +56,13 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache generation.
 extension ArchitectureHead {
 
+    // swiftlint:disable function_body_length
+
+    /// Generate a cache.
+    @inlinable
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard size > 0, numberOfElements > 0 else {
             return nil
@@ -194,5 +199,7 @@ extension ArchitectureHead {
                 + logicSignals + components
         )
     }
+
+    // swiftlint:enable function_body_length
 
 }

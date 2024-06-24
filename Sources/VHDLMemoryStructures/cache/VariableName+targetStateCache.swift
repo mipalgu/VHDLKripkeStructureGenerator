@@ -55,34 +55,52 @@
 
 import VHDLParsing
 
+// swiftlint:disable force_unwrapping
+
+/// Add cache constants.
 extension VariableName {
 
-    static let currentValue = VariableName(rawValue: "currentValue")!
+    /// The `currentValue` signal.
+    @usableFromInline static let currentValue = VariableName(rawValue: "currentValue")!
 
-    static let enables = VariableName(rawValue: "enables")!
+    /// The `enables` signal.
+    @usableFromInline static let enables = VariableName(rawValue: "enables")!
 
-    static let incrementIndex = VariableName(rawValue: "IncrementIndex")!
+    /// The `IncrementIndex` signal.
+    @usableFromInline static let incrementIndex = VariableName(rawValue: "IncrementIndex")!
 
-    static let memoryAddress = VariableName(rawValue: "memoryAddress")!
+    /// The `memoryAddress` signal.
+    @usableFromInline static let memoryAddress = VariableName(rawValue: "memoryAddress")!
 
-    static let memoryOffset = VariableName(rawValue: "memoryOffset")!
+    /// The `memoryOffset` signal.
+    @usableFromInline static let memoryOffset = VariableName(rawValue: "memoryOffset")!
 
-    static let readEnables = VariableName(rawValue: "readEnables")!
+    /// The `readEnables` signal.
+    @usableFromInline static let readEnables = VariableName(rawValue: "readEnables")!
 
-    static let readStates = VariableName(rawValue: "readStates")!
+    /// The `readStates` signal.
+    @usableFromInline static let readStates = VariableName(rawValue: "readStates")!
 
-    static let resetEnables = VariableName(rawValue: "ResetEnables")!
+    /// The `resetEnables` signal.
+    @usableFromInline static let resetEnables = VariableName(rawValue: "ResetEnables")!
 
-    static let stateIndex = VariableName(rawValue: "stateIndex")!
+    /// The `stateIndex` signal.
+    @usableFromInline static let stateIndex = VariableName(rawValue: "stateIndex")!
 
-    static let targetStatesCache = VariableName(rawValue: "TargetStatesCache")!
+    /// The `TargetStatesCache` signal.
+    @usableFromInline static let targetStatesCache = VariableName(rawValue: "TargetStatesCache")!
 
-    static let targetStatesCacheInternalStateType = VariableName(
+    /// The `TargetStatesCache_InternalState_t` signal.
+    @usableFromInline static let targetStatesCacheInternalStateType = VariableName(
         rawValue: "TargetStatesCache_InternalState_t"
     )!
 
-    static let weBRAM = VariableName(rawValue: "weBRAM")!
+    /// The `weBRAM` signal.
+    @usableFromInline static let weBRAM = VariableName(rawValue: "weBRAM")!
 
-    static let workingStates = VariableName(rawValue: "workingStates")!
+    /// The `workingStates` signal.
+    @usableFromInline static let workingStates = VariableName(rawValue: "workingStates")!
 
 }
+
+// swiftlint:enable force_unwrapping

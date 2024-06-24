@@ -53,10 +53,63 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
+/// Add cache creation.
 extension VHDLFile {
 
+    /// Create a cache of elements that may be mapped to underlying BRAM structures.
+    /// 
+    /// This initialiser creates a cache of elements that may be smaller than 32-bits and therefore needs to
+    /// be encoded into an appropriate 32-bit aligned memory structure. The interface of the cache hides the
+    /// underlying mapping into BRAM and instead provides addresses based on the specific element rather
+    /// than the underlying memory address. For example, 3 elements each 4 bits are addresses as element 0, 1,
+    /// and 2 respectively rather than sharing address 0 within a 32-bit aligned memory space.
+    /// 
+    /// The entity of this cache is defined based on element size and reachable address space based on the
+    /// number of elements. An entity with 12 3-bit elements may look like the example below:
+    /// ```VHDL
+    /// entity Cache is
+    ///     port(
+    ///         clk: in std_logic;
+    ///         address: in std_logic_vector(3 downto 0);
+    ///         data: in std_logic_vector(2 downto 0);
+    ///         we: in std_logic;
+    ///         ready: in std_logic;
+    ///         busy: out std_logic;
+    ///         value: out std_logic_vector(2 downto 0);
+    ///         value_en: out std_logic;
+    ///         lastAddress: out std_logic_vector(3 downto 0)
+    ///     );
+    /// end Cache;
+    /// ````
+    /// 
+    /// Each element within the cache is encoded together with an enable bit that indicates whether the
+    /// element is present or not. This allows the cache to be partially filled and the enable bit to be used
+    /// to determine which elements are within the dangling memory space. Read and write operations are
+    /// supported through a `we` (write enable) bit that is `high` when writing and `low` when reading. The
+    /// `value` output describes the current element at the given address and is paired with `value_en` to
+    /// indicate whether an element exists at the given address. The `data` signal specifies the
+    /// new data to be written to the cache when `we` is `high`.
+    /// 
+    /// To perform a write, the data is set with the new element and the `we` and `ready` signals are set
+    /// `high`. The write will only be initiated when the `busy` signal is `low`. When a write happens, the
+    /// `busy` signal will go `high` until the write is complete. The `lastAddress` signal will contain the
+    /// address of the last write operation.
+    /// 
+    /// To perform a read, the address signal is set to the read address, the `we` signal is set `low` and the
+    /// `ready` signal is set `high`. The read will only be performed when the `busy` signal is `high`. The
+    /// read will take exactly 1 clock cycle to finish and will not change the `busy` signal during the
+    /// operation. The `value` signal will contain the element at the given address and the `value_en` signal
+    /// will be `high` if the element is present and `low` if the element is not present.
+    /// - Parameters:
+    ///   - name: The name of the cache.
+    ///   - size: The size of the elements stored within the cache.
+    ///   - numberOfElements: The number of elements to store in the cache.
+    /// - Warning: Please ensure `elementSize` is less than or equal to 30 bits as large elements are
+    /// currently not supported and will cause the program to crash.
+    @inlinable
     public init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard
             let entity = Entity(cacheName: name, elementSize: size, numberOfElements: numberOfElements),

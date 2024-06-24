@@ -58,6 +58,7 @@ import VHDLParsing
 
 extension VHDLFile {
 
+    @inlinable
     public init?(dividerName name: VariableName, size: Int) {
         guard
             let entity = Entity(dividerName: name, size: size),

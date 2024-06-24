@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -77,6 +78,7 @@ extension VHDLFile {
         )
     }
 
+    @inlinable
     public init?(bramName name: VariableName, numberOfAddresses: Int) {
         guard
             let entity = Entity(bramName: name, numberOfAddresses: numberOfAddresses),

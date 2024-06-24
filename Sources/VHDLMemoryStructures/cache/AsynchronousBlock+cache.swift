@@ -56,8 +56,14 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache creation.
 extension AsynchronousBlock {
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable force_unwrapping
+
+    /// Generate a cache.
+    @inlinable
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard size <= 30 else {
             fatalError("Caches containing large elements are not yet supported!")
@@ -303,5 +309,8 @@ extension AsynchronousBlock {
         ]
         self = .blocks(blocks: components + statements + [.process(block: process)])
     }
+
+    // swiftlint:enable force_unwrapping
+    // swiftlint:enable function_body_length
 
 }

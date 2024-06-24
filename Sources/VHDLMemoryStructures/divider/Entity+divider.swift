@@ -58,6 +58,7 @@ import VHDLParsing
 
 extension Entity {
 
+    @inlinable
     init?(dividerName name: VariableName, size: Int) {
         guard size > 0, size <= 32 else {
             return nil

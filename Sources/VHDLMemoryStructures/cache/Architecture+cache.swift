@@ -53,10 +53,14 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
+/// Add cache creation.
 extension Architecture {
 
+    /// Create a cache.
+    @inlinable
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard
             let head = ArchitectureHead(

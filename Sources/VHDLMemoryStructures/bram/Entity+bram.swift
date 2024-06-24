@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Utilities
 import VHDLMachines
 import VHDLParsing
 
@@ -67,6 +68,7 @@ extension Entity {
         )
     }
 
+    @inlinable
     init?(bramName name: VariableName, numberOfAddresses: Int) {
         guard numberOfAddresses > 0, Int64(numberOfAddresses) <= Int64(UInt32.max) + 1 else {
             return nil
