@@ -69,7 +69,9 @@ extension VHDLFile {
         self.init(
             architectures: [architecture],
             entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+            includes: [
+                .library(value: .ieee), .include(statement: .stdLogic1164), .include(statement: .numericStd)
+            ]
         )
     }
 
