@@ -246,6 +246,20 @@ extension AsynchronousBlock {
                 )))
             )),
             .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .valueEn)),
+                value: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .readEnables))),
+                    index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .toInteger,
+                        parameters: [
+                            Argument(argument: .reference(
+                                variable: .variable(reference: .variable(name: .remainder))
+                            ))
+                        ]
+                    ))))
+                )))
+            )),
+            .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .index)),
                 value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
                     value: .reference(variable: .variable(reference: .variable(name: .memoryAddress))),

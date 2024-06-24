@@ -85,6 +85,7 @@ extension Entity {
             PortSignal(type: .stdLogic, name: .ready, mode: .input),
             PortSignal(type: .stdLogic, name: .busy, mode: .output),
             PortSignal(type: elementType, name: .value, mode: .output),
+            PortSignal(type: .stdLogic, name: .valueEn, mode: .output),
             PortSignal(type: addressType, name: .lastAddress, mode: .output)
         ]
         guard let block = PortBlock(signals: signals) else {
