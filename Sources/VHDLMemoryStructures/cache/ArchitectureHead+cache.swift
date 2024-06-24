@@ -65,8 +65,10 @@ extension ArchitectureHead {
         guard size <= 30 else {
             fatalError("Large element sizes are currently not supported!")
         }
-        let elementsPerAddress = 31 / (size + 1)
-        let numberOfAddresses = max(1, numberOfElements * (size + 1) / 31)
+        let encodedSize = size + 1
+        let elementsPerAddress = 31 / encodedSize
+        let totalBits = numberOfElements * encodedSize
+        let numberOfAddresses = max(1, totalBits.isMultiple(of: 31) ? totalBits / 31 : totalBits / 31 + 1)
         let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
         guard
             addressBits <= 32,
