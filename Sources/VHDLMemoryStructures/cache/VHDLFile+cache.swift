@@ -93,16 +93,19 @@ extension VHDLFile {
     /// indicate whether an element exists at the given address. The `data` signal specifies the
     /// new data to be written to the cache when `we` is `high`.
     /// 
-    /// To perform a write, the data is set with the new element and the `we` and `ready` signals are set
-    /// `high`. The write will only be initiated when the `busy` signal is `low`. When a write happens, the
-    /// `busy` signal will go `high` until the write is complete. The `lastAddress` signal will contain the
-    /// address of the last write operation.
+    /// To perform a write, the write `address` and `data`` is set with the new element and the `we` and
+    /// `ready` signals are set `high`. The write will only be initiated when the `busy` signal is `low`. When
+    /// a write happens, the `busy` signal will go `high` until the write is complete. The `lastAddress`
+    /// signal will contain the address of the last write operation.
     /// 
     /// To perform a read, the address signal is set to the read address, the `we` signal is set `low` and the
-    /// `ready` signal is set `high`. The read will only be performed when the `busy` signal is `high`. The
+    /// `ready` signal is set `high`. The read will only be performed when the `busy` signal is `low`. The
     /// read will take exactly 1 clock cycle to finish and will not change the `busy` signal during the
     /// operation. The `value` signal will contain the element at the given address and the `value_en` signal
     /// will be `high` if the element is present and `low` if the element is not present.
+    /// 
+    /// During the operation of the cache, any detected errors will cause a permanent `busy` signal blocking
+    /// all further use of the cache.
     /// - Parameters:
     ///   - name: The name of the cache.
     ///   - size: The size of the elements stored within the cache.
