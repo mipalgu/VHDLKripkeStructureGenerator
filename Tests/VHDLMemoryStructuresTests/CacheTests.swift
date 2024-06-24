@@ -91,6 +91,8 @@ final class CacheTests: XCTestCase {
             type TargetStatesCacheCache_t is array (0 to 6) of std_logic_vector(2 downto 0);
             signal cache: TargetStatesCacheCache_t;
             signal cacheIndex: integer range 0 to 6;
+            signal memoryIndex: integer range 0 to 2;
+            signal genIndex: std_logic_vector(31 downto 0);
             signal di: std_logic_vector(31 downto 0);
             signal index: std_logic_vector(31 downto 0);
             signal weBRAM: std_logic;
@@ -102,6 +104,7 @@ final class CacheTests: XCTestCase {
             signal readCache: TargetStatesCacheCache_t;
             signal unsignedAddress: unsigned(3 downto 0);
             constant denominator: unsigned(3 downto 0) := "0111";
+            signal result: unsigned(3 downto 0);
             signal remainder: unsigned(3 downto 0);
             type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, IncrementIndex, ResetEnables, Error);
             signal internalState: TargetStatesCacheInternalState_t;
@@ -161,7 +164,117 @@ final class CacheTests: XCTestCase {
                 );
             end component;
         begin
-
+            TargetStatesCacheEncoder_inst: TargetStatesCacheEncoder port map (
+                in0 => cache(0),
+                in0en => enables(0),
+                in1 => cache(1),
+                in1en => enables(1),
+                in2 => cache(2),
+                in2en => enables(2),
+                in3 => cache(3),
+                in3en => enables(3),
+                in4 => cache(4),
+                in4en => enables(4),
+                in5 => cache(5),
+                in5en => enables(5),
+                in6 => cache(6),
+                in6en => enables(6),
+                data => di
+            );
+            TargetStatesCacheDecoder_inst: TargetStatesCacheDecoder port map (
+                data => currentValue,
+                out0 => readCache(0),
+                out0en => readEnables(0),
+                out1 => readCache(1),
+                out1en => readEnables(1),
+                out2 => readCache(2),
+                out2en => readEnables(2),
+                out3 => readCache(3),
+                out3en => readEnables(3),
+                out4 => readCache(4),
+                out4en => readEnables(4),
+                out5 => readCache(5),
+                out5en => readEnables(5),
+                out6 => readCache(6),
+                out6en => readEnables(6)
+            );
+            TargetStatesCacheDivider_inst: TargetStatesCacheDivider port map (
+                numerator => unsignedAddress,
+                denominator => denominator,
+                result => result,
+                remainder => remainder
+            );
+            TargetStatesCacheBRAM_inst: TargetStatesCacheBRAM port map (
+                clk => clk,
+                we => weBRAM,
+                addr => index,
+                di => di,
+                do => currentValue
+            );
+            unsignedAddress <= unsigned(address);
+            memoryAddress <= "0000000000000000000000000000" & std_logic_vector(result);
+            value <= readCache(to_integer(remainder));
+            index <= memoryAddress when read = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
+            genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    case internalState is
+                        when Initial =>
+                            cache <= (others => (others => '0'));
+                            enables <= (others => '0');
+                            cacheIndex <= 0;
+                            weBRAM <= '0';
+                            lastAddress <= (others => '0');
+                            busy <= '0';
+                            memoryIndex <= 0;
+                            internalState <= WaitForNewData;
+                        when WaitForNewData =>
+                            if (ready = '1' and we = '1') then
+                                internalState <= WriteElement;
+                                busy <= '1';
+                                cache(cacheIndex) <= data;
+                            else
+                                internalState <= WaitForNewData;
+                                busy <= '0';
+                                cache(cacheIndex) <= (others => '0');
+                            end if;
+                            weBRAM <= '0';
+                        when WriteElement =>
+                            if (memoryIndex = 2) then
+                                internalState <= Error;
+                                weBRAM <= '0';
+                            elsif (cacheIndex = 6) then
+                                weBRAM <= '1';
+                                internalState <= ResetEnables;
+                            else
+                                weBRAM <= '1';
+                                internalState <= IncrementIndex;
+                            end if;
+                            lastAddress <= genIndex;
+                            enables(cacheIndex) <= '1';
+                            cache(cacheIndex) <= data;
+                            busy <= '1';
+                        when IncrementIndex =>
+                            weBRAM <= '0';
+                            cacheIndex <= cacheIndex + 1;
+                            busy <= '1';
+                            internalState <= WaitForNewData;
+                        when ResetEnables =>
+                            weBRAM <= '0';
+                            cacheIndex <= 0;
+                            cache <= (others => (others => '0'));
+                            enables <= (others => '0');
+                            busy <= '1';
+                            memoryIndex <= memoryIndex + 1;
+                            internalState <= WaitForNewData;
+                        when others =>
+                            internalState <= Error;
+                            busy <= '1';
+                            weBRAM <= '0';
+                    end case;
+                end if;
+            end process;
         end Behavioral;
 
         """

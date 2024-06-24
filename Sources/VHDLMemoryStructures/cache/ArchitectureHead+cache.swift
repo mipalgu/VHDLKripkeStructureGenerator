@@ -67,8 +67,8 @@ extension ArchitectureHead {
         }
         let elementsPerAddress = 31 / (size + 1)
         let numberOfAddresses = max(1, numberOfElements * (size + 1) / 31)
+        let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
         guard
-            let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1),
             addressBits <= 32,
             let decoderName = VariableName(rawValue: name.rawValue + "Decoder"),
             let encoderName = VariableName(rawValue: name.rawValue + "Encoder"),
@@ -108,7 +108,18 @@ extension ArchitectureHead {
             type: .signal(type: .ranged(type: .integer(size: arraySize))),
             name: .cacheIndex
         )))
-        let cacheSignals = [cacheType, cache, cacheIndex]
+        let memoryIndex = HeadStatement.definition(value: .signal(value: LocalSignal(
+            type: SignalType.ranged(type: .integer(size: .to(
+                lower: .literal(value: .integer(value: 0)),
+                upper: .literal(value: .integer(value: numberOfAddresses))
+            ))),
+            name: .memoryIndex
+        )))
+        let genIndex = HeadStatement.definition(value: .signal(value: LocalSignal(
+            type: .logicVector32,
+            name: .genIndex
+        )))
+        let cacheSignals = [cacheType, cache, cacheIndex, memoryIndex, genIndex]
         let expanderTypes = [
             HeadStatement.definition(value: .type(value: .array(value: ArrayDefinition(
                 name: enablesTypeName,
@@ -160,6 +171,9 @@ extension ArchitectureHead {
                 type: unsignedAddressType, name: .unsignedAddress
             ))),
             .definition(value: .constant(value: denominatorConstant)),
+            .definition(value: .signal(value: LocalSignal(
+                type: unsignedAddressType, name: .result
+            ))),
             .definition(value: .signal(value: LocalSignal(
                 type: unsignedAddressType, name: .remainder
             )))

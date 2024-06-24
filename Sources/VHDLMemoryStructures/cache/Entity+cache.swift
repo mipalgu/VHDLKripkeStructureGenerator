@@ -64,7 +64,9 @@ extension Entity {
         guard size <= 30 else {
             fatalError("Caches containing large elements are not yet supported!")
         }
-        guard let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1), addressBits <= 32 else {
+        let numberOfAddressesBits = numberOfElements == 1 ? .some(1)
+            : BitLiteral.bitsRequired(for: numberOfElements - 1)
+        guard let addressBits = numberOfAddressesBits, addressBits <= 32 else {
             return nil
         }
         let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(
