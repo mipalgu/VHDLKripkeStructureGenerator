@@ -78,19 +78,31 @@ extension Architecture {
                     rhs: .reference(variable: .variable(reference: .variable(name: .denominator)))
                 )))
             )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .result)),
-                value: .expression(value: .reference(variable: .variable(reference: .variable(name: .data))))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .remainder)),
-                value: .expression(value: .binary(operation: .subtraction(
-                    lhs: .reference(variable: .variable(reference: .variable(name: .numerator))),
-                    rhs: .binary(operation: .multiplication(
-                        lhs: .reference(variable: .variable(reference: .variable(name: .denominator))),
-                        rhs: .reference(variable: .variable(reference: .variable(name: .data)))
-                    ))
-                )))
+            .process(block: ProcessBlock(
+                sensitivityList: [.clk],
+                code: .ifStatement(block: .ifStatement(
+                    condition: .conditional(condition: .edge(value: .rising(
+                        expression: .reference(variable: .variable(reference: .variable(name: .clk)))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .result)),
+                            value: .reference(variable: .variable(reference: .variable(name: .data)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .remainder)),
+                            value: .binary(operation: .subtraction(
+                                lhs: .reference(variable: .variable(reference: .variable(name: .numerator))),
+                                rhs: .binary(operation: .multiplication(
+                                    lhs: .reference(
+                                        variable: .variable(reference: .variable(name: .denominator))
+                                    ),
+                                    rhs: .reference(variable: .variable(reference: .variable(name: .data)))
+                                ))
+                            ))
+                        ))
+                    ])
+                ))
             ))
         ]
         self.init(body: .blocks(blocks: statements), entity: name, head: head, name: .behavioral)

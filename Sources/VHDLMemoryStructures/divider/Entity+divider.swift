@@ -68,6 +68,7 @@ extension Entity {
             lower: .literal(value: .integer(value: 0))
         )))
         let signals = [
+            PortSignal(type: .stdLogic, name: .clk, mode: .input),
             PortSignal(type: type, name: .numerator, mode: .input),
             PortSignal(type: type, name: .denominator, mode: .input),
             PortSignal(type: type, name: .result, mode: .output),

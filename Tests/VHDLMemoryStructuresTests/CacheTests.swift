@@ -155,6 +155,7 @@ final class CacheTests: XCTestCase {
             end component;
             component TargetStatesCacheDivider is
                 port(
+                    clk: in std_logic;
                     numerator: in unsigned(3 downto 0);
                     denominator: in unsigned(3 downto 0);
                     result: out unsigned(3 downto 0);
@@ -206,6 +207,7 @@ final class CacheTests: XCTestCase {
                 out6en => readEnables(6)
             );
             TargetStatesCacheDivider_inst: component TargetStatesCacheDivider port map (
+                clk => clk,
                 numerator => unsignedAddress,
                 denominator => denominator,
                 result => result,

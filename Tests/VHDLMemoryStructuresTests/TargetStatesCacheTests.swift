@@ -171,6 +171,7 @@ final class TargetStatesCacheTests: XCTestCase {
             end component;
             component PingMachineTargetStatesCacheDivider is
                 port(
+                    clk: in std_logic;
                     numerator: in unsigned(3 downto 0);
                     denominator: in unsigned(3 downto 0);
                     result: out unsigned(3 downto 0);
@@ -222,6 +223,7 @@ final class TargetStatesCacheTests: XCTestCase {
                 out6en => readEnables(6)
             );
             PingMachineTargetStatesCacheDivider_inst: component PingMachineTargetStatesCacheDivider port map (
+                clk => clk,
                 numerator => unsignedAddress,
                 denominator => denominator,
                 result => result,

@@ -149,6 +149,10 @@ extension AsynchronousBlock {
         ))
         let dividerMappings = [
             VariableMap(
+                lhs: .variable(reference: .variable(name: .clk)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .clk))))
+            ),
+            VariableMap(
                 lhs: .variable(reference: .variable(name: .numerator)),
                 rhs: .expression(value: .reference(
                     variable: .variable(reference: .variable(name: .unsignedAddress))
