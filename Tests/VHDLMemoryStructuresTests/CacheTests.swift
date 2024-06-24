@@ -105,6 +105,61 @@ final class CacheTests: XCTestCase {
             signal remainder: unsigned(3 downto 0);
             type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, IncrementIndex, ResetEnables, Error);
             signal internalState: TargetStatesCacheInternalState_t;
+            component TargetStatesCacheEncoder is
+                port(
+                    in0: in std_logic_vector(2 downto 0);
+                    in0en: in std_logic;
+                    in1: in std_logic_vector(2 downto 0);
+                    in1en: in std_logic;
+                    in2: in std_logic_vector(2 downto 0);
+                    in2en: in std_logic;
+                    in3: in std_logic_vector(2 downto 0);
+                    in3en: in std_logic;
+                    in4: in std_logic_vector(2 downto 0);
+                    in4en: in std_logic;
+                    in5: in std_logic_vector(2 downto 0);
+                    in5en: in std_logic;
+                    in6: in std_logic_vector(2 downto 0);
+                    in6en: in std_logic;
+                    data: out std_logic_vector(31 downto 0)
+                );
+            end component;
+            component TargetStatesCacheDecoder is
+                port(
+                    data: in std_logic_vector(31 downto 0);
+                    out0: out std_logic_vector(2 downto 0);
+                    out0en: out std_logic;
+                    out1: out std_logic_vector(2 downto 0);
+                    out1en: out std_logic;
+                    out2: out std_logic_vector(2 downto 0);
+                    out2en: out std_logic;
+                    out3: out std_logic_vector(2 downto 0);
+                    out3en: out std_logic;
+                    out4: out std_logic_vector(2 downto 0);
+                    out4en: out std_logic;
+                    out5: out std_logic_vector(2 downto 0);
+                    out5en: out std_logic;
+                    out6: out std_logic_vector(2 downto 0);
+                    out6en: out std_logic
+                );
+            end component;
+            component TargetStatesCacheDivider is
+                port(
+                    numerator: in unsigned(3 downto 0);
+                    denominator: in unsigned(3 downto 0);
+                    result: out unsigned(3 downto 0);
+                    remainder: out unsigned(3 downto 0)
+                );
+            end component;
+            component TargetStatesCacheBRAM is
+                port(
+                    clk: in std_logic;
+                    we: in std_logic;
+                    addr: in std_logic_vector(31 downto 0);
+                    di: in std_logic_vector(31 downto 0);
+                    do: out std_logic_vector(31 downto 0)
+                );
+            end component;
         begin
 
         end Behavioral;
