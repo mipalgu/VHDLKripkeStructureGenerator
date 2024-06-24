@@ -81,38 +81,89 @@ final class TargetStatesCacheTests: XCTestCase {
         library IEEE;
         use IEEE.std_logic_1164.all;
         use IEEE.numeric_std.all;
-        use work.PingMachineTypes.all;
 
-        entity TargetStatesCache is
+        entity PingMachineTargetStatesCache is
             port(
                 clk: in std_logic;
-                state: in std_logic_vector(2 downto 0);
                 address: in std_logic_vector(3 downto 0);
+                data: in std_logic_vector(2 downto 0);
                 we: in std_logic;
                 ready: in std_logic;
-                value: out std_logic_vector(3 downto 0);
                 busy: out std_logic;
+                value: out std_logic_vector(2 downto 0);
+                value_en: out std_logic;
                 lastAddress: out std_logic_vector(3 downto 0)
             );
-        end TargetStatesCache;
+        end PingMachineTargetStatesCache;
 
-        architecture Behavioral of TargetStatesCache is
-            signal workingStates: TargetStatesBRAMElement_t;
+        architecture Behavioral of PingMachineTargetStatesCache is
+            type PingMachineTargetStatesCacheCache_t is array (0 to 6) of std_logic_vector(2 downto 0);
+            signal cache: PingMachineTargetStatesCacheCache_t;
+            signal cacheIndex: integer range 0 to 6;
             signal memoryIndex: integer range 0 to 2;
+            signal genIndex: std_logic_vector(31 downto 0);
             signal di: std_logic_vector(31 downto 0);
             signal index: std_logic_vector(31 downto 0);
             signal weBRAM: std_logic;
-            signal enables: TargetStatesBRAMEnabled_t;
-            signal genIndex: std_logic_vector(3 downto 0);
-            type TargetStatesCache_InternalState_t is (Initial, WaitForNewRinglets, WriteElement, Error, ResetEnables, IncrementIndex);
-            signal internalState: TargetStatesCache_InternalState_t := Initial;
-            signal stateIndex: integer range 0 to 6;
-            signal memoryAddress: std_logic_vector(31 downto 0);
-            signal memoryOffset: integer range 0 to 6;
             signal currentValue: std_logic_vector(31 downto 0);
-            signal readStates: TargetStatesBRAMElement_t;
-            signal readEnables: TargetStatesBRAMEnabled_t;
-            component TargetStatesBRAM is
+            signal memoryAddress: std_logic_vector(31 downto 0);
+            type PingMachineTargetStatesCacheEnables_t is array (0 to 6) of std_logic;
+            signal enables: PingMachineTargetStatesCacheEnables_t;
+            signal readEnables: PingMachineTargetStatesCacheEnables_t;
+            signal readCache: PingMachineTargetStatesCacheCache_t;
+            signal unsignedAddress: unsigned(3 downto 0);
+            constant denominator: unsigned(3 downto 0) := "0111";
+            signal result: unsigned(3 downto 0);
+            signal remainder: unsigned(3 downto 0);
+            type PingMachineTargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, IncrementIndex, ResetEnables, Error);
+            signal internalState: PingMachineTargetStatesCacheInternalState_t;
+            component PingMachineTargetStatesCacheEncoder is
+                port(
+                    in0: in std_logic_vector(2 downto 0);
+                    in0en: in std_logic;
+                    in1: in std_logic_vector(2 downto 0);
+                    in1en: in std_logic;
+                    in2: in std_logic_vector(2 downto 0);
+                    in2en: in std_logic;
+                    in3: in std_logic_vector(2 downto 0);
+                    in3en: in std_logic;
+                    in4: in std_logic_vector(2 downto 0);
+                    in4en: in std_logic;
+                    in5: in std_logic_vector(2 downto 0);
+                    in5en: in std_logic;
+                    in6: in std_logic_vector(2 downto 0);
+                    in6en: in std_logic;
+                    data: out std_logic_vector(31 downto 0)
+                );
+            end component;
+            component PingMachineTargetStatesCacheDecoder is
+                port(
+                    data: in std_logic_vector(31 downto 0);
+                    out0: out std_logic_vector(2 downto 0);
+                    out0en: out std_logic;
+                    out1: out std_logic_vector(2 downto 0);
+                    out1en: out std_logic;
+                    out2: out std_logic_vector(2 downto 0);
+                    out2en: out std_logic;
+                    out3: out std_logic_vector(2 downto 0);
+                    out3en: out std_logic;
+                    out4: out std_logic_vector(2 downto 0);
+                    out4en: out std_logic;
+                    out5: out std_logic_vector(2 downto 0);
+                    out5en: out std_logic;
+                    out6: out std_logic_vector(2 downto 0);
+                    out6en: out std_logic
+                );
+            end component;
+            component PingMachineTargetStatesCacheDivider is
+                port(
+                    numerator: in unsigned(3 downto 0);
+                    denominator: in unsigned(3 downto 0);
+                    result: out unsigned(3 downto 0);
+                    remainder: out unsigned(3 downto 0)
+                );
+            end component;
+            component PingMachineTargetStatesCacheBRAM is
                 port(
                     clk: in std_logic;
                     we: in std_logic;
@@ -121,144 +172,117 @@ final class TargetStatesCacheTests: XCTestCase {
                     do: out std_logic_vector(31 downto 0)
                 );
             end component;
-            component TargetStatesEncoder is
-                port(
-                    clk: in std_logic;
-                    state0: in std_logic_vector(2 downto 0);
-                    state0en: in std_logic;
-                    state1: in std_logic_vector(2 downto 0);
-                    state1en: in std_logic;
-                    state2: in std_logic_vector(2 downto 0);
-                    state2en: in std_logic;
-                    state3: in std_logic_vector(2 downto 0);
-                    state3en: in std_logic;
-                    state4: in std_logic_vector(2 downto 0);
-                    state4en: in std_logic;
-                    state5: in std_logic_vector(2 downto 0);
-                    state5en: in std_logic;
-                    state6: in std_logic_vector(2 downto 0);
-                    state6en: in std_logic;
-                    data: out std_logic_vector(31 downto 0)
-                );
-            end component;
-            component TargetStatesDecoder is
-                port(
-                    data: in std_logic_vector(31 downto 0);
-                    state0: out std_logic_vector(2 downto 0);
-                    state0en: out std_logic;
-                    state1: out std_logic_vector(2 downto 0);
-                    state1en: out std_logic;
-                    state2: out std_logic_vector(2 downto 0);
-                    state2en: out std_logic;
-                    state3: out std_logic_vector(2 downto 0);
-                    state3en: out std_logic;
-                    state4: out std_logic_vector(2 downto 0);
-                    state4en: out std_logic;
-                    state5: out std_logic_vector(2 downto 0);
-                    state5en: out std_logic;
-                    state6: out std_logic_vector(2 downto 0);
-                    state6en: out std_logic
-                );
-            end component;
         begin
-            bram_inst: component TargetStatesBRAM port map (
+            PingMachineTargetStatesCacheEncoder_inst: component PingMachineTargetStatesCacheEncoder port map (
+                in0 => cache(0),
+                in0en => enables(0),
+                in1 => cache(1),
+                in1en => enables(1),
+                in2 => cache(2),
+                in2en => enables(2),
+                in3 => cache(3),
+                in3en => enables(3),
+                in4 => cache(4),
+                in4en => enables(4),
+                in5 => cache(5),
+                in5en => enables(5),
+                in6 => cache(6),
+                in6en => enables(6),
+                data => di
+            );
+            PingMachineTargetStatesCacheDecoder_inst: component PingMachineTargetStatesCacheDecoder port map (
+                data => currentValue,
+                out0 => readCache(0),
+                out0en => readEnables(0),
+                out1 => readCache(1),
+                out1en => readEnables(1),
+                out2 => readCache(2),
+                out2en => readEnables(2),
+                out3 => readCache(3),
+                out3en => readEnables(3),
+                out4 => readCache(4),
+                out4en => readEnables(4),
+                out5 => readCache(5),
+                out5en => readEnables(5),
+                out6 => readCache(6),
+                out6en => readEnables(6)
+            );
+            PingMachineTargetStatesCacheDivider_inst: component PingMachineTargetStatesCacheDivider port map (
+                numerator => unsignedAddress,
+                denominator => denominator,
+                result => result,
+                remainder => remainder
+            );
+            PingMachineTargetStatesCacheBRAM_inst: component PingMachineTargetStatesCacheBRAM port map (
                 clk => clk,
                 we => weBRAM,
                 addr => index,
                 di => di,
                 do => currentValue
             );
-            encoder_inst: component TargetStatesEncoder port map (
-                clk => clk,
-                state0 => workingStates(0),
-                state0en => enables(0),
-                state1 => workingStates(1),
-                state1en => enables(1),
-                state2 => workingStates(2),
-                state2en => enables(2),
-                state3 => workingStates(3),
-                state3en => enables(3),
-                state4 => workingStates(4),
-                state4en => enables(4),
-                state5 => workingStates(5),
-                state5en => enables(5),
-                state6 => workingStates(6),
-                state6en => enables(6),
-                data => di
-            );
-            decoder_inst: component TargetStatesDecoder port map (
-                data => currentValue,
-                state0 => readStates(0),
-                state0en => readEnables(0),
-                state1 => readStates(1),
-                state1en => readEnables(1),
-                state2 => readStates(2),
-                state2en => readEnables(2),
-                state3 => readStates(3),
-                state3en => readEnables(3),
-                state4 => readStates(4),
-                state4en => readEnables(4),
-                state5 => readStates(5),
-                state5en => readEnables(5),
-                state6 => readStates(6),
-                state6en => readEnables(6)
-            );
-            memoryAddress <= "0000000000000000000000000000" & std_logic_vector(unsigned(address) / 7);
-            memoryOffset <= to_integer(unsigned(address) - unsigned(address) / 7 * 7);
-            value <= readStates(memoryOffset) & readEnables(memoryOffset);
-            index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewRinglets else genIndex;
-            genIndex <= std_logic_vector(to_unsigned(memoryIndex, 4) * 7 + to_unsigned(stateIndex, 4));
+            unsignedAddress <= unsigned(address);
+            memoryAddress <= "0000000000000000000000000000" & std_logic_vector(result);
+            value <= readCache(to_integer(remainder));
+            value_en <= readEnables(to_integer(remainder));
+            index <= memoryAddress when read = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
+            genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
             process(clk)
             begin
                 if (rising_edge(clk)) then
                     case internalState is
                         when Initial =>
-                            busy <= '0';
-                            internalState <= WaitForNewRinglets;
-                            memoryIndex <= 0;
-                            weBRAM <= '0';
-                            di <= (others => '0');
-                            stateIndex <= 0;
+                            cache <= (others => (others => '0'));
                             enables <= (others => '0');
-                        when WaitForNewRinglets =>
+                            cacheIndex <= 0;
+                            weBRAM <= '0';
+                            lastAddress <= (others => '0');
+                            busy <= '0';
+                            memoryIndex <= 0;
+                            internalState <= WaitForNewData;
+                        when WaitForNewData =>
                             if (ready = '1' and we = '1') then
                                 internalState <= WriteElement;
                                 busy <= '1';
-                                workingStates(stateIndex) <= state;
+                                cache(cacheIndex) <= data;
+                                enables(cacheIndex) <= '1';
                             else
+                                internalState <= WaitForNewData;
                                 busy <= '0';
+                                cache(cacheIndex) <= (others => '0');
+                                enables(cacheIndex) <= '0';
                             end if;
                             weBRAM <= '0';
                         when WriteElement =>
                             if (memoryIndex = 2) then
                                 internalState <= Error;
                                 weBRAM <= '0';
-                            elsif (stateIndex = 6) then
+                            elsif (cacheIndex = 6) then
+                                weBRAM <= '1';
                                 internalState <= ResetEnables;
-                                weBRAM <= '1';
+                                lastAddress <= genIndex;
                             else
-                                internalState <= IncrementIndex;
                                 weBRAM <= '1';
+                                internalState <= IncrementIndex;
+                                lastAddress <= genIndex;
                             end if;
-                            lastAddress <= genIndex;
-                            enables(stateIndex) <= '1';
-                            workingStates(stateIndex) <= state;
                             busy <= '1';
                         when IncrementIndex =>
                             weBRAM <= '0';
-                            stateIndex <= stateIndex + 1;
+                            cacheIndex <= cacheIndex + 1;
                             busy <= '1';
-                            internalState <= WaitForNewRinglets;
+                            internalState <= WaitForNewData;
                         when ResetEnables =>
                             weBRAM <= '0';
+                            cacheIndex <= 0;
+                            cache <= (others => (others => '0'));
                             enables <= (others => '0');
-                            workingStates <= (others => (others => '0'));
                             busy <= '1';
                             memoryIndex <= memoryIndex + 1;
-                            stateIndex <= 0;
-                            internalState <= WaitForNewRinglets;
+                            internalState <= WaitForNewData;
                         when others =>
-                            null;
+                            internalState <= Error;
+                            busy <= '1';
+                            weBRAM <= '0';
                     end case;
                 end if;
             end process;
