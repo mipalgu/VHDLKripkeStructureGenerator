@@ -93,12 +93,22 @@ extension Architecture {
                             name: .variable(reference: .variable(name: .remainder)),
                             value: .binary(operation: .subtraction(
                                 lhs: .reference(variable: .variable(reference: .variable(name: .numerator))),
-                                rhs: .binary(operation: .multiplication(
-                                    lhs: .reference(
-                                        variable: .variable(reference: .variable(name: .denominator))
-                                    ),
-                                    rhs: .reference(variable: .variable(reference: .variable(name: .data)))
-                                ))
+                                rhs: .functionCall(call: .custom(function: CustomFunctionCall(
+                                    name: .resize,
+                                    parameters: [
+                                        Argument(
+                                            argument: .binary(operation: .multiplication(
+                                                lhs: .reference(variable: .variable(
+                                                    reference: .variable(name: .denominator)
+                                                )),
+                                                rhs: .reference(variable: .variable(
+                                                    reference: .variable(name: .data)
+                                                ))
+                                            ))
+                                        ),
+                                        Argument(argument: .literal(value: .integer(value: size)))
+                                    ]
+                                )))
                             ))
                         ))
                     ])

@@ -243,7 +243,7 @@ final class TargetStatesCacheTests: XCTestCase {
             index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
             genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
             lastAddress <= std_logic_vector(unsignedLastAddress);
-            currentIndex <= to_unsigned(memoryIndex, 4) * denominator + to_unsigned(cacheIndex, 4);
+            currentIndex <= resize(to_unsigned(memoryIndex, 4) * denominator, 4) + to_unsigned(cacheIndex, 4);
             process(clk)
             begin
                 if (rising_edge(clk)) then

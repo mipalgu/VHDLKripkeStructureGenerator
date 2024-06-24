@@ -321,18 +321,28 @@ extension AsynchronousBlock {
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .currentIndex)),
                 value: .expression(value: .binary(operation: .addition(
-                    lhs: .binary(operation: .multiplication(
-                        lhs: .functionCall(call: .custom(function: CustomFunctionCall(
-                            name: .toUnsigned,
-                            parameters: [
-                                Argument(argument: .reference(
-                                    variable: .variable(reference: .variable(name: .memoryIndex))
-                                )),
-                                Argument(argument: .literal(value: .integer(value: addressBits)))
-                            ]
-                        ))),
-                        rhs: .reference(variable: .variable(reference: .variable(name: .denominator)))
-                    )),
+                    lhs: .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .resize,
+                        parameters: [
+                            Argument(
+                                argument: .binary(operation: .multiplication(
+                                    lhs: .functionCall(call: .custom(function: CustomFunctionCall(
+                                        name: .toUnsigned,
+                                        parameters: [
+                                            Argument(argument: .reference(
+                                                variable: .variable(reference: .variable(name: .memoryIndex))
+                                            )),
+                                            Argument(argument: .literal(value: .integer(value: addressBits)))
+                                        ]
+                                    ))),
+                                    rhs: .reference(variable: .variable(
+                                        reference: .variable(name: .denominator)
+                                    ))
+                                ))
+                            ),
+                            Argument(argument: .literal(value: .integer(value: addressBits)))
+                        ]
+                    ))),
                     rhs: .functionCall(call: .custom(function: CustomFunctionCall(
                         name: .toUnsigned,
                         parameters: [

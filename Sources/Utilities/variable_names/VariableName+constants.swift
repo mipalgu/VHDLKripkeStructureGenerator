@@ -132,6 +132,9 @@ public extension VariableName {
     /// The `reset` signal.
     static let reset = VariableName(rawValue: "reset")!
 
+    /// The `resize` function.
+    static let resize = VariableName(rawValue: "resize")!
+
     /// The `result` signal.
     static let result = VariableName(rawValue: "result")!
 
