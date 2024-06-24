@@ -71,6 +71,9 @@ final class TargetStatesCacheTests: XCTestCase {
 
     // swiftlint:enable implicitly_unwrapped_optional
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable line_length
+
     /// Test cache generation.
     func testGeneration() {
         guard let result = VHDLFile(targetStatesCacheFor: representation) else {
@@ -291,5 +294,8 @@ final class TargetStatesCacheTests: XCTestCase {
         """
         XCTAssertEqual(expected, result.rawValue)
     }
+
+    // swiftlint:enable line_length
+    // swiftlint:enable function_body_length
 
 }

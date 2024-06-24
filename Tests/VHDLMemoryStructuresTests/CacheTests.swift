@@ -62,6 +62,9 @@ import XCTest
 /// Test class for cache.
 final class CacheTests: XCTestCase {
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable line_length
+
     /// Test cache generation.
     func testCacheGeneration() {
         guard let result = VHDLFile(
@@ -284,5 +287,8 @@ final class CacheTests: XCTestCase {
         """
         XCTAssertEqual(result.rawValue, expected)
     }
+
+    // swiftlint:enable line_length
+    // swiftlint:enable function_body_length
 
 }
