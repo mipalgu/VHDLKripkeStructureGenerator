@@ -61,25 +61,13 @@ extension VHDLFile {
 
     public init?<T>(targetStatesCacheFor representation: T) where T: MachineVHDLRepresentable {
         guard
-            let entity = Entity(targetStateCacheFor: representation),
-            let block = AsynchronousBlock(targetStatesCacheFor: representation),
-            let head = ArchitectureHead(targetStatesCacheFor: representation),
-            let work = VariableName(rawValue: "work"),
-            let types = VariableName(rawValue: "\(representation.entity.name.rawValue)Types"),
-            let include = UseStatement(nonEmptyComponents: [.module(name: work), .module(name: types), .all])
+            let name = VariableName(rawValue: representation.entity.name.rawValue + "TargetStatesCache")
         else {
             return nil
         }
-        self.init(
-            architectures: [Architecture(body: block, entity: entity.name, head: head, name: .behavioral)],
-            entities: [entity],
-            includes: [
-                .library(value: .ieee),
-                .include(statement: .stdLogic1164),
-                .include(statement: .numericStd),
-                .include(statement: include)
-            ]
-        )
+        let numberOfElements = representation.machine.numberOfTargetStates
+        let elementSize = representation.machine.targetStateBits - 1
+        self.init(cacheName: name, elementSize: elementSize, numberOfElements: numberOfElements)
     }
 
 }
