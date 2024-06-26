@@ -1,4 +1,4 @@
-// Architecture+CacheMonitor.swift
+// AsynchronousBlock+cacheMonitor.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,7 +56,7 @@
 import Utilities
 import VHDLParsing
 
-extension Architecture {
+extension AsynchronousBlock {
 
     init?(
         cacheMonitorName name: VariableName,
@@ -65,25 +65,7 @@ extension Architecture {
         numberOfElements: Int,
         selectors: Int
     ) {
-        guard
-            let head = ArchitectureHead(
-                cacheMonitorName: name,
-                cacheName: cacheName,
-                elementSize: size,
-                numberOfElements: numberOfElements,
-                selectors: selectors
-            ),
-            let body = AsynchronousBlock(
-                cacheMonitorName: name,
-                cacheName: cacheName,
-                elementSize: size,
-                numberOfElements: numberOfElements,
-                selectors: selectors
-            )
-        else {
-            return nil
-        }
-        self.init(body: body, entity: name, head: head, name: .behavioral)
+        nil
     }
 
 }

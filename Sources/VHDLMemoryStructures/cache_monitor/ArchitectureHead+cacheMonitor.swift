@@ -1,4 +1,4 @@
-// Architecture+CacheMonitor.swift
+// ArchitectureHead+cacheMonitor.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,7 +56,7 @@
 import Utilities
 import VHDLParsing
 
-extension Architecture {
+extension ArchitectureHead {
 
     init?(
         cacheMonitorName name: VariableName,
@@ -66,24 +66,68 @@ extension Architecture {
         selectors: Int
     ) {
         guard
-            let head = ArchitectureHead(
-                cacheMonitorName: name,
-                cacheName: cacheName,
-                elementSize: size,
-                numberOfElements: numberOfElements,
-                selectors: selectors
-            ),
-            let body = AsynchronousBlock(
-                cacheMonitorName: name,
-                cacheName: cacheName,
-                elementSize: size,
-                numberOfElements: numberOfElements,
-                selectors: selectors
+            selectors > 0,
+            let cache = Entity(cacheName: cacheName, elementSize: size, numberOfElements: numberOfElements),
+            let internalStateTypeName = VariableName(rawValue: name.rawValue + "InternalState_t")
+        else {
+            return nil
+        }
+        let selectorCacheSignals = cache.port.signals.lazy.filter {
+            $0.name != .clk && $0.name != .lastAddress
+        }
+        let cacheSignals = selectorCacheSignals.map {
+            HeadStatement.definition(value: .signal(value: LocalSignal(
+                type: $0.type, name: $0.name, defaultValue: $0.defaultValue, comment: $0.comment
+            )))
+        }
+        let selectorOutputs = selectorCacheSignals.filter { $0.mode == .output }
+        let selectorSignals = (0..<selectors).flatMap { selector in
+            let cacheSignals = selectorOutputs.map {
+                HeadStatement.definition(value: .signal(value: LocalSignal(
+                    type: $0.type,
+                    name: VariableName(rawValue: "last\($0.name.rawValue)\(selector)")!,
+                    defaultValue: $0.defaultValue,
+                    comment: $0.comment
+                )))
+            }
+            return cacheSignals + [
+                HeadStatement.definition(value: .signal(value: LocalSignal(
+                    type: .stdLogic,
+                    name: VariableName(rawValue: "selector\(selector)_en")!,
+                    defaultValue: .literal(value: .bit(value: .high)),
+                    comment: nil
+                )))
+            ]
+        }
+        let cacheComponent = HeadStatement.definition(
+            value: .component(value: ComponentDefinition(entity: cache))
+        )
+        let selectorInternalStates = (0..<selectors).compactMap {
+            VariableName(rawValue: "CheckSelector\($0)")
+        }
+        guard
+            selectorInternalStates.count == selectors,
+            let enumeration = EnumerationDefinition(
+                name: internalStateTypeName, nonEmptyValues: [.initial] + selectorInternalStates
             )
         else {
             return nil
         }
-        self.init(body: body, entity: name, head: head, name: .behavioral)
+        let internalStateType = HeadStatement.definition(value: .type(
+            value: .enumeration(value: enumeration)
+        ))
+        let internalStateDefinition = HeadStatement.definition(value: .signal(
+            value: LocalSignal(
+                type: .alias(name: internalStateTypeName),
+                name: .internalState,
+                defaultValue: .reference(variable: .variable(reference: .variable(name: .initial)))
+            )
+        ))
+        self.init(
+            statements: cacheSignals + selectorSignals + [
+                internalStateType, internalStateDefinition, cacheComponent
+            ]
+        )
     }
 
 }
