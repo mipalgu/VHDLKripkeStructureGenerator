@@ -165,6 +165,9 @@ public extension VariableName {
     /// The `TargetStatesBRAMEnabled_t` type.
     static let targetStatesBRAMEnabledType = VariableName(rawValue: "TargetStatesBRAMEnabled_t")!
 
+    /// The `TargetStatesCacheMonitor`.
+    static let targetStatesCacheMonitor = VariableName(rawValue: "TargetStatesCacheMonitor")!
+
     /// The `targetStateOut` signal.
     static let targetStateOut = VariableName(rawValue: "targetStateOut")!
 
