@@ -85,7 +85,7 @@ extension ArchitectureHead {
             let cacheSignals = selectorOutputs.map {
                 HeadStatement.definition(value: .signal(value: LocalSignal(
                     type: $0.type,
-                    name: VariableName(rawValue: "last\($0.name.rawValue)\(selector)")!,
+                    name: VariableName(rawValue: "last\($0.name.rawValue.capitalized)\(selector)")!,
                     defaultValue: $0.defaultValue,
                     comment: $0.comment
                 )))
@@ -94,7 +94,7 @@ extension ArchitectureHead {
                 HeadStatement.definition(value: .signal(value: LocalSignal(
                     type: .stdLogic,
                     name: VariableName(rawValue: "selector\(selector)_en")!,
-                    defaultValue: .literal(value: .bit(value: .high)),
+                    defaultValue: .literal(value: .bit(value: .low)),
                     comment: nil
                 )))
             ]
