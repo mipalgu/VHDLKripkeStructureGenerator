@@ -62,6 +62,12 @@ extension VHDLFile {
     public init?<T>(
         stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
+        self.init(sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize)
+    }
+
+    public init?<T>(
+        sequentialStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
         guard
             let body = AsynchronousBlock(
                 stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
