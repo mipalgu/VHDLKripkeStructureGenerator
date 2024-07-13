@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import VHDLMachines
 import VHDLParsing
 
 /// A factory for creating memory structures in `VHDL`.
@@ -102,6 +103,23 @@ public struct MemoryStructureFactory {
             return nil
         }
         return [cache, decoder, encoder, divider, bram]
+    }
+
+    /// Create the target states cache for a machine.
+    /// - Parameter representation: The representation of the machine to generate the cache for.
+    /// - Returns: The `VHDL` files required to implement the target states cache.
+    @inlinable
+    public func targetStateCache<T>(for representation: T) -> [VHDLFile]? where T: MachineVHDLRepresentable {
+        guard
+            let cache = VHDLFile(targetStatesCacheFor: representation),
+            let encoder = VHDLFile(targetStatesEncoderFor: representation),
+            let decoder = VHDLFile(targetStatesDecoderFor: representation),
+            let divider = VHDLFile(targetStatesDividerFor: representation),
+            let bram = VHDLFile(targetStatesBRAMFor: representation)
+        else {
+            return nil
+        }
+        return [cache, encoder, decoder, divider, bram]
     }
 
 }

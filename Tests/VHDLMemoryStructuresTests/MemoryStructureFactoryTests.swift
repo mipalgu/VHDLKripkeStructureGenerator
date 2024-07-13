@@ -53,6 +53,8 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import TestUtils
+import VHDLMachines
 @testable import VHDLMemoryStructures
 import VHDLParsing
 import XCTest
@@ -63,7 +65,15 @@ final class MemoryStructureFactoryTests: XCTestCase {
     /// The factory under test.
     let factory = MemoryStructureFactory()
 
+    /// A Ping machine.
+    let machine = Machine.pingMachine
+
     // swiftlint:disable force_unwrapping
+
+    /// The machine representation.
+    var representation: MachineRepresentation {
+        MachineRepresentation(machine: machine, name: .pingMachine)!
+    }
 
     /// Test the cache generates the correct files.
     func testCacheGeneration() {
@@ -81,6 +91,24 @@ final class MemoryStructureFactoryTests: XCTestCase {
             VariableName(rawValue: "CacheEncoder")!,
             VariableName(rawValue: "CacheDecoder")!,
             VariableName(rawValue: "CacheBRAM")!
+        ]
+        XCTAssertEqual(fileNames, expected)
+    }
+
+    /// Test the target states cache generates the correct files.
+    func testTargetStatesCacheGeneration() {
+        guard let files = factory.targetStateCache(for: representation) else {
+            XCTFail("Failed to generate target state cache")
+            return
+        }
+        let fileNames = Set(files.compactMap { $0.entities.first?.name })
+        XCTAssertEqual(fileNames.count, files.count)
+        let expected: Set<VariableName> = [
+            VariableName(rawValue: "PingMachineTargetStatesCache")!,
+            VariableName(rawValue: "PingMachineTargetStatesCacheDivider")!,
+            VariableName(rawValue: "PingMachineTargetStatesCacheEncoder")!,
+            VariableName(rawValue: "PingMachineTargetStatesCacheDecoder")!,
+            VariableName(rawValue: "PingMachineTargetStatesCacheBRAM")!
         ]
         XCTAssertEqual(fileNames, expected)
     }
