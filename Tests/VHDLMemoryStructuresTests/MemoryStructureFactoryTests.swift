@@ -1,4 +1,4 @@
-// MemoryStructureFactory.swift
+// MemoryStructureFactoryTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,45 +53,34 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+@testable import VHDLMemoryStructures
 import VHDLParsing
+import XCTest
 
-public struct MemoryStructureFactory {
+/// Test class for ``MemoryStructureFactory``.
+final class MemoryStructureFactoryTests: XCTestCase {
 
-    public init() {}
+    /// The factory under test.
+    let factory = MemoryStructureFactory()
 
-    public func createCache(name: VariableName, elementSize size: Int, numberOfElements: Int) -> [VHDLFile]? {
-        guard size > 0, numberOfElements > 0 else {
-            return nil
+    /// Test the cache generates the correct files.
+    func testCacheGeneration() {
+        guard let files = factory.createCache(
+            name: VariableName(rawValue: "Cache")!, elementSize: 8, numberOfElements: 200
+        ) else {
+            XCTFail("Failed to generate cache")
+            return
         }
-        let elementsPerAddress = 31 / size
-        guard elementsPerAddress > 0 else {
-            return nil
-        }
-        let numberOfAddresses: Int
-        if numberOfElements.isMultiple(of: elementsPerAddress) {
-            numberOfAddresses = numberOfElements / elementsPerAddress
-        } else {
-            numberOfAddresses = numberOfElements / elementsPerAddress + 1
-        }
-        guard
-            let cache = VHDLFile(cacheName: name, elementSize: size, numberOfElements: numberOfElements),
-            let decoderName = VariableName(rawValue: name.rawValue + "Decoder"),
-            let encoderName = VariableName(rawValue: name.rawValue + "Encoder"),
-            let bramName = VariableName(rawValue: name.rawValue + "BRAM"),
-            let dividerName = VariableName(rawValue: name.rawValue + "Divider"),
-            let decoder = VHDLFile(
-                decoderName: decoderName, numberOfElements: elementsPerAddress, elementSize: size
-            ),
-            let encoder = VHDLFile(
-                encoderName: encoderName, numberOfElements: elementsPerAddress, elementSize: size
-            ),
-            let addressSize = BitLiteral.bitsRequired(for: max(1, numberOfAddresses - 1)),
-            let divider = VHDLFile(dividerName: dividerName, size: addressSize),
-            let bram = VHDLFile(bramName: bramName, numberOfAddresses: numberOfAddresses)
-        else {
-            return nil
-        }
-        return [cache, decoder, encoder, divider, bram]
+        let fileNames = Set(files.compactMap { $0.entities.first?.name })
+        XCTAssertEqual(fileNames.count, files.count)
+        let expected: Set<VariableName> = [
+            VariableName(rawValue: "Cache")!,
+            VariableName(rawValue: "CacheDivider")!,
+            VariableName(rawValue: "CacheEncoder")!,
+            VariableName(rawValue: "CacheDecoder")!,
+            VariableName(rawValue: "CacheBRAM")!
+        ]
+        XCTAssertEqual(fileNames, expected)
     }
 
 }
