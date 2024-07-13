@@ -63,6 +63,8 @@ final class MemoryStructureFactoryTests: XCTestCase {
     /// The factory under test.
     let factory = MemoryStructureFactory()
 
+    // swiftlint:disable force_unwrapping
+
     /// Test the cache generates the correct files.
     func testCacheGeneration() {
         guard let files = factory.createCache(
@@ -82,5 +84,7 @@ final class MemoryStructureFactoryTests: XCTestCase {
         ]
         XCTAssertEqual(fileNames, expected)
     }
+
+    // swiftlint:enable force_unwrapping
 
 }
