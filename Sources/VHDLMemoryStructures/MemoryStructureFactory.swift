@@ -55,10 +55,20 @@
 
 import VHDLParsing
 
+/// A factory for creating memory structures in `VHDL`.
 public struct MemoryStructureFactory {
 
+    /// Create the factory.
+    @inlinable
     public init() {}
 
+    /// Create all the files for a cache memory structure.
+    /// - Parameters:
+    ///   - name: The name of the cache.
+    ///   - size: The size of each element in the cache.
+    ///   - numberOfElements: The total number of elements in the cache.
+    /// - Returns: The VHDL files required to implement the cache.
+    @inlinable
     public func createCache(name: VariableName, elementSize size: Int, numberOfElements: Int) -> [VHDLFile]? {
         guard size > 0, numberOfElements > 0 else {
             return nil
