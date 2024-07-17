@@ -56,8 +56,37 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache monitor creation.
 extension VHDLFile {
 
+    /// Create a `VHDL` file for a cache monitor.
+    /// 
+    /// A cache monitor is a file that arbitrates access to a cache when multiple entities are trying to
+    /// access it simultaneously. The cache monitor adopts a round-robin schedule to determine which entity
+    /// has access to the cache at any point in time. This schedule is not strictly enforced by the monitor
+    /// but instead requires each entity to relinquish access to move onto the next entity. This design
+    /// ensures a lightweight implementation that does not require a central arbiter to manage priorities and
+    /// timeout requirements or adopt time-based scheduling windows that can create inefficient access. This
+    /// does, however, require all entites to be aware of this fact and relinquish access when not using the
+    /// cache as continuous access can result in starvation for all other entities.
+    /// 
+    /// To request access to the cache, an entity must assert the `ready` signal `high` at the start and
+    /// during the entire operation of the cache. The cache monitor will assert the appropriate `en` signal
+    /// (en0, en1, en2, etc.) to signify which entity has access to the cache at each point in time. The
+    /// `value` and `value_en` signals are shared between all entities but only represent valid data for a
+    /// specific entity when their respective `en` is `high`.
+    /// 
+    /// When changing the current entity using the cache, the monitor will give a 1-cycle switching
+    /// window to ensure that the entity can respond within enough time to obtain ownership of the cache. The
+    /// values within the very first clock cycle where `en` is `high` may represent junk data as the cache is
+    /// providing this timing window and the cache contains a 1-cycle read-window starting with the updated
+    /// signals from the new entity. Please ensure you leave a 1-cycle window on the very first access of the
+    /// cache to ensure that the cache monitor can switch entities without data corruption.
+    /// - Parameters:
+    ///   - name: The name of the monitor.
+    ///   - members: The number of entities that have access to the cache.
+    ///   - cache: The cache this monitor is managing.
+    @inlinable
     public init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
         guard
             let entity = Entity(cacheMonitorName: name, numberOfMembers: members, cache: cache),
