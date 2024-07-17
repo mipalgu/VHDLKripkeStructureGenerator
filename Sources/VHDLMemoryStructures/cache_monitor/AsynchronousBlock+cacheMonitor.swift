@@ -116,14 +116,14 @@ extension AsynchronousBlock {
                     variable: .variable(reference: .variable(name: defaultSignal.1))
                 ))
             ]
-            let expression = statements.joined {
-                guard case .whenBlock(let when) = $0, case .when(let statement) = when else {
+            let expression = statements.reversed().joined {
+                guard case .whenBlock(let when) = $1, case .when(let statement) = when else {
                     fatalError("Impossible!")
                 }
                 return AsynchronousExpression.whenBlock(value: .whenElse(statement: WhenElseStatement(
                     value: statement.value,
                     condition: statement.condition,
-                    elseBlock: $1
+                    elseBlock: $0
                 )))
             }
             return AsynchronousBlock.statement(statement: .assignment(
