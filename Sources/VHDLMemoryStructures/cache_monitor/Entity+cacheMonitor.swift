@@ -56,8 +56,15 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache monitor creation.
 extension Entity {
 
+    /// Create a cache monitor entity.
+    /// - Parameters:
+    ///   - name: The name of the cache monitor.
+    ///   - members: The number of members that have access to the cache.
+    ///   - cache: The cache entity to monitor.
+    @inlinable
     init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
         guard members > 1 else {
             return nil
@@ -78,6 +85,7 @@ extension Entity {
             expectedSignalNames.contains($0.name) && $0.name != .busy && $0.name != .lastAddress &&
                 $0.name != .value && $0.name != .valueEn
         }
+        // swiftlint:disable force_unwrapping
         let memberSignals = (0..<members).flatMap { member in
             let cacheSignals = cacheMemberSignals.map {
                 PortSignal(
@@ -90,6 +98,7 @@ extension Entity {
                 PortSignal(type: .stdLogic, name: VariableName(rawValue: "en\(member)")!, mode: .output)
             ]
         }
+        // swiftlint:enable force_unwrapping
         let busy = PortSignal(type: .stdLogic, name: .busy, mode: .output)
         let lastAddress = PortSignal(type: addressType, name: .lastAddress, mode: .output)
         let value = PortSignal(type: dataType, name: .value, mode: .output)

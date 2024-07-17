@@ -56,8 +56,17 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache monitor creation.
 extension AsynchronousBlock {
 
+    // swiftlint:disable function_body_length
+
+    /// Create a cache monitor block.
+    /// - Parameters:
+    ///   - name: The name of the cache monitor.
+    ///   - members: The number of members that have access to the cache.
+    ///   - cache: The cache entity to monitor.
+    @inlinable
     init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
         guard members > 0 else {
             return nil
@@ -82,6 +91,7 @@ extension AsynchronousBlock {
         let component = AsynchronousBlock.component(block: ComponentInstantiation(
             label: .cacheInst, name: cache.name, port: PortMap(variables: mappedSignals)
         ))
+        // swiftlint:disable force_unwrapping
         let memberAssignments = (0..<members).map {
             AsynchronousBlock.statement(statement: .assignment(
                 name: .variable(reference: .variable(name: VariableName(rawValue: "en\($0)")!)),
@@ -98,6 +108,7 @@ extension AsynchronousBlock {
         let cacheAssignmentNames = cacheAssignmentSignals.map { signal in
             ((0..<members).map { ($0, VariableName(rawValue: signal.name.rawValue + "\($0)")!) }, signal.name)
         }
+        // swiftlint:disable:next closure_body_length
         let assignments = cacheAssignmentNames.map {
             let defaultSignal = $0.last!
             let statements = $0.dropLast().map {
@@ -131,7 +142,10 @@ extension AsynchronousBlock {
                 value: expression
             ))
         }
+        // swiftlint:enable force_unwrapping
         self = .blocks(blocks: [component] + memberAssignments + assignments + [.process(block: process)])
     }
+
+    // swiftlint:enable function_body_length
 
 }

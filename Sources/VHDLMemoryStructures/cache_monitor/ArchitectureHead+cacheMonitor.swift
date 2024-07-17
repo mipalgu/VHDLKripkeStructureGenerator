@@ -56,8 +56,15 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache monitor creation.
 extension ArchitectureHead {
 
+    /// Create a cache monitor architecture head.
+    /// - Parameters:
+    ///   - name: The name of the cache monitor.
+    ///   - members: The number of members that have access to the cache.
+    ///   - cache: The cache entity.
+    @inlinable
     init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
         guard members > 1 else {
             return nil

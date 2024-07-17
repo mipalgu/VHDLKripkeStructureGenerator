@@ -56,8 +56,14 @@
 import Utilities
 import VHDLParsing
 
+/// Add cache monitor creation.
 extension ProcessBlock {
 
+    // swiftlint:disable function_body_length
+
+    /// Create the cache monitor process logic.
+    /// - Parameter members: The number of members the monitor arbitrates access too.
+    @inlinable
     init?(cacheMonitorNumberOfMembers members: Int) {
         guard members > 0 else {
             return nil
@@ -175,5 +181,7 @@ extension ProcessBlock {
         ))
         self.init(sensitivityList: [.clk], code: body)
     }
+
+    // swiftlint:enable function_body_length
 
 }
