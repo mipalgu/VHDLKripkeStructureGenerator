@@ -67,7 +67,10 @@ extension AsynchronousBlock {
         let expectedSignalNames: Set<VariableName> = [
             .address, .data, .we, .ready, .busy, .value, .valueEn, .lastAddress
         ]
-        guard expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }) else {
+        guard
+            expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }),
+            let process = ProcessBlock(cacheMonitorNumberOfMembers: members)
+        else {
             return nil
         }
         let mappedSignals = cache.port.signals.map {
@@ -128,7 +131,7 @@ extension AsynchronousBlock {
                 value: expression
             ))
         }
-        self = .blocks(blocks: [component] + memberAssignments + assignments)
+        self = .blocks(blocks: [component] + memberAssignments + assignments + [.process(block: process)])
     }
 
 }

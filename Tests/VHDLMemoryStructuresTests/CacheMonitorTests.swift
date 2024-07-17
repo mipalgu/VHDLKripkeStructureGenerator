@@ -145,9 +145,9 @@ final class CacheMonitorTests: XCTestCase {
                             end if;
                         when ChooseAccess =>
                             if (enables = "10") then
-                                enables <= "00";
+                                enables <= "01";
                             else
-                                enables <= enables << 1;
+                                enables <= enables(0 downto 0) & "0";
                             end if;
                             internalState <= WaitForAccess;
                         when WaitForAccess =>
