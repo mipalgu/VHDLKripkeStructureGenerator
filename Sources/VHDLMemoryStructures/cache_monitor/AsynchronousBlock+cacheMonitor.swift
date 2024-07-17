@@ -59,7 +59,7 @@ import VHDLParsing
 extension AsynchronousBlock {
 
     init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
-        guard members > 1 else {
+        guard members > 0 else {
             return nil
         }
         let cacheSignals = cache.port.signals
@@ -76,9 +76,59 @@ extension AsynchronousBlock {
                 rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: $0.name))))
             )
         }
-        self = .component(block: ComponentInstantiation(
+        let component = AsynchronousBlock.component(block: ComponentInstantiation(
             label: .cacheInst, name: cache.name, port: PortMap(variables: mappedSignals)
         ))
+        let memberAssignments = (0..<members).map {
+            AsynchronousBlock.statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "en\($0)")!)),
+                value: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .enables))),
+                    index: .index(value: .literal(value: .integer(value: $0)))
+                )))
+            ))
+        }
+        let cacheAssignmentSignals = cacheSignals.filter {
+            expectedSignalNames.contains($0.name) && $0.name != .busy && $0.name != .value &&
+                $0.name != .valueEn && $0.name != .lastAddress
+        }
+        let cacheAssignmentNames = cacheAssignmentSignals.map { signal in
+            ((0..<members).map { ($0, VariableName(rawValue: signal.name.rawValue + "\($0)")!) }, signal.name)
+        }
+        let assignments = cacheAssignmentNames.map {
+            let defaultSignal = $0.last!
+            let statements = $0.dropLast().map {
+                AsynchronousExpression.whenBlock(value: .when(statement: WhenStatement(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .enables))),
+                            index: .index(value: .literal(value: .integer(value: $0)))
+                        )),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    value: .reference(variable: .variable(reference: .variable(name: $1)))
+                )))
+            } + [
+                .expression(value: .reference(
+                    variable: .variable(reference: .variable(name: defaultSignal.1))
+                ))
+            ]
+            let expression = statements.joined {
+                guard case .whenBlock(let when) = $0, case .when(let statement) = when else {
+                    fatalError("Impossible!")
+                }
+                return AsynchronousExpression.whenBlock(value: .whenElse(statement: WhenElseStatement(
+                    value: statement.value,
+                    condition: statement.condition,
+                    elseBlock: $1
+                )))
+            }
+            return AsynchronousBlock.statement(statement: .assignment(
+                name: .variable(reference: .variable(name: $1)),
+                value: expression
+            ))
+        }
+        self = .blocks(blocks: [component] + memberAssignments + assignments)
     }
 
 }

@@ -126,28 +126,28 @@ final class CacheMonitorTests: XCTestCase {
                 value_en => value_en,
                 lastAddress => lastAddress
             );
-            en0 <= enabled(0);
-            en1 <= enabled(1);
-            address <= address0 when enabled(0) = '1' else address1;
-            data <= data0 when enabled(0) = '1' else data1;
-            we <= we0 when enabled(0) = '1' else we1;
-            ready <= ready0 when enabled(0) = '1' else ready1;
+            en0 <= enables(0);
+            en1 <= enables(1);
+            address <= address0 when enables(0) = '1' else address1;
+            data <= data0 when enables(0) = '1' else data1;
+            we <= we0 when enables(0) = '1' else we1;
+            ready <= ready0 when enables(0) = '1' else ready1;
             process(clk)
             begin
                 if (rising_edge(clk)) then
                     case internalState is
                         when Initial =>
-                            enabled <= "01";
+                            enables <= "01";
                             internalState <= WaitForAccess;
                         when WaitWhileBusy =>
                             if (ready /= '1') then
                                 internalState <= ChooseAccess;
                             end if;
                         when ChooseAccess =>
-                            if (enabled = "10") then
-                                enabled <= "00";
+                            if (enables = "10") then
+                                enables <= "00";
                             else
-                                enabled <= enabled << 1;
+                                enables <= enables << 1;
                             end if;
                             internalState <= WaitForAccess;
                         when WaitForAccess =>
