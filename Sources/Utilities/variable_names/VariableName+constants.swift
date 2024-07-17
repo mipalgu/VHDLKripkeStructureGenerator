@@ -69,6 +69,12 @@ public extension VariableName {
     /// The `cacheIndex` signal.
     static let cacheIndex = VariableName(rawValue: "cacheIndex")!
 
+    /// The `cache_inst` label.
+    static let cacheInst = VariableName(rawValue: "cache_inst")!
+
+    /// The `ChooseAccess` case.
+    static let chooseAccess = VariableName(rawValue: "ChooseAccess")!
+
     /// The `currentIndex` signal.
     static let currentIndex = VariableName(rawValue: "currentIndex")!
 
@@ -191,6 +197,12 @@ public extension VariableName {
 
     /// The `value_en` signal.
     static let valueEn = VariableName(rawValue: "value_en")!
+
+    /// The `WaitForAccess` case.
+    static let waitForAccess = VariableName(rawValue: "WaitForAccess")!
+
+    /// The `WaitWhileBusy` case.
+    static let waitWhileBusy = VariableName(rawValue: "WaitWhileBusy")!
 
     /// The `WaitForNewData` type.
     static let waitForNewDataType = VariableName(rawValue: "WaitForNewData")!

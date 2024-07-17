@@ -1,4 +1,4 @@
-// VHDLFile+cacheMonitor.swift
+// AsynchronousBlock+cacheMonitor.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,20 +56,29 @@
 import Utilities
 import VHDLParsing
 
-extension VHDLFile {
+extension AsynchronousBlock {
 
-    public init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
-        guard
-            let entity = Entity(cacheMonitorName: name, numberOfMembers: members, cache: cache),
-            let architecture = Architecture(cacheMonitorName: name, numberOfMembers: members, cache: cache)
-        else {
+    init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
+        guard members > 1 else {
             return nil
         }
-        self.init(
-            architectures: [architecture],
-            entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
-        )
+        let cacheSignals = cache.port.signals
+        let cacheSignalNames = Set(cacheSignals.map(\.name))
+        let expectedSignalNames: Set<VariableName> = [
+            .address, .data, .we, .ready, .busy, .value, .valueEn, .lastAddress
+        ]
+        guard expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }) else {
+            return nil
+        }
+        let mappedSignals = cache.port.signals.map {
+            VariableMap(
+                lhs: .variable(reference: .variable(name: $0.name)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: $0.name))))
+            )
+        }
+        self = .component(block: ComponentInstantiation(
+            label: .cacheInst, name: cache.name, port: PortMap(variables: mappedSignals)
+        ))
     }
 
 }

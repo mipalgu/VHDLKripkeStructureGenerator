@@ -1,4 +1,4 @@
-// VHDLFile+cacheMonitor.swift
+// Architecture+cacheMonitor.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,20 +56,25 @@
 import Utilities
 import VHDLParsing
 
-extension VHDLFile {
+extension Architecture {
 
-    public init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
+    init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
+        guard members > 1 else {
+            return nil
+        }
+        let cacheSignals = cache.port.signals
+        let cacheSignalNames = Set(cacheSignals.map(\.name))
+        let expectedSignalNames: Set<VariableName> = [
+            .address, .data, .we, .ready, .busy, .value, .valueEn, .lastAddress
+        ]
         guard
-            let entity = Entity(cacheMonitorName: name, numberOfMembers: members, cache: cache),
-            let architecture = Architecture(cacheMonitorName: name, numberOfMembers: members, cache: cache)
+            expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }),
+            let head = ArchitectureHead(cacheMonitorName: name, numberOfMembers: members, cache: cache),
+            let body = AsynchronousBlock(cacheMonitorName: name, numberOfMembers: members, cache: cache)
         else {
             return nil
         }
-        self.init(
-            architectures: [architecture],
-            entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
-        )
+        self.init(body: body, entity: name, head: head, name: .behavioral)
     }
 
 }

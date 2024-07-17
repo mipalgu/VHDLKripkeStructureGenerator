@@ -53,13 +53,14 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import TestUtils
 @testable import VHDLMemoryStructures
 import VHDLParsing
 import XCTest
 
 final class CacheMonitorTests: XCTestCase {
 
-    let cache = Entity(cacheName: .cache, elementSize: 3, numberOfElements: 10)!
+    let cache = Entity(cacheName: VariableName(rawValue: "Cache")!, elementSize: 3, numberOfElements: 10)!
 
     func testMonitor() {
         guard let result = VHDLFile(
@@ -93,13 +94,13 @@ final class CacheMonitorTests: XCTestCase {
         end CacheMonitor;
 
         architecture Behavioral of CacheMonitor is
+            type CacheMonitorInternalState_t is (Initial, ChooseAccess, WaitWhileBusy, WaitForAccess);
             signal address: std_logic_vector(3 downto 0);
             signal data: std_logic_vector(2 downto 0);
             signal we: std_logic;
             signal ready: std_logic;
-            signal enabled: std_logic_vector(1 downto 0);
-            type MonitorInternalState_t is (Initial, ChooseAccess, WaitWhileBusy, WaitForAccess);
-            signal internalState: MonitorInternalState_t := Initial;
+            signal enables: std_logic_vector(1 downto 0);
+            signal internalState: CacheMonitorInternalState_t := Initial;
             component Cache is
                 port(
                     clk: in std_logic;
@@ -114,7 +115,7 @@ final class CacheMonitorTests: XCTestCase {
                 );
             end component;
         begin
-            cache_inst: Cache port map (
+            cache_inst: component Cache port map (
                 clk => clk,
                 address => address,
                 data => data,

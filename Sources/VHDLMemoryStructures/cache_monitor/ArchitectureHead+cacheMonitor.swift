@@ -1,4 +1,4 @@
-// VHDLFile+cacheMonitor.swift
+// ArchitectureHead+cacheMonitor.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,20 +56,55 @@
 import Utilities
 import VHDLParsing
 
-extension VHDLFile {
+extension ArchitectureHead {
 
-    public init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
+    init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
+        guard members > 1 else {
+            return nil
+        }
+        let cacheSignals = cache.port.signals
+        let cacheSignalNames = Set(cacheSignals.map(\.name))
+        let expectedSignalNames: Set<VariableName> = [
+            .address, .data, .we, .ready, .busy, .value, .valueEn, .lastAddress
+        ]
         guard
-            let entity = Entity(cacheMonitorName: name, numberOfMembers: members, cache: cache),
-            let architecture = Architecture(cacheMonitorName: name, numberOfMembers: members, cache: cache)
+            expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }),
+            let addressType = cacheSignals.first(where: { $0.name == .address })?.type,
+            let dataType = cacheSignals.first(where: { $0.name == .data })?.type,
+            let internalStateType = VariableName(rawValue: name.rawValue + "InternalState_t"),
+            let internalStateCases = EnumerationDefinition(
+                name: internalStateType,
+                nonEmptyValues: [.initial, .chooseAccess, .waitWhileBusy, .waitForAccess]
+            )
         else {
             return nil
         }
-        self.init(
-            architectures: [architecture],
-            entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
-        )
+        let internalStateTypeDefinition = HeadStatement.definition(value: .type(value: .enumeration(
+            value: internalStateCases
+        )))
+        let signals = [
+            LocalSignal(type: addressType, name: .address),
+            LocalSignal(type: dataType, name: .data),
+            LocalSignal(type: .stdLogic, name: .we),
+            LocalSignal(type: .stdLogic, name: .ready),
+            LocalSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: members - 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .enables
+            ),
+            LocalSignal(
+                type: .alias(name: internalStateType),
+                name: .internalState,
+                defaultValue: .reference(variable: .variable(reference: .variable(name: .initial)))
+            )
+        ]
+        .map { HeadStatement.definition(value: .signal(value: $0)) }
+        let cacheDefinition = HeadStatement.definition(value: .component(
+            value: ComponentDefinition(entity: cache)
+        ))
+        self.init(statements: [internalStateTypeDefinition] + signals + [cacheDefinition])
     }
 
 }
