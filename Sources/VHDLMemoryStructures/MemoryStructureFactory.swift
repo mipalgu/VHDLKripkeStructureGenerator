@@ -111,7 +111,16 @@ public struct MemoryStructureFactory {
     @inlinable
     public func targetStateCache<T>(for representation: T) -> [VHDLFile]? where T: MachineVHDLRepresentable {
         guard
+            let monitorName = VariableName(
+                rawValue: "\(representation.entity.name.rawValue)TargetStatesCacheMonitor"
+            ),
             let cache = VHDLFile(targetStatesCacheFor: representation),
+            let cacheEntity = cache.entities.first,
+            let monitor = VHDLFile(
+                cacheMonitorName: monitorName,
+                numberOfMembers: representation.machine.states.count,
+                cache: cacheEntity
+            ),
             let encoder = VHDLFile(targetStatesEncoderFor: representation),
             let decoder = VHDLFile(targetStatesDecoderFor: representation),
             let divider = VHDLFile(targetStatesDividerFor: representation),
@@ -119,7 +128,7 @@ public struct MemoryStructureFactory {
         else {
             return nil
         }
-        return [cache, encoder, decoder, divider, bram]
+        return [monitor, cache, encoder, decoder, divider, bram]
     }
 
 }

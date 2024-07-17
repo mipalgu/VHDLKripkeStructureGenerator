@@ -104,6 +104,7 @@ final class MemoryStructureFactoryTests: XCTestCase {
         let fileNames = Set(files.compactMap { $0.entities.first?.name })
         XCTAssertEqual(fileNames.count, files.count)
         let expected: Set<VariableName> = [
+            VariableName(rawValue: "PingMachineTargetStatesCacheMonitor")!,
             VariableName(rawValue: "PingMachineTargetStatesCache")!,
             VariableName(rawValue: "PingMachineTargetStatesCacheDivider")!,
             VariableName(rawValue: "PingMachineTargetStatesCacheEncoder")!,
