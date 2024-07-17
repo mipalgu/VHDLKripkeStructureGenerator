@@ -82,7 +82,7 @@ final class StateGeneratorTests: XCTestCase {
 
     /// Test concurrent state generator.
     func testConcurrent() {
-        guard let result = VHDLFile(stateGeneratorFor: state, in: representation) else {
+        guard let result = VHDLFile(concurrentStateGeneratorFor: state, in: representation) else {
             XCTFail("Result is nil!")
             return
         }

@@ -62,7 +62,37 @@ extension VHDLFile {
     public init?<T>(
         stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        self.init(sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize)
+        self.init(concurrentStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize)
+    }
+
+    public init?<T>(
+        concurrentStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        guard
+            let body = AsynchronousBlock(
+                stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            ),
+            let head = ArchitectureHead(
+                stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            ),
+            let entity = Entity(stateGeneratorFor: state, in: representation),
+            let typesInclude = UseStatement(
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
+            )
+        else {
+            return nil
+        }
+        let includes = [
+            Include.library(value: .ieee),
+            .include(statement: .stdLogic1164),
+            .include(statement: typesInclude),
+            .include(statement: .primitiveTypes)
+        ]
+        self.init(
+            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            entities: [entity],
+            includes: includes
+        )
     }
 
     public init?<T>(
