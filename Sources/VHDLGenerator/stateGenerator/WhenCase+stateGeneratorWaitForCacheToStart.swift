@@ -58,6 +58,72 @@ import VHDLParsing
 
 extension WhenCase {
 
+    @usableFromInline static let sequentialStateGeneratorWaitForCacheToStart = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .waitForCacheToStart)
+        ))),
+        code: .blocks(blocks: [
+            .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .cacheBusy))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(
+                            reference: .variable(name: .checkForDuplicates)
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .startCache)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .statesIndex)),
+                        value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                            IndexedValue(index: .others, value: .bit(value: .low))
+                        ]))))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .ringletIndex)),
+                        value: .literal(value: .integer(value: 0))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .targetStatesReady)),
+                        value: .literal(value: .bit(value: .high))
+                    ))
+                ]),
+                elseBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .targetStatesReady)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .startCache)),
+                        value: .literal(value: .bit(value: .high))
+                    ))
+                ])
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startGeneration)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .cacheRead)),
+                value: .literal(value: .boolean(value: false))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
     @usableFromInline static let stateGeneratorWaitForCacheToStart = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
             reference: .variable(name: .waitForCacheToStart)

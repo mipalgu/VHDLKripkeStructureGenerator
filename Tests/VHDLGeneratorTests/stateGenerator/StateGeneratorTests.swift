@@ -404,9 +404,9 @@ final class StateGeneratorTests: XCTestCase {
                             internalState <= CheckForJob;
                             statesIndex <= (others => '0');
                             ringletIndex <= 0;
-                            targetStatesReady <= '0';
-                            targetStatesWE <= '0';
-                            targetStatesData <= (others => '0');
+                            targetStatesready <= '0';
+                            targetStateswe <= '0';
+                            targetStatesdata <= (others => '0');
                         when CheckForJob =>
                             if (ready = '1') then
                                 if (read = '1') then
@@ -424,8 +424,8 @@ final class StateGeneratorTests: XCTestCase {
                                 cacheRead <= true;
                                 busy <= '0';
                             end if;
-                            targetStatesReady <= '0';
-                            targetStatesWE <= '0';
+                            targetStatesready <= '0';
+                            targetStateswe <= '0';
                         when WaitForRunnerToStart =>
                             if (runnerBusy = '1') then
                                 internalState <= WaitForRunnerToFinish;
@@ -433,6 +433,8 @@ final class StateGeneratorTests: XCTestCase {
                             end if;
                             busy <= '1';
                             startCache <= '0';
+                            targetStatesready <= '0';
+                            targetStateswe <= '0';
                         when WaitForRunnerToFinish =>
                             if (runnerBusy = '0') then
                                 if (cacheBusy = '0') then
@@ -449,35 +451,35 @@ final class StateGeneratorTests: XCTestCase {
                             end if;
                             startGeneration <= '0';
                             busy <= '1';
-                            targetStatesReady <= '0';
-                            targetStatesWE <= '0';
+                            targetStatesready <= '0';
+                            targetStateswe <= '0';
                         when WaitForCacheToStart =>
                             if (cacheBusy = '1') then
                                 internalState <= CheckForDuplicates;
                                 startCache <= '0';
                                 statesIndex <= (others => '0');
                                 ringletIndex <= 0;
-                                targetStatesReady <= '1';
+                                targetStatesready <= '1';
                             else
-                                targetStatesReady <= '0';
+                                targetStatesready <= '0';
                                 startCache <= '1';
                             end if;
                             startGeneration <= '0';
                             busy <= '1';
                             cacheRead <= false;
-                            targetStatesWE <= '0';
+                            targetStateswe <= '0';
                         when CheckForDuplicates =>
-                            if (targetStatesEn = '1' and targetStatesBusy = '0') then
+                            if (targetStatesen = '1' and targetStatesbusy = '0') then
                                 if (statesIndex = 12) then
                                     internalState <= Error;
                                 elsif (ringletIndex = 1) then
                                     internalState <= WaitForCacheToEnd;
                                 elsif (ringlets(ringletIndex)(7) = '1') then
-                                    if (statesIndex > unsigned(targetStatesLastAddress)) then
+                                    if (statesIndex > unsigned(targetStateslastAddress)) then
                                         internalState <= AddToStates;
                                     else
-                                        if (targetStatesValue_en = '1') then
-                                            if (targetStatesValue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
+                                        if (targetStatesvalue_en = '1') then
+                                            if (targetStatesvalue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
                                                 statesIndex <= (others => '0');
                                                 ringletIndex <= ringletIndex + 1;
                                             else
@@ -495,17 +497,17 @@ final class StateGeneratorTests: XCTestCase {
                             cacheRead <= false;
                             startGeneration <= '0';
                             startCache <= '0';
-                            targetStatesWE <= '0';
-                            targetStatesReady <= '1';
+                            targetStateswe <= '0';
+                            targetStatesready <= '1';
                         when AddToStates =>
-                            targetStatesData <= encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6);
-                            targetStatesWE <= '1';
-                            targetStatesReady <= '1';
+                            targetStatesdata <= encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6);
+                            targetStateswe <= '1';
+                            targetStatesready <= '1';
                             busy <= '1';
                             cacheRead <= false;
                             startGeneration <= '0';
                             startCache <= '0';
-                            if (targetStatesEn = '1') then
+                            if (targetStatesen = '1') then
                                 internalState <= ResetStateIndex;
                                 ringletIndex <= ringletIndex + 1;
                             end if;
@@ -516,11 +518,11 @@ final class StateGeneratorTests: XCTestCase {
                             if (cacheBusy = '0') then
                                 internalState <= CheckForJob;
                             end if;
-                            targetStatesReady <= '0';
-                            targetStatesWE <= '0';
+                            targetStatesready <= '0';
+                            targetStateswe <= '0';
                         when ResetStateIndex =>
-                            targetStatesWE <= '0';
-                            targetStatesReady <= '1';
+                            targetStateswe <= '0';
+                            targetStatesready <= '1';
                             statesIndex <= (others => '0');
                             busy <= '1';
                             cacheRead <= false;

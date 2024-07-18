@@ -109,11 +109,11 @@ extension ProcessBlock {
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
                     cases: [
-                        .stateGeneratorInitial,
-                        .stateGeneratorCheckForJob,
-                        .stateGeneratorWaitForRunnerToStart,
-                        .stateGeneratorWaitForRunnerToFinish,
-                        .stateGeneratorWaitForCacheToStart,
+                        .sequentialStateGeneratorInitial,
+                        .sequentialStateGeneratorCheckForJob,
+                        .sequentialStateGeneratorWaitForRunnerToStart,
+                        .sequentialStateGeneratorWaitForRunnerToFinish,
+                        .sequentialStateGeneratorWaitForCacheToStart,
                         checkForDuplicates,
                         WhenCase(stateGeneratorAddToStatesFor: state, in: representation),
                         .stateGeneratorWaitForCacheToEnd,

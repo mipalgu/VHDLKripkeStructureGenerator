@@ -58,6 +58,78 @@ import VHDLParsing
 
 extension WhenCase {
 
+    @usableFromInline static let sequentialStateGeneratorWaitForRunnerToFinish = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .waitForRunnerToFinish)
+        ))),
+        code: .blocks(blocks: [
+            .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .runnerBusy))),
+                    rhs: .literal(value: .bit(value: .low))
+                ))),
+                ifBlock: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .cacheBusy))),
+                        rhs: .literal(value: .bit(value: .low))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .waitForCacheToStart)
+                            ))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .startCache)),
+                            value: .literal(value: .bit(value: .high))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .cacheRead)),
+                            value: .literal(value: .boolean(value: false))
+                        ))
+                    ]),
+                    elseBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .startCache)),
+                            value: .literal(value: .bit(value: .low))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .cacheRead)),
+                            value: .literal(value: .boolean(value: true))
+                        ))
+                    ])
+                )),
+                elseBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .cacheRead)),
+                        value: .literal(value: .boolean(value: true))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .startCache)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ])
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startGeneration)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesReady)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
     @usableFromInline static let stateGeneratorWaitForRunnerToFinish = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
             reference: .variable(name: .waitForRunnerToFinish)
