@@ -333,23 +333,23 @@ final class StateGeneratorTests: XCTestCase {
             );
         end InitialGenerator;
 
-        architecture Behavioral of StartTimerGenerator is
+        architecture Behavioral of InitialGenerator is
             signal startGeneration: std_logic;
             signal startCache: std_logic;
-            signal ringlets: StartTimer_State_Execution_t;
+            signal ringlets: Initial_State_Execution_t;
             signal runnerBusy: std_logic;
             signal cacheBusy: std_logic;
             signal cacheRead: boolean;
             signal statesIndex: unsigned(3 downto 0);
             signal ringletIndex: integer range 0 to 1;
-            type StartTimerGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex);
-            signal internalState: StartTimerGeneratorInternalState_t := Initial;
+            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex);
+            signal internalState: InitialGeneratorInternalState_t := Initial;
             signal genRead: boolean;
             signal genReady: std_logic;
-            component StartTimerRingletCache is
+            component InitialRingletCache is
                 port(
                     clk: in std_logic;
-                    newRinglets: in StartTimer_State_Execution_t;
+                    newRinglets: in Initial_State_Execution_t;
                     readAddress: in std_logic_vector(31 downto 0);
                     value: out std_logic_vector(31 downto 0);
                     read: in boolean;
@@ -358,37 +358,28 @@ final class StateGeneratorTests: XCTestCase {
                     lastAddress: out std_logic_vector(31 downto 0)
                 );
             end component;
-            component StartTimerStateRunner is
+            component InitialStateRunner is
                 port(
                     clk: in std_logic;
-                    timerOn: in std_logic;
-                    powerOn: in std_logic;
-                    ModeSelector_bootMode: in std_logic;
-                    ModeSelector_operationalMode: in std_logic;
+                    ping: in std_logic;
                     executeOnEntry: in boolean;
                     ready: in std_logic;
-                    ringlets: out StartTimer_State_Execution_t;
+                    ringlets: out Initial_State_Execution_t;
                     busy: out std_logic := '0';
-                    working_timerOn: out std_logic;
-                    working_powerOn: out std_logic;
-                    working_ModeSelector_bootMode: out std_logic;
-                    working_ModeSelector_operationalMode: out std_logic;
+                    working_ping: out std_logic;
                     working_executeOnEntry: out boolean
                 );
             end component;
         begin
-            runner_inst: component StartTimerStateRunner port map (
+            runner_inst: component InitialStateRunner port map (
                 clk => clk,
-                timerOn => timerOn,
-                powerOn => powerOn,
-                ModeSelector_bootMode => ModeSelector_bootMode,
-                ModeSelector_operationalMode => ModeSelector_operationalMode,
+                ping => ping,
                 executeOnEntry => executeOnEntry,
                 ready => startGeneration,
                 ringlets => ringlets,
                 busy => runnerBusy
             );
-            cache_inst: component StartTimerRingletCache port map (
+            cache_inst: component InitialRingletCache port map (
                 clk => clk,
                 newRinglets => ringlets,
                 readAddress => address,
