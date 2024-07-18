@@ -204,7 +204,7 @@ extension AsynchronousBlock {
     ) where T: MachineVHDLRepresentable {
         guard
             let process = ProcessBlock(
-                stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+                sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
             ),
             let writeSnapshot = Record(writeSnapshotFor: state, in: representation)
         else {
