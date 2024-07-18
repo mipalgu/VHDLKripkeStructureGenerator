@@ -100,7 +100,7 @@ extension VHDLFile {
     ) where T: MachineVHDLRepresentable {
         guard
             let body = AsynchronousBlock(
-                stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+                sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
             ),
             let head = ArchitectureHead(
                 sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize

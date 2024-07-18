@@ -391,7 +391,7 @@ final class StateGeneratorTests: XCTestCase {
             );
             genRead <= true when read = '1' and internalState = CheckForJob else cacheRead;
             genReady <= '1' when ready = '1' and internalState = CheckForJob else startCache;
-            targetStatesAddress <= std_logic_vector(statesIndex);
+            targetStatesaddress <= std_logic_vector(statesIndex);
             process(clk)
             begin
                 if (rising_edge(clk)) then
