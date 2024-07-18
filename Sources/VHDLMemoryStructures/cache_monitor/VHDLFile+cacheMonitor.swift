@@ -76,12 +76,6 @@ extension VHDLFile {
     /// `value` and `value_en` signals are shared between all entities but only represent valid data for a
     /// specific entity when their respective `en` is `high`.
     /// 
-    /// When changing the current entity using the cache, the monitor will give a 1-cycle switching
-    /// window to ensure that the entity can respond within enough time to obtain ownership of the cache. The
-    /// values within the very first clock cycle where `en` is `high` may represent junk data as the cache is
-    /// providing this timing window and the cache contains a 1-cycle read-window starting with the updated
-    /// signals from the new entity. Please ensure you leave a 1-cycle window on the very first access of the
-    /// cache to ensure that the cache monitor can switch entities without data corruption.
     /// - Parameters:
     ///   - name: The name of the monitor.
     ///   - members: The number of entities that have access to the cache.
