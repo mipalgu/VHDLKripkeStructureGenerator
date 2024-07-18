@@ -306,6 +306,7 @@ final class StateGeneratorTests: XCTestCase {
         let expected = """
         library IEEE;
         use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
         use work.PingMachineTypes.all;
         use work.PrimitiveTypes.all;
 
@@ -318,39 +319,37 @@ final class StateGeneratorTests: XCTestCase {
                 ready: in std_logic;
                 read: in std_logic;
                 busy: out std_logic;
-                targetStates: out TargetStates_t;
+                targetStatesaddress: out std_logic_vector(3 downto 0);
+                targetStatesdata: out std_logic_vector(2 downto 0);
+                targetStateswe: out std_logic;
+                targetStatesready: out std_logic;
+                targetStatesbusy: in std_logic;
+                targetStatesvalue: in std_logic_vector(2 downto 0);
+                targetStatesvalue_en: in std_logic;
+                targetStateslastAddress: in std_logic_vector(3 downto 0);
+                targetStatesen: in std_logic;
                 value: out std_logic_vector(31 downto 0);
                 lastAddress: out std_logic_vector(31 downto 0)
             );
         end InitialGenerator;
 
-        architecture Behavioral of InitialGenerator is
+        architecture Behavioral of StartTimerGenerator is
             signal startGeneration: std_logic;
             signal startCache: std_logic;
-            signal ringlets: Initial_State_Execution_t;
+            signal ringlets: StartTimer_State_Execution_t;
             signal runnerBusy: std_logic;
             signal cacheBusy: std_logic;
             signal cacheRead: boolean;
-            signal statesIndex: integer range 0 to 12;
+            signal statesIndex: unsigned(3 downto 0);
             signal ringletIndex: integer range 0 to 1;
-            signal states: TargetStates_t;
-            signal hasDuplicate: boolean;
-            signal internalState: std_logic_vector(3 downto 0) := x"0";
-            constant Initial: std_logic_vector(3 downto 0) := x"0";
-            constant CheckForJob: std_logic_vector(3 downto 0) := x"1";
-            constant WaitForRunnerToStart: std_logic_vector(3 downto 0) := x"2";
-            constant WaitForRunnerToFinish: std_logic_vector(3 downto 0) := x"3";
-            constant WaitForCacheToStart: std_logic_vector(3 downto 0) := x"4";
-            constant WaitForCacheToEnd: std_logic_vector(3 downto 0) := x"5";
-            constant CheckForDuplicates: std_logic_vector(3 downto 0) := x"6";
-            constant Error: std_logic_vector(3 downto 0) := x"7";
-            constant AddToStates: std_logic_vector(3 downto 0) := x"8";
+            type StartTimerGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex);
+            signal internalState: StartTimerGeneratorInternalState_t := Initial;
             signal genRead: boolean;
             signal genReady: std_logic;
-            component InitialRingletCache is
+            component StartTimerRingletCache is
                 port(
                     clk: in std_logic;
-                    newRinglets: in Initial_State_Execution_t;
+                    newRinglets: in StartTimer_State_Execution_t;
                     readAddress: in std_logic_vector(31 downto 0);
                     value: out std_logic_vector(31 downto 0);
                     read: in boolean;
@@ -359,28 +358,37 @@ final class StateGeneratorTests: XCTestCase {
                     lastAddress: out std_logic_vector(31 downto 0)
                 );
             end component;
-            component InitialStateRunner is
+            component StartTimerStateRunner is
                 port(
                     clk: in std_logic;
-                    ping: in std_logic;
+                    timerOn: in std_logic;
+                    powerOn: in std_logic;
+                    ModeSelector_bootMode: in std_logic;
+                    ModeSelector_operationalMode: in std_logic;
                     executeOnEntry: in boolean;
                     ready: in std_logic;
-                    ringlets: out Initial_State_Execution_t;
+                    ringlets: out StartTimer_State_Execution_t;
                     busy: out std_logic := '0';
-                    working_ping: out std_logic;
+                    working_timerOn: out std_logic;
+                    working_powerOn: out std_logic;
+                    working_ModeSelector_bootMode: out std_logic;
+                    working_ModeSelector_operationalMode: out std_logic;
                     working_executeOnEntry: out boolean
                 );
             end component;
         begin
-            runner_inst: component InitialStateRunner port map (
+            runner_inst: component StartTimerStateRunner port map (
                 clk => clk,
-                ping => ping,
+                timerOn => timerOn,
+                powerOn => powerOn,
+                ModeSelector_bootMode => ModeSelector_bootMode,
+                ModeSelector_operationalMode => ModeSelector_operationalMode,
                 executeOnEntry => executeOnEntry,
                 ready => startGeneration,
                 ringlets => ringlets,
                 busy => runnerBusy
             );
-            cache_inst: component InitialRingletCache port map (
+            cache_inst: component StartTimerRingletCache port map (
                 clk => clk,
                 newRinglets => ringlets,
                 readAddress => address,
@@ -392,6 +400,7 @@ final class StateGeneratorTests: XCTestCase {
             );
             genRead <= true when read = '1' and internalState = CheckForJob else cacheRead;
             genReady <= '1' when ready = '1' and internalState = CheckForJob else startCache;
+            targetStatesAddress <= std_logic_vector(statesIndex);
             process(clk)
             begin
                 if (rising_edge(clk)) then
@@ -402,10 +411,11 @@ final class StateGeneratorTests: XCTestCase {
                             startCache <= '0';
                             cacheRead <= true;
                             internalState <= CheckForJob;
-                            statesIndex <= 0;
+                            statesIndex <= (others => '0');
                             ringletIndex <= 0;
-                            states <= (others => (others => '0'));
-                            hasDuplicate <= false;
+                            targetStatesReady <= '0';
+                            targetStatesWE <= '0';
+                            targetStatesData <= (others => '0');
                         when CheckForJob =>
                             if (ready = '1') then
                                 if (read = '1') then
@@ -423,6 +433,8 @@ final class StateGeneratorTests: XCTestCase {
                                 cacheRead <= true;
                                 busy <= '0';
                             end if;
+                            targetStatesReady <= '0';
+                            targetStatesWE <= '0';
                         when WaitForRunnerToStart =>
                             if (runnerBusy = '1') then
                                 internalState <= WaitForRunnerToFinish;
@@ -446,63 +458,84 @@ final class StateGeneratorTests: XCTestCase {
                             end if;
                             startGeneration <= '0';
                             busy <= '1';
+                            targetStatesReady <= '0';
+                            targetStatesWE <= '0';
                         when WaitForCacheToStart =>
                             if (cacheBusy = '1') then
                                 internalState <= CheckForDuplicates;
                                 startCache <= '0';
-                                statesIndex <= 0;
+                                statesIndex <= (others => '0');
                                 ringletIndex <= 0;
-                                states <= (others => (others => '0'));
-                                hasDuplicate <= false;
+                                targetStatesReady <= '1';
                             else
+                                targetStatesReady <= '0';
                                 startCache <= '1';
                             end if;
                             startGeneration <= '0';
                             busy <= '1';
                             cacheRead <= false;
+                            targetStatesWE <= '0';
                         when CheckForDuplicates =>
-                            if (statesIndex = 12) then
-                                internalState <= Error;
-                            elsif (ringletIndex = 1) then
-                                internalState <= WaitForCacheToEnd;
-                            elsif (ringlets(ringletIndex)(7) = '1') then
-                                for i in 0 to 10 loop
-                                    if (states(i)(0) = '1') then
-                                        if (states(i) = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6) & '1') then
-                                            hasDuplicate <= true;
+                            if (targetStatesEn = '1' and targetStatesBusy = '0') then
+                                if (statesIndex = 12) then
+                                    internalState <= Error;
+                                elsif (ringletIndex = 1) then
+                                    internalState <= WaitForCacheToEnd;
+                                elsif (ringlets(ringletIndex)(7) = '1') then
+                                    if (statesIndex > unsigned(targetStatesLastAddress)) then
+                                        internalState <= AddToStates;
+                                    else
+                                        if (targetStatesValue_en = '1') then
+                                            if (targetStatesValue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
+                                                statesIndex <= (others => '0');
+                                                ringletIndex <= ringletIndex + 1;
+                                            else
+                                                statesIndex <= statesIndex + 1;
+                                            end if;
+                                        else
+                                            statesIndex <= statesIndex + 1;
                                         end if;
                                     end if;
-                                end loop;
-                                internalState <= AddToStates;
-                            else
-                                ringletIndex <= ringletIndex + 1;
-                            end if;
-                            busy <= '1';
-                            cacheRead <= false;
-                            startGeneration <= '0';
-                            startCache <= '0';
-                        when AddToStates =>
-                            if (not hasDuplicate) then
-                                if (ringlets(ringletIndex)(7) = '1') then
-                                    states(statesIndex) <= encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6) & '1';
-                                    statesIndex <= statesIndex + 1;
+                                else
+                                    ringletIndex <= ringletIndex + 1;
                                 end if;
                             end if;
                             busy <= '1';
                             cacheRead <= false;
                             startGeneration <= '0';
                             startCache <= '0';
-                            hasDuplicate <= false;
-                            ringletIndex <= ringletIndex + 1;
-                            internalState <= CheckForDuplicates;
+                            targetStatesWE <= '0';
+                            targetStatesReady <= '1';
+                        when AddToStates =>
+                            targetStatesData <= encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6);
+                            targetStatesWE <= '1';
+                            targetStatesReady <= '1';
+                            busy <= '1';
+                            cacheRead <= false;
+                            startGeneration <= '0';
+                            startCache <= '0';
+                            if (targetStatesEn = '1') then
+                                internalState <= ResetStateIndex;
+                                ringletIndex <= ringletIndex + 1;
+                            end if;
                         when WaitForCacheToEnd =>
                             startCache <= '0';
                             busy <= '1';
                             cacheRead <= false;
                             if (cacheBusy = '0') then
                                 internalState <= CheckForJob;
-                                targetStates <= states;
                             end if;
+                            targetStatesReady <= '0';
+                            targetStatesWE <= '0';
+                        when ResetStateIndex =>
+                            targetStatesWE <= '0';
+                            targetStatesReady <= '1';
+                            statesIndex <= (others => '0');
+                            busy <= '1';
+                            cacheRead <= false;
+                            startGeneration <= '0';
+                            startCache <= '0';
+                            internalState <= CheckForDuplicates;
                         when others =>
                             null;
                     end case;

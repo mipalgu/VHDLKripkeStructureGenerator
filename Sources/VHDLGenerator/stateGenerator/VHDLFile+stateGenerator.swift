@@ -105,7 +105,7 @@ extension VHDLFile {
             let head = ArchitectureHead(
                 stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
             ),
-            let entity = Entity(stateGeneratorFor: state, in: representation),
+            let entity = Entity(sequentialStateGeneratorFor: state, in: representation),
             let typesInclude = UseStatement(
                 rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
             )
@@ -115,6 +115,7 @@ extension VHDLFile {
         let includes = [
             Include.library(value: .ieee),
             .include(statement: .stdLogic1164),
+            .include(statement: .numericStd),
             .include(statement: typesInclude),
             .include(statement: .primitiveTypes)
         ]

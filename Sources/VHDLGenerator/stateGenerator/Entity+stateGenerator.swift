@@ -55,6 +55,7 @@
 // 
 
 import VHDLMachines
+import VHDLMemoryStructures
 import VHDLParsing
 
 extension Entity {
@@ -77,6 +78,43 @@ extension Entity {
                 PortSignal(type: .stdLogic, name: .read, mode: .input),
                 PortSignal(type: .stdLogic, name: .busy, mode: .output),
                 PortSignal(type: .alias(name: .targetStatesType), name: .targetStates, mode: .output),
+                PortSignal(type: .logicVector32, name: .value, mode: .output),
+                PortSignal(type: .logicVector32, name: .lastAddress, mode: .output)
+            ])!
+        )
+    }
+
+    init?<T>(
+        sequentialStateGeneratorFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        guard
+            let writeSnapshot = Record(writeSnapshotFor: state, in: representation),
+            let cacheEntity = VHDLFile(targetStatesCacheFor: representation)?.entities.first
+        else {
+            return nil
+        }
+        let clk = machine.clocks[machine.drivingClock]
+        let variables = writeSnapshot.types.filter { $0.name != .nextState }.map {
+            PortSignal(type: $0.type, name: $0.name, mode: .input)
+        }
+        let name = VariableName(rawValue: "\(state.name.rawValue)Generator")!
+        let cacheSignals = cacheEntity.port.signals.filter { $0.name != .clk }.map {
+            PortSignal(
+                type: $0.type,
+                name: VariableName(rawValue: "targetStates\($0.name.rawValue)")!,
+                mode: $0.mode == .input ? .output : .input
+            )
+        }
+        self.init(
+            name: name,
+            port: PortBlock(signals: [PortSignal(clock: clk)] + variables + [
+                PortSignal(type: .logicVector32, name: .address, mode: .input),
+                PortSignal(type: .stdLogic, name: .ready, mode: .input),
+                PortSignal(type: .stdLogic, name: .read, mode: .input),
+                PortSignal(type: .stdLogic, name: .busy, mode: .output)
+            ] + cacheSignals + [
+                PortSignal(type: .stdLogic, name: VariableName(rawValue: "targetStatesen")!, mode: .input),
                 PortSignal(type: .logicVector32, name: .value, mode: .output),
                 PortSignal(type: .logicVector32, name: .lastAddress, mode: .output)
             ])!
