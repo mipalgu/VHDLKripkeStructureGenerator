@@ -103,7 +103,7 @@ extension VHDLFile {
                 stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
             ),
             let head = ArchitectureHead(
-                stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+                sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
             ),
             let entity = Entity(sequentialStateGeneratorFor: state, in: representation),
             let typesInclude = UseStatement(

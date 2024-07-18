@@ -82,6 +82,9 @@ extension VariableName {
     /// The `hasDuplicate` signal.
     @usableFromInline static let hasDuplicate = VariableName(rawValue: "hasDuplicate")!
 
+    /// The `ResetStateIndex` constant.
+    @usableFromInline static let resetStateIndex = VariableName(rawValue: "ResetStateIndex")!
+
     /// The `runnerBusy` signal.
     @usableFromInline static let runnerBusy = VariableName(rawValue: "runnerBusy")!
 
