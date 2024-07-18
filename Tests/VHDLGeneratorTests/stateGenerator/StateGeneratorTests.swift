@@ -519,16 +519,14 @@ final class StateGeneratorTests: XCTestCase {
                             targetStatesready <= '0';
                             targetStateswe <= '0';
                         when ResetStateIndex =>
-                            targetStateswe <= '0';
                             targetStatesready <= '1';
+                            targetStateswe <= '0';
                             statesIndex <= (others => '0');
                             busy <= '1';
                             cacheRead <= false;
                             startGeneration <= '0';
                             startCache <= '0';
                             internalState <= CheckForDuplicates;
-                        when others =>
-                            null;
                     end case;
                 end if;
             end process;

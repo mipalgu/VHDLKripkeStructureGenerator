@@ -1,8 +1,8 @@
-// WhenCase+stateGeneratorWaitForCacheToEnd.swift
+// WhenCase+stateGeneratorResetStateIndex.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
-// Copyright © 2023 Morgan McColl. All rights reserved.
+// Copyright © 2024 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -52,58 +52,29 @@
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
 
 import VHDLParsing
 
 extension WhenCase {
 
-    @usableFromInline static let sequentialStateGeneratorWaitForCacheToEnd = WhenCase(
-        condition: .expression(expression: .reference(variable: .variable(
-            reference: .variable(name: .waitForCacheToEnd)
-        ))),
+    @usableFromInline static let stateGeneratorResetStateIndex = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(reference: .variable(
+            name: .resetStateIndex
+        )))),
         code: .blocks(blocks: [
             .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .startCache)),
-                value: .literal(value: .bit(value: .low))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .busy)),
-                value: .literal(value: .bit(value: .high))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .cacheRead)),
-                value: .literal(value: .boolean(value: false))
-            )),
-            .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .comparison(value: .equality(
-                    lhs: .reference(variable: .variable(reference: .variable(name: .cacheBusy))),
-                    rhs: .literal(value: .bit(value: .low))
-                ))),
-                ifBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .internalState)),
-                    value: .reference(variable: .variable(reference: .variable(name: .checkForJob)))
-                ))
-            )),
-            .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .targetStatesReady)),
-                value: .literal(value: .bit(value: .low))
+                value: .literal(value: .bit(value: .high))
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .targetStatesWe)),
                 value: .literal(value: .bit(value: .low))
-            ))
-        ])
-    )
-
-    @usableFromInline static let stateGeneratorWaitForCacheToEnd = WhenCase(
-        condition: .expression(expression: .reference(variable: .variable(
-            reference: .variable(name: .waitForCacheToEnd)
-        ))),
-        code: .blocks(blocks: [
+            )),
             .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .startCache)),
-                value: .literal(value: .bit(value: .low))
+                name: .variable(reference: .variable(name: .statesIndex)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .busy)),
@@ -113,22 +84,19 @@ extension WhenCase {
                 name: .variable(reference: .variable(name: .cacheRead)),
                 value: .literal(value: .boolean(value: false))
             )),
-            .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .comparison(value: .equality(
-                    lhs: .reference(variable: .variable(reference: .variable(name: .cacheBusy))),
-                    rhs: .literal(value: .bit(value: .low))
-                ))),
-                ifBlock: .blocks(blocks: [
-                    .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: .internalState)),
-                        value: .reference(variable: .variable(reference: .variable(name: .checkForJob)))
-                    )),
-                    .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: .targetStates)),
-                        value: .reference(variable: .variable(reference: .variable(name: .states)))
-                    ))
-                ])
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startGeneration)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startCache)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .checkForDuplicates)))
             ))
         ])
     )
+
 }

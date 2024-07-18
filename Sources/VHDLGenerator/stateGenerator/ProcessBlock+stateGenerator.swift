@@ -117,9 +117,9 @@ extension ProcessBlock {
                         .sequentialStateGeneratorWaitForRunnerToFinish,
                         .sequentialStateGeneratorWaitForCacheToStart,
                         checkForDuplicates,
-                        WhenCase(stateGeneratorAddToStatesFor: state, in: representation),
-                        .stateGeneratorWaitForCacheToEnd,
-                        .othersNull
+                        WhenCase(sequentialStateGeneratorAddToStatesFor: state, in: representation),
+                        .sequentialStateGeneratorWaitForCacheToEnd,
+                        .stateGeneratorResetStateIndex
                     ]
                 ))
             ))

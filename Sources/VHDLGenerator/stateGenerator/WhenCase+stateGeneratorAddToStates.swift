@@ -60,6 +60,83 @@ import VHDLParsing
 extension WhenCase {
 
     init<T>(
+        sequentialStateGeneratorAddToStatesFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let readBits = readSnapshot.encodedBits
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .addToStates)
+            ))),
+            code: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesData)),
+                    value: writeSnapshot.reducedEncoding(
+                        for: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .ringlets)
+                            )),
+                            index: .index(value: .reference(variable: .variable(
+                                reference: .variable(name: .ringletIndex)
+                            )))
+                        )),
+                        offset: readBits,
+                        ignoring: [.nextState]
+                    )
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesWe)),
+                    value: .literal(value: .bit(value: .high))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesReady)),
+                    value: .literal(value: .bit(value: .high))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .busy)),
+                    value: .literal(value: .bit(value: .high))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .cacheRead)),
+                    value: .literal(value: .boolean(value: false))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .startGeneration)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .startCache)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .ifStatement(block: .ifStatement(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .resetStateIndex)
+                            ))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .ringletIndex)),
+                            value: .binary(operation: .addition(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .ringletIndex)
+                                )),
+                                rhs: .literal(value: .integer(value: 1))
+                            ))
+                        ))
+                    ])
+                ))
+            ])
+        )
+    }
+
+    init<T>(
         stateGeneratorAddToStatesFor state: State, in representation: T
     ) where T: MachineVHDLRepresentable {
         let maxIndex = max(0, state.encodedSize(in: representation) - 1)
