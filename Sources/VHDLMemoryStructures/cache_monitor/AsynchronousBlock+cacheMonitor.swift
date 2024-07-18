@@ -71,15 +71,19 @@ extension AsynchronousBlock {
         guard members > 0 else {
             return nil
         }
-        let cacheSignals = cache.port.signals
-        let cacheSignalNames = Set(cacheSignals.map(\.name))
         let expectedSignalNames: Set<VariableName> = [
             .address, .data, .we, .ready, .busy, .value, .valueEn, .lastAddress
         ]
-        guard
-            expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }),
-            let process = ProcessBlock(cacheMonitorNumberOfMembers: members)
-        else {
+        let cacheSignalNames = Set(cache.port.signals.map(\.name))
+        guard expectedSignalNames.allSatisfy({ cacheSignalNames.contains($0) }) else {
+            return nil
+        }
+        // swiftlint:disable force_unwrapping
+        guard members > 1 else {
+            self.init(cacheMonitorSingularName: name, cache: cache)
+            return
+        }
+        guard let process = ProcessBlock(cacheMonitorNumberOfMembers: members) else {
             return nil
         }
         let mappedSignals = cache.port.signals.map {
@@ -91,7 +95,6 @@ extension AsynchronousBlock {
         let component = AsynchronousBlock.component(block: ComponentInstantiation(
             label: .cacheInst, name: cache.name, port: PortMap(variables: mappedSignals)
         ))
-        // swiftlint:disable force_unwrapping
         let memberAssignments = (0..<members).map {
             AsynchronousBlock.statement(statement: .assignment(
                 name: .variable(reference: .variable(name: VariableName(rawValue: "en\($0)")!)),
@@ -148,5 +151,39 @@ extension AsynchronousBlock {
     }
 
     // swiftlint:enable function_body_length
+
+    /// Create a cache monitor with 1 member.
+    /// - Parameters:
+    ///   - name: The name of the monitor.
+    ///   - cache: The cache it monitors.
+    @inlinable
+    init?(cacheMonitorSingularName name: VariableName, cache: Entity) {
+        // swiftlint:disable force_unwrapping
+        let expectedSignals: Set<VariableName> = [.address, .data, .we, .ready]
+        let signalNames = cache.port.signals.map(\.name)
+        guard expectedSignals.allSatisfy({ signalNames.contains($0) }) else {
+            return nil
+        }
+        let mappedSignals = cache.port.signals.map {
+            let rawName = expectedSignals.contains($0.name) ? $0.name.rawValue + "0" : $0.name.rawValue
+            return VariableMap(
+                lhs: .variable(reference: .variable(name: $0.name)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: rawName)!
+                ))))
+            )
+        }
+        let component = ComponentInstantiation(
+            label: .cacheInst, name: cache.name, port: PortMap(variables: mappedSignals)
+        )
+        self = .blocks(blocks: [
+            .component(block: component),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "en0")!)),
+                value: .expression(value: .literal(value: .bit(value: .high)))
+            ))
+        ])
+        // swiftlint:enable force_unwrapping
+    }
 
 }

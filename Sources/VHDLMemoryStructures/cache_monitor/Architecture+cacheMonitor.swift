@@ -66,7 +66,7 @@ extension Architecture {
     ///   - cache: The cache entity.
     @inlinable
     init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
-        guard members > 1 else {
+        guard members > 0 else {
             return nil
         }
         let cacheSignals = cache.port.signals

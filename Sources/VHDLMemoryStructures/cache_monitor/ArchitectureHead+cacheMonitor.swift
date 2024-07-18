@@ -66,8 +66,15 @@ extension ArchitectureHead {
     ///   - cache: The cache entity.
     @inlinable
     init?(cacheMonitorName name: VariableName, numberOfMembers members: Int, cache: Entity) {
-        guard members > 1 else {
+        guard members > 0 else {
             return nil
+        }
+        let cacheDefinition = HeadStatement.definition(value: .component(
+            value: ComponentDefinition(entity: cache)
+        ))
+        guard members > 1 else {
+            self.init(statements: [cacheDefinition])
+            return
         }
         let cacheSignals = cache.port.signals
         let cacheSignalNames = Set(cacheSignals.map(\.name))
@@ -107,9 +114,6 @@ extension ArchitectureHead {
             )
         ]
         .map { HeadStatement.definition(value: .signal(value: $0)) }
-        let cacheDefinition = HeadStatement.definition(value: .component(
-            value: ComponentDefinition(entity: cache)
-        ))
         self.init(statements: [internalStateTypeDefinition] + signals + [cacheDefinition])
     }
 

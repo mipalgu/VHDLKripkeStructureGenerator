@@ -65,30 +65,25 @@ extension ProcessBlock {
     /// - Parameter members: The number of members the monitor arbitrates access too.
     @inlinable
     init?(cacheMonitorNumberOfMembers members: Int) {
-        guard members > 0 else {
+        guard members > 1 else {
             return nil
         }
         let firstMember = [BitLiteral](repeating: .low, count: members - 1) + [.high]
         let lastMembers = [.high] + [BitLiteral](repeating: .low, count: members - 1)
-        let shiftExpression: Expression
-        if members == 1 {
-            shiftExpression = .literal(value: .vector(value: .bits(value: BitVector(values: [.high]))))
-        } else {
-            shiftExpression = .binary(operation: .concatenate(
-                lhs: .reference(variable: .indexed(
-                    name: .reference(variable: .variable(
-                        reference: .variable(name: .lastEnabled)
-                    )),
-                    index: .range(value: .downto(
-                        upper: .literal(value: .integer(value: members - 2)),
-                        lower: .literal(value: .integer(value: 0))
-                    ))
+        let shiftExpression = Expression.binary(operation: .concatenate(
+            lhs: .reference(variable: .indexed(
+                name: .reference(variable: .variable(
+                    reference: .variable(name: .lastEnabled)
                 )),
-                rhs: .literal(value: .vector(value: .bits(
-                    value: BitVector(values: [.low])
-                )))
-            ))
-        }
+                index: .range(value: .downto(
+                    upper: .literal(value: .integer(value: members - 2)),
+                    lower: .literal(value: .integer(value: 0))
+                ))
+            )),
+            rhs: .literal(value: .vector(value: .bits(
+                value: BitVector(values: [.low])
+            )))
+        ))
         let body = SynchronousBlock.ifStatement(block: .ifStatement(
             condition: .conditional(condition: .edge(value: .rising(expression: .reference(
                 variable: .variable(reference: .variable(name: .clk))

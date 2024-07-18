@@ -171,6 +171,66 @@ final class CacheMonitorTests: XCTestCase {
         XCTAssertEqual(result.rawValue, expected)
     }
 
+    /// Test monitor generation.
+    func testSingleMonitor() {
+        guard let result = VHDLFile(
+            cacheMonitorName: VariableName(rawValue: "CacheMonitor")!, numberOfMembers: 1, cache: cache
+        ) else {
+            XCTFail("Failed to create cache monitor!")
+            return
+        }
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+
+        entity CacheMonitor is
+            port(
+                clk: in std_logic;
+                address0: in std_logic_vector(3 downto 0);
+                data0: in std_logic_vector(2 downto 0);
+                we0: in std_logic;
+                ready0: in std_logic;
+                en0: out std_logic;
+                value: out std_logic_vector(2 downto 0);
+                value_en: out std_logic;
+                busy: out std_logic;
+                lastAddress: out std_logic_vector(3 downto 0)
+            );
+        end CacheMonitor;
+
+        architecture Behavioral of CacheMonitor is
+            component Cache is
+                port(
+                    clk: in std_logic;
+                    address: in std_logic_vector(3 downto 0);
+                    data: in std_logic_vector(2 downto 0);
+                    we: in std_logic;
+                    ready: in std_logic;
+                    busy: out std_logic;
+                    value: out std_logic_vector(2 downto 0);
+                    value_en: out std_logic;
+                    lastAddress: out std_logic_vector(3 downto 0)
+                );
+            end component;
+        begin
+            cache_inst: component Cache port map (
+                clk => clk,
+                address => address0,
+                data => data0,
+                we => we0,
+                ready => ready0,
+                busy => busy,
+                value => value,
+                value_en => value_en,
+                lastAddress => lastAddress
+            );
+            en0 <= '1';
+        end Behavioral;
+
+        """
+        XCTAssertEqual(result.rawValue, expected)
+    }
+
     // swiftlint:enable line_length
     // swiftlint:enable function_body_length
 
