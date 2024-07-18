@@ -77,7 +77,7 @@ extension ProcessBlock {
             shiftExpression = .binary(operation: .concatenate(
                 lhs: .reference(variable: .indexed(
                     name: .reference(variable: .variable(
-                        reference: .variable(name: .enables)
+                        reference: .variable(name: .lastEnabled)
                     )),
                     index: .range(value: .downto(
                         upper: .literal(value: .integer(value: members - 2)),
@@ -108,9 +108,15 @@ extension ProcessBlock {
                                 )))
                             )),
                             .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .lastEnabled)),
+                                value: .literal(value: .vector(value: .bits(
+                                    value: BitVector(values: firstMember)
+                                )))
+                            )),
+                            .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .internalState)),
                                 value: .reference(
-                                    variable: .variable(reference: .variable(name: .waitForAccess))
+                                    variable: .variable(reference: .variable(name: .waitWhileBusy))
                                 )
                             ))
                         ])
@@ -124,12 +130,26 @@ extension ProcessBlock {
                                 lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
                                 rhs: .literal(value: .bit(value: .high))
                             ))),
-                            ifBlock: .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .internalState)),
-                                value: .reference(
-                                    variable: .variable(reference: .variable(name: .chooseAccess))
-                                )
-                            ))
+                            ifBlock: .blocks(blocks: [
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .internalState)),
+                                    value: .reference(
+                                        variable: .variable(reference: .variable(name: .chooseAccess))
+                                    )
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .enables)),
+                                    value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                                        values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                    ))))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .lastEnabled)),
+                                    value: .reference(variable: .variable(
+                                        reference: .variable(name: .enables)
+                                    ))
+                                ))
+                            ])
                         ))
                     ),
                     WhenCase(
@@ -140,7 +160,7 @@ extension ProcessBlock {
                             .ifStatement(block: .ifElse(
                                 condition: .conditional(condition: .comparison(value: .equality(
                                     lhs: .reference(variable: .variable(
-                                        reference: .variable(name: .enables)
+                                        reference: .variable(name: .lastEnabled)
                                     )),
                                     rhs: .literal(value: .vector(value: .bits(
                                         value: BitVector(values: lastMembers)
@@ -160,21 +180,10 @@ extension ProcessBlock {
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .internalState)),
                                 value: .reference(
-                                    variable: .variable(reference: .variable(name: .waitForAccess))
+                                    variable: .variable(reference: .variable(name: .waitWhileBusy))
                                 )
                             ))
                         ])
-                    ),
-                    WhenCase(
-                        condition: .expression(expression: .reference(variable: .variable(
-                            reference: .variable(name: .waitForAccess)
-                        ))),
-                        code: .statement(statement: .assignment(
-                            name: .variable(reference: .variable(name: .internalState)),
-                            value: .reference(
-                                variable: .variable(reference: .variable(name: .waitWhileBusy))
-                            )
-                        ))
                     )
                 ]
             ))

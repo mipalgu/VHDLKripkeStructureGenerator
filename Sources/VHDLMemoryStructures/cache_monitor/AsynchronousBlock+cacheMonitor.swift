@@ -101,17 +101,22 @@ extension AsynchronousBlock {
                 )))
             ))
         }
-        let cacheAssignmentSignals = cacheSignals.filter {
-            expectedSignalNames.contains($0.name) && $0.name != .busy && $0.name != .value &&
-                $0.name != .valueEn && $0.name != .lastAddress
+        let othersLow = Expression.literal(value: .vector(value: .indexed(values: IndexedVector(
+            values: [IndexedValue(index: .others, value: .literal(value: .bit(value: .low)))]
+        ))))
+        let low = Expression.literal(value: .bit(value: .low))
+        let cacheAssignmentSignals: [(VariableName, Expression)] = [
+            (.address, othersLow), (.data, othersLow), (.we, low), (.ready, low)
+        ]
+        let cacheAssignmentNames = cacheAssignmentSignals.map { signal, defaultValue in
+            (
+                (0..<members).map { ($0, VariableName(rawValue: signal.rawValue + "\($0)")!) },
+                signal,
+                defaultValue
+            )
         }
-        let cacheAssignmentNames = cacheAssignmentSignals.map { signal in
-            ((0..<members).map { ($0, VariableName(rawValue: signal.name.rawValue + "\($0)")!) }, signal.name)
-        }
-        // swiftlint:disable:next closure_body_length
         let assignments = cacheAssignmentNames.map {
-            let defaultSignal = $0.last!
-            let statements = $0.dropLast().map {
+            let statements = $0.map {
                 AsynchronousExpression.whenBlock(value: .when(statement: WhenStatement(
                     condition: .conditional(condition: .comparison(value: .equality(
                         lhs: .reference(variable: .indexed(
@@ -122,11 +127,7 @@ extension AsynchronousBlock {
                     ))),
                     value: .reference(variable: .variable(reference: .variable(name: $1)))
                 )))
-            } + [
-                .expression(value: .reference(
-                    variable: .variable(reference: .variable(name: defaultSignal.1))
-                ))
-            ]
+            } + [AsynchronousExpression.expression(value: $2)]
             let expression = statements.reversed().joined {
                 guard case .whenBlock(let when) = $1, case .when(let statement) = when else {
                     fatalError("Impossible!")

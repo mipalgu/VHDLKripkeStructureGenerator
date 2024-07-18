@@ -58,10 +58,18 @@ import TestUtils
 import VHDLParsing
 import XCTest
 
+/// Tests for cache monitor.
 final class CacheMonitorTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
+    /// The cache to monitor.
     let cache = Entity(cacheName: VariableName(rawValue: "Cache")!, elementSize: 3, numberOfElements: 10)!
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable line_length
+
+    /// Test monitor generation.
     func testMonitor() {
         guard let result = VHDLFile(
             cacheMonitorName: VariableName(rawValue: "CacheMonitor")!, numberOfMembers: 2, cache: cache
@@ -94,12 +102,13 @@ final class CacheMonitorTests: XCTestCase {
         end CacheMonitor;
 
         architecture Behavioral of CacheMonitor is
-            type CacheMonitorInternalState_t is (Initial, ChooseAccess, WaitWhileBusy, WaitForAccess);
+            type CacheMonitorInternalState_t is (Initial, ChooseAccess, WaitWhileBusy);
             signal address: std_logic_vector(3 downto 0);
             signal data: std_logic_vector(2 downto 0);
             signal we: std_logic;
             signal ready: std_logic;
             signal enables: std_logic_vector(1 downto 0);
+            signal lastEnabled: std_logic_vector(1 downto 0);
             signal internalState: CacheMonitorInternalState_t := Initial;
             component Cache is
                 port(
@@ -128,29 +137,30 @@ final class CacheMonitorTests: XCTestCase {
             );
             en0 <= enables(0);
             en1 <= enables(1);
-            address <= address0 when enables(0) = '1' else address1;
-            data <= data0 when enables(0) = '1' else data1;
-            we <= we0 when enables(0) = '1' else we1;
-            ready <= ready0 when enables(0) = '1' else ready1;
+            address <= address0 when enables(0) = '1' else address1 when enables(1) = '1' else (others => '0');
+            data <= data0 when enables(0) = '1' else data1 when enables(1) = '1' else (others => '0');
+            we <= we0 when enables(0) = '1' else we1 when enables(1) = '1' else '0';
+            ready <= ready0 when enables(0) = '1' else ready1 when enables(1) = '1' else '0';
             process(clk)
             begin
                 if (rising_edge(clk)) then
                     case internalState is
                         when Initial =>
                             enables <= "01";
-                            internalState <= WaitForAccess;
+                            lastEnabled <= "01";
+                            internalState <= WaitWhileBusy;
                         when WaitWhileBusy =>
                             if (ready /= '1') then
                                 internalState <= ChooseAccess;
+                                enables <= (others => '0');
+                                lastEnabled <= enables;
                             end if;
                         when ChooseAccess =>
-                            if (enables = "10") then
+                            if (lastEnabled = "10") then
                                 enables <= "01";
                             else
-                                enables <= enables(0 downto 0) & "0";
+                                enables <= lastEnabled(0 downto 0) & "0";
                             end if;
-                            internalState <= WaitForAccess;
-                        when WaitForAccess =>
                             internalState <= WaitWhileBusy;
                     end case;
                 end if;
@@ -160,5 +170,10 @@ final class CacheMonitorTests: XCTestCase {
         """
         XCTAssertEqual(result.rawValue, expected)
     }
+
+    // swiftlint:enable line_length
+    // swiftlint:enable function_body_length
+
+    // swiftlint:enable force_unwrapping
 
 }

@@ -81,7 +81,7 @@ extension ArchitectureHead {
             let internalStateType = VariableName(rawValue: name.rawValue + "InternalState_t"),
             let internalStateCases = EnumerationDefinition(
                 name: internalStateType,
-                nonEmptyValues: [.initial, .chooseAccess, .waitWhileBusy, .waitForAccess]
+                nonEmptyValues: [.initial, .chooseAccess, .waitWhileBusy]
             )
         else {
             return nil
@@ -89,18 +89,17 @@ extension ArchitectureHead {
         let internalStateTypeDefinition = HeadStatement.definition(value: .type(value: .enumeration(
             value: internalStateCases
         )))
+        let enablesType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: members - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
         let signals = [
             LocalSignal(type: addressType, name: .address),
             LocalSignal(type: dataType, name: .data),
             LocalSignal(type: .stdLogic, name: .we),
             LocalSignal(type: .stdLogic, name: .ready),
-            LocalSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(
-                    upper: .literal(value: .integer(value: members - 1)),
-                    lower: .literal(value: .integer(value: 0))
-                ))),
-                name: .enables
-            ),
+            LocalSignal(type: enablesType, name: .enables),
+            LocalSignal(type: enablesType, name: .lastEnabled),
             LocalSignal(
                 type: .alias(name: internalStateType),
                 name: .internalState,

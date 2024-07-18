@@ -111,6 +111,9 @@ public extension VariableName {
     /// The `internalStateOut` signal.
     static let internalStateOut = VariableName(rawValue: "internalStateOut")!
 
+    /// The `lastEnabled` signal.
+    static let lastEnabled = VariableName(rawValue: "lastEnabled")!
+
     /// The `nextState` signal.
     static let nextState = VariableName(rawValue: "nextState")!
 
