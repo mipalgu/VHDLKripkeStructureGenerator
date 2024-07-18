@@ -61,6 +61,199 @@ import VHDLParsing
 extension WhenCase {
 
     init?<T>(
+        sequentialStateGeneratorCheckForDuplicatesFor state: State,
+        in representation: T,
+        maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let maxIndex = machine.numberOfTargetStates
+        let observedIndex = state.encodedSize(in: representation) - 1
+        guard let executionMaxIndex = state.executionSize(
+            in: representation, maxExecutionSize: maxExecutionSize
+        ).size else {
+            return nil
+        }
+        let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let readBits = readSnapshot.encodedBits
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let ifStatement = SynchronousBlock.ifStatement(block: .ifStatement(
+            condition: .logical(operation: .and(
+                lhs: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                rhs: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesBusy))),
+                    rhs: .literal(value: .bit(value: .low))
+                )))
+            )),
+            ifBlock: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .statesIndex))),
+                    rhs: .literal(value: .integer(value: maxIndex))
+                ))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .error)))
+                )),
+                elseBlock: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ringletIndex))),
+                        rhs: .literal(value: .integer(value: executionMaxIndex))
+                    ))),
+                    ifBlock: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(
+                            reference: .variable(name: .waitForCacheToEnd)
+                        ))
+                    )),
+                    elseBlock: .ifStatement(block: .ifElse(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .indexed(
+                                name: .reference(variable: .indexed(
+                                    name: .reference(variable: .variable(
+                                        reference: .variable(name: .ringlets)
+                                    )),
+                                    index: .index(value: .reference(variable: .variable(
+                                        reference: .variable(name: .ringletIndex)
+                                    )))
+                                )),
+                                index: .index(value: .literal(value: .integer(value: observedIndex)))
+                            )),
+                            rhs: .literal(value: .bit(value: .high))
+                        ))),
+                        ifBlock: .ifStatement(block: .ifElse(
+                            condition: .conditional(condition: .comparison(value: .greaterThan(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .statesIndex)
+                                )),
+                                rhs: .cast(operation: .unsigned(expression: .reference(
+                                    variable: .variable(reference: .variable(name: .targetStatesLastAddress))
+                                )))
+                            ))),
+                            ifBlock: .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .internalState)),
+                                value: .reference(variable: .variable(
+                                    reference: .variable(name: .addToStates)
+                                ))
+                            )),
+                            elseBlock: .ifStatement(block: .ifElse(
+                                condition: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .reference(variable: .variable(reference: .variable(
+                                        name: .targetStatesValueEn
+                                    ))),
+                                    rhs: .literal(value: .bit(value: .high))
+                                ))),
+                                ifBlock: .ifStatement(block: .ifElse(
+                                    condition: .conditional(condition: .comparison(value: .equality(
+                                        lhs: .reference(variable: .variable(
+                                            reference: .variable(name: .targetStatesValue)
+                                        )),
+                                        rhs: writeSnapshot.reducedEncoding(
+                                            for: .reference(variable: .indexed(
+                                                name: .reference(variable: .variable(
+                                                    reference: .variable(name: .ringlets)
+                                                )),
+                                                index: .index(value: .reference(
+                                                    variable: .variable(
+                                                        reference: .variable(name: .ringletIndex)
+                                                    )
+                                                ))
+                                            )),
+                                            offset: readBits,
+                                            ignoring: [.nextState]
+                                        )
+                                    ))),
+                                    ifBlock: .blocks(blocks: [
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .statesIndex)),
+                                            value: .literal(value: .vector(value: .indexed(
+                                                values: IndexedVector(
+                                                    values: [
+                                                        IndexedValue(index: .others, value: .bit(value: .low))
+                                                    ]
+                                                )
+                                            )))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .variable(reference: .variable(name: .ringletIndex)),
+                                            value: .binary(operation: .addition(
+                                                lhs: .reference(variable: .variable(
+                                                    reference: .variable(name: .ringletIndex)
+                                                )),
+                                                rhs: .literal(value: .integer(value: 1))
+                                            ))
+                                        ))
+                                    ]),
+                                    elseBlock: .statement(statement: .assignment(
+                                        name: .variable(reference: .variable(name: .statesIndex)),
+                                        value: .binary(operation: .addition(
+                                            lhs: .reference(variable: .variable(
+                                                reference: .variable(name: .statesIndex)
+                                            )),
+                                            rhs: .literal(value: .integer(value: 1))
+                                        ))
+                                    ))
+                                )),
+                                elseBlock: .statement(statement: .assignment(
+                                    name: .variable(reference: .variable(name: .statesIndex)),
+                                    value: .binary(operation: .addition(
+                                        lhs: .reference(variable: .variable(
+                                            reference: .variable(name: .statesIndex)
+                                        )),
+                                        rhs: .literal(value: .integer(value: 1))
+                                    ))
+                                ))
+                            ))
+                        )),
+                        elseBlock: .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .ringletIndex)),
+                            value: .binary(operation: .addition(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .ringletIndex)
+                                )),
+                                rhs: .literal(value: .integer(value: 1))
+                            ))
+                        ))
+                    ))
+                ))
+            ))
+        ))
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .checkForDuplicates)
+            ))),
+            code: .blocks(blocks: [
+                ifStatement,
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .busy)),
+                    value: .literal(value: .bit(value: .high))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .cacheRead)),
+                    value: .literal(value: .boolean(value: false))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .startGeneration)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .startCache)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesWe)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesReady)),
+                    value: .literal(value: .bit(value: .high))
+                ))
+            ])
+        )
+    }
+
+    init?<T>(
         stateGeneratorCheckForDuplicatesFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         let machine = representation.machine

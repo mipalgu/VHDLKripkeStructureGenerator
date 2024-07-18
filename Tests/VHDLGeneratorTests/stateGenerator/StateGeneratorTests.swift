@@ -477,17 +477,15 @@ final class StateGeneratorTests: XCTestCase {
                                 elsif (ringlets(ringletIndex)(7) = '1') then
                                     if (statesIndex > unsigned(targetStateslastAddress)) then
                                         internalState <= AddToStates;
-                                    else
-                                        if (targetStatesvalue_en = '1') then
-                                            if (targetStatesvalue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
-                                                statesIndex <= (others => '0');
-                                                ringletIndex <= ringletIndex + 1;
-                                            else
-                                                statesIndex <= statesIndex + 1;
-                                            end if;
+                                    elsif (targetStatesvalue_en = '1') then
+                                        if (targetStatesvalue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
+                                            statesIndex <= (others => '0');
+                                            ringletIndex <= ringletIndex + 1;
                                         else
                                             statesIndex <= statesIndex + 1;
                                         end if;
+                                    else
+                                        statesIndex <= statesIndex + 1;
                                     end if;
                                 else
                                     ringletIndex <= ringletIndex + 1;

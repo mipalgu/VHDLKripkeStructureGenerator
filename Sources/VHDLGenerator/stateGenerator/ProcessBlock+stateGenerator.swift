@@ -95,7 +95,9 @@ extension ProcessBlock {
         sequentialStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
         guard let checkForDuplicates = WhenCase(
-            stateGeneratorCheckForDuplicatesFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            sequentialStateGeneratorCheckForDuplicatesFor: state,
+            in: representation,
+            maxExecutionSize: maxExecutionSize
         ) else {
             return nil
         }
