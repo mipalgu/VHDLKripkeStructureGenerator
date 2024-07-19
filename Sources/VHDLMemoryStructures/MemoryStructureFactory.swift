@@ -118,7 +118,7 @@ public struct MemoryStructureFactory {
             let cacheEntity = cache.entities.first,
             let monitor = VHDLFile(
                 cacheMonitorName: monitorName,
-                numberOfMembers: representation.machine.states.count,
+                numberOfMembers: representation.machine.states.count + 1,
                 cache: cacheEntity
             ),
             let encoder = VHDLFile(targetStatesEncoderFor: representation),
