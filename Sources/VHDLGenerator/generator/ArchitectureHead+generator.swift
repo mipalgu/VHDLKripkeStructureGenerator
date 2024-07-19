@@ -56,6 +56,7 @@
 
 import Utilities
 import VHDLMachines
+import VHDLMemoryStructures
 import VHDLParsing
 
 extension ArchitectureHead {
@@ -247,6 +248,114 @@ extension ArchitectureHead {
         self.init(
             statements: stateTrackers + constants + stateInternals + indexVariables + stateSignals
                 + targetValues + genSignals + generators
+        )
+    }
+
+    init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
+        let machine: Machine = representation.machine
+        let constants: [VariableName] = [
+            .initial, .setRead, .resetRead, .incrementIndex, .setJob, .checkIfFinished, .hasFinished
+        ]
+        let stateInternals = machine.states.compactMap {
+            VariableName(rawValue: "Start\($0.name.rawValue)")
+        }
+        guard
+            stateInternals.count == machine.states.count,
+            let internalStateName = VariableName(
+                rawValue: "\(representation.entity.name.rawValue)GeneratorInternalState_t"
+            ),
+            let internalStateEnum = EnumerationDefinition(
+                name: internalStateName, nonEmptyValues: constants + stateInternals
+            ),
+            let addressBits = BitLiteral.bitsRequired(for: max(1, machine.numberOfTargetStates - 1)),
+            let cache = VHDLFile(targetStatesCacheFor: representation)?.entities.first,
+            let monitorName = VariableName(
+                rawValue: representation.entity.name.rawValue + "TargetStatesCacheMonitor"
+            ),
+            let monitor = VHDLFile(
+                cacheMonitorName: monitorName, numberOfMembers: machine.states.count + 1, cache: cache
+            )?.entities.first
+        else {
+            return nil
+        }
+        let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: max(0, addressBits - 1))),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let dataType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: max(0, machine.targetStateBits - 2))),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let validSignals: Set<VariableName> = [.address, .data, .we, .ready]
+        let monitorSignals = cache.port.signals.filter { validSignals.contains($0.name) }
+        let stateSignals = machine.states.enumerated()
+            .flatMap { index, state in
+                let name = state.name.rawValue
+                let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+                let types = writeSnapshot.types.filter { $0.name != VariableName.nextState }
+                let typeSignals = types.map {
+                    LocalSignal(type: $0.type, name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!)
+                }
+                let stateMonitorSignals = monitorSignals.map {
+                    LocalSignal(
+                        type: $0.type,
+                        name: VariableName(rawValue: "targetStates\($0.name.rawValue)\(index + 1)")!
+                    )
+                }
+                return typeSignals + stateMonitorSignals + [
+                    LocalSignal(type: .stdLogic, name: VariableName(rawValue: "targetStatesen\(index + 1)")!),
+                    LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Ready")!),
+                    LocalSignal(type: .stdLogic, name: VariableName(rawValue: "\(name)Busy")!)
+                ]
+            }
+            .map {
+                HeadStatement.definition(value: .signal(value: $0))
+            }
+        let generatorSignals = monitorSignals.map {
+            LocalSignal(type: $0.type, name: VariableName(rawValue: "targetStates\($0.name.rawValue)0")!)
+        }
+        let generatorCacheSignals = generatorSignals + [
+            LocalSignal(type: .stdLogic, name: VariableName(rawValue: "targetStatesen0")!),
+            LocalSignal(type: dataType, name: VariableName(rawValue: "targetStatesvalue")!),
+            LocalSignal(type: .stdLogic, name: VariableName(rawValue: "targetStatesvalue_en")!),
+            LocalSignal(type: .stdLogic, name: VariableName(rawValue: "targetStatesbusy")!),
+            LocalSignal(type: addressType, name: VariableName(rawValue: "targetStateslastAddress")!)
+
+        ]
+        let generatorMonitorSignals = generatorCacheSignals.map {
+            HeadStatement.definition(value: .signal(value: $0))
+        }
+        let genSignals = machine.states.map {
+            HeadStatement.definition(value: .signal(value: LocalSignal(
+                type: .stdLogic, name: VariableName(rawValue: "gen\($0.name.rawValue)Ready")!
+            )))
+        }
+        let generators = machine.states.map {
+            let entity = Entity(sequentialStateGeneratorFor: $0, in: representation)!
+            return HeadStatement.definition(value: .component(value: ComponentDefinition(entity: entity)))
+        }
+        let monitorDefinition = HeadStatement.definition(
+            value: .component(value: ComponentDefinition(entity: monitor))
+        )
+        let variables: [HeadStatement] = [
+            .definition(value: .type(value: .enumeration(value: internalStateEnum))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: internalStateName),
+                name: .currentState,
+                defaultValue: .reference(variable: .variable(reference: .variable(name: .initial)))
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .unsigned(size: .downto(
+                    upper: .literal(value: .integer(value: addressBits - 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
+                name: .pendingStateIndex
+            ))),
+            .definition(value: .signal(value: LocalSignal(type: dataType, name: .currentTargetState)))
+        ]
+        self.init(
+            statements: variables + stateSignals + generatorMonitorSignals + genSignals + generators
+                + [monitorDefinition]
         )
     }
 

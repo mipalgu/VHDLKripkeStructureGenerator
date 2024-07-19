@@ -73,6 +73,9 @@ extension VariableName {
     /// The `currentPendingState` signal.
     @usableFromInline static let currentPendingState = VariableName(rawValue: "currentPendingState")!
 
+    /// The `currentTargetState` signal.
+    @usableFromInline static let currentTargetState = VariableName(rawValue: "currentTargetState")!
+
     /// The `currentWorkingPendingState` signal.
     @usableFromInline static let currentWorkingPendingState = VariableName(
         rawValue: "currentWorkingPendingState"
@@ -86,6 +89,9 @@ extension VariableName {
 
     /// The `HasFinished` signal.
     @usableFromInline static let hasFinished = VariableName(rawValue: "HasFinished")!
+
+    /// The `IncrementIndex` constant.
+    @usableFromInline static let incrementIndex = VariableName(rawValue: "IncrementIndex")!
 
     /// The `isFinished` signal.
     @usableFromInline static let isFinished = VariableName(rawValue: "isFinished")!
@@ -111,8 +117,14 @@ extension VariableName {
     /// The `pendingStateIndex` signal.
     @usableFromInline static let pendingStateIndex = VariableName(rawValue: "pendingStateIndex")!
 
+    /// The `ResetRead` constant.
+    @usableFromInline static let resetRead = VariableName(rawValue: "ResetRead")!
+
     /// The `SetJob` constant.
     @usableFromInline static let setJob = VariableName(rawValue: "SetJob")!
+
+    /// The `SetRead` constant.
+    @usableFromInline static let setRead = VariableName(rawValue: "SetRead")!
 
     /// The `VerifyDuplicate` constant.
     @usableFromInline static let verifyDuplicate = VariableName(rawValue: "VerifyDuplicate")!
