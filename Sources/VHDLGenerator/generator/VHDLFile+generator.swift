@@ -60,6 +60,33 @@ import VHDLParsing
 extension VHDLFile {
 
     public init?<T>(generatorFor representation: T) where T: MachineVHDLRepresentable {
+        self.init(sequentialGeneratorFor: representation)
+    }
+
+    public init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
+        guard
+            let head = ArchitectureHead(generatorFor: representation),
+            let body = AsynchronousBlock(generatorFor: representation),
+            let typesInclude = UseStatement(
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
+            )
+        else {
+            return nil
+        }
+        let entity = Entity(generatorFor: representation)
+        let includes = [
+            Include.library(value: .ieee), .include(statement: .stdLogic1164),
+            .include(statement: .numericStd), .include(statement: .primitiveTypes),
+            .include(statement: typesInclude)
+        ]
+        self.init(
+            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            entities: [entity],
+            includes: includes
+        )
+    }
+
+    public init?<T>(concurrentGeneratorFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let head = ArchitectureHead(generatorFor: representation),
             let body = AsynchronousBlock(generatorFor: representation),
