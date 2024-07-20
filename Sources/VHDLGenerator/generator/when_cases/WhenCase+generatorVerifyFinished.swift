@@ -85,4 +85,24 @@ extension WhenCase {
         ))
     )
 
+    @usableFromInline static let sequentialGeneratorHasFinished = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .hasFinished)
+        ))),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .finished)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe0)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesReady0)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
 }

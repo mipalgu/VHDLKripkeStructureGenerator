@@ -156,4 +156,57 @@ extension WhenCase {
         )
     }
 
+    init<T>(sequentialGeneratorCheckIfFinishedFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let stateBusyNames = machine.states.map {
+            VariableName(rawValue: "\($0.name.rawValue)Busy")!
+        }
+        let stateConditionals = stateBusyNames.map {
+            Expression.conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .variable(reference: .variable(name: $0))),
+                rhs: .literal(value: .bit(value: .low))
+            )))
+        }
+        let otherConditionals = [
+            Expression.conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesValueEn))),
+                rhs: .literal(value: .bit(value: .low))
+            ))),
+            Expression.conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn0))),
+                rhs: .literal(value: .bit(value: .high))
+            )))
+        ]
+        let allConditionals = stateConditionals + otherConditionals
+        let combinedConditionals = allConditionals.joined {
+            Expression.logical(operation: .and(lhs: $0, rhs: $1))
+        }
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .checkIfFinished)
+            ))),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifElse(
+                    condition: combinedConditionals,
+                    ifBlock: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
+                    )),
+                    elseBlock: .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .resetRead)))
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesWe0)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesReady0)),
+                    value: .literal(value: .bit(value: .high))
+                ))
+            ])
+        )
+    }
+
 }

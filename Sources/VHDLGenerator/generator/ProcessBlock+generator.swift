@@ -120,8 +120,8 @@ extension ProcessBlock {
                     condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
                     cases: [initial, .generatorSetRead, .generatorResetRead, .generatorIncrementIndex, setJob]
                         + stateInternals + [
-                            WhenCase(generatorCheckIfFinishedFor: representation),
-                            .generatorHasFinished
+                            WhenCase(sequentialGeneratorCheckIfFinishedFor: representation),
+                            .sequentialGeneratorHasFinished
                         ]
                 ))
             ))
