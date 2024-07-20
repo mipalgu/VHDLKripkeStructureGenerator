@@ -66,7 +66,7 @@ extension VHDLFile {
     public init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
         guard
             let head = ArchitectureHead(sequentialGeneratorFor: representation),
-            let body = AsynchronousBlock(generatorFor: representation),
+            let body = AsynchronousBlock(sequentialGeneratorFor: representation),
             let typesInclude = UseStatement(
                 rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
             )
