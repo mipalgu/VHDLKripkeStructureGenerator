@@ -126,6 +126,9 @@ extension VariableName {
     /// The `SetRead` constant.
     @usableFromInline static let setRead = VariableName(rawValue: "SetRead")!
 
+    /// The `targetStatesaddress0` signal.
+    @usableFromInline static let targetStatesAddress0 = VariableName(rawValue: "targetStatesaddress0")!
+
     /// The `targetStatesdata0` signal.
     @usableFromInline static let targetStatesData0 = VariableName(rawValue: "targetStatesdata0")!
 

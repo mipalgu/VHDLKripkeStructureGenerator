@@ -226,4 +226,112 @@ extension WhenCase {
         )
     }
 
+    init?<T>(sequentialGeneratorSetJobFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let stateIndex = VectorIndex.range(value: .downto(
+            upper: .literal(value: .integer(value: machine.numberOfStateBits)),
+            lower: .literal(value: .integer(value: 1))
+        ))
+        let stateLogics = machine.states.map {
+            let name = $0.name.rawValue
+            return SynchronousBlock.ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(name: .targetStatesValue))),
+                        index: stateIndex
+                    )),
+                    rhs: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(rawValue: "STATE_\(name)")!
+                    )))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .ifStatement(block: .ifElse(
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(
+                                name: VariableName(rawValue: "\(name)Busy")!
+                            ))),
+                            rhs: .literal(value: .bit(value: .low))
+                        ))),
+                        ifBlock: .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: VariableName(rawValue: "Start\(name)")!)
+                            ))
+                        )),
+                        elseBlock: .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .resetRead)
+                            ))
+                        ))
+                    ))
+                ])
+            ))
+        }
+        let combinedStateLogic = stateLogics.reversed().joined {
+            guard case .ifStatement(let block) = $1, case .ifStatement(let condition, let code) = block else {
+                fatalError("Invalid state logic format, found: \($1).")
+            }
+            return SynchronousBlock.ifStatement(block: .ifElse(
+                condition: condition,
+                ifBlock: code,
+                elseBlock: $0
+            ))
+        }
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .setJob)
+            ))),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifStatement(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn0))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .ifStatement(block: .ifElse(
+                        condition: .logical(operation: .and(
+                            lhs: .conditional(condition: .comparison(value: .equality(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .targetStatesValueEn)
+                                )),
+                                rhs: .literal(value: .bit(value: .high))
+                            ))),
+                            rhs: .conditional(condition: .comparison(value: .lessThanOrEqual(
+                                lhs: .reference(variable: .variable(
+                                    reference: .variable(name: .targetStatesAddress0)
+                                )),
+                                rhs: .reference(variable: .variable(
+                                    reference: .variable(name: .targetStatesLastAddress)
+                                ))
+                            )))
+                        )),
+                        ifBlock: .blocks(blocks: [
+                            combinedStateLogic,
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .currentTargetState)),
+                                value: .reference(variable: .variable(reference: .variable(
+                                    name: .targetStatesValue
+                                )))
+                            ))
+                        ]),
+                        elseBlock: .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .checkIfFinished)
+                            ))
+                        ))
+                    ))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesWe0)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesReady0)),
+                    value: .literal(value: .bit(value: .high))
+                ))
+            ])
+        )
+    }
+
 }

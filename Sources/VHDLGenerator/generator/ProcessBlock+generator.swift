@@ -103,7 +103,7 @@ extension ProcessBlock {
         let clk = machine.clocks[machine.drivingClock].name
         guard
             let initial = WhenCase(sequentialGeneratorInitialFor: representation),
-            let setJob = WhenCase(generatorSetJobFor: representation)
+            let setJob = WhenCase(sequentialGeneratorSetJobFor: representation)
         else {
             return nil
         }
@@ -118,10 +118,11 @@ extension ProcessBlock {
                 )))),
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [initial, .generatorSetRead, setJob] + stateInternals + [
-                        WhenCase(generatorCheckIfFinishedFor: representation),
-                        .generatorHasFinished
-                    ]
+                    cases: [initial, .generatorSetRead, .generatorResetRead, .generatorIncrementIndex, setJob]
+                        + stateInternals + [
+                            WhenCase(generatorCheckIfFinishedFor: representation),
+                            .generatorHasFinished
+                        ]
                 ))
             ))
         )

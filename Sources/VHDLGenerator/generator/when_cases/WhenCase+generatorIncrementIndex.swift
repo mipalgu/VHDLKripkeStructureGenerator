@@ -1,4 +1,4 @@
-// WhenCase+generatorResetRead.swift
+// WhenCase+generatorIncrementIndex.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,9 +57,9 @@ import VHDLParsing
 
 extension WhenCase {
 
-    @usableFromInline static let generatorResetRead = WhenCase(
+    @usableFromInline static let generatorIncrementIndex = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
-            reference: .variable(name: .resetRead)
+            reference: .variable(name: .incrementIndex)
         ))),
         code: .blocks(blocks: [
             .statement(statement: .assignment(
@@ -70,15 +70,16 @@ extension WhenCase {
                 name: .variable(reference: .variable(name: .targetStatesReady0)),
                 value: .literal(value: .bit(value: .low))
             )),
-            .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .comparison(value: .equality(
-                    lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn0))),
-                    rhs: .literal(value: .bit(value: .low))
-                ))),
-                ifBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentState)),
-                    value: .reference(variable: .variable(reference: .variable(name: .setRead)))
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .pendingStateIndex)),
+                value: .binary(operation: .addition(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .pendingStateIndex))),
+                    rhs: .literal(value: .integer(value: 1))
                 ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(reference: .variable(name: .resetRead)))
             ))
         ])
     )
