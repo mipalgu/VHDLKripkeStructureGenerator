@@ -204,7 +204,7 @@ extension AsynchronousBlock {
     }
 
     init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
-        guard let block = ProcessBlock(generatorFor: representation) else {
+        guard let block = ProcessBlock(sequentialGeneratorFor: representation) else {
             return nil
         }
         let machine = representation.machine

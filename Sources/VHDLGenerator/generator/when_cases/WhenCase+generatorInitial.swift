@@ -170,6 +170,92 @@ extension WhenCase {
         )
     }
 
+    init?<T>(sequentialGeneratorInitialFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let initialState = machine.states[machine.initialState]
+        guard let writeSnapshot = Record(writeSnapshotFor: initialState, in: representation) else {
+            return nil
+        }
+        let literals: [LogicLiteral] = writeSnapshot.types.flatMap {
+            guard $0.name != .nextState else {
+                return BitLiteral.bitVersion(
+                    of: machine.initialState, bitsRequired: machine.numberOfStateBits
+                )
+                .map {
+                    LogicLiteral(bit: $0)
+                }
+            }
+            guard $0.name != .executeOnEntry else {
+                return [.high]
+            }
+            return $0.type.signalType.defaultEncoding
+        }
+        let stateSignals = machine.states.flatMap {
+            let name = $0.name.rawValue
+            let writeSnapshot = Record(writeSnapshotFor: $0, in: representation)!
+            let types = writeSnapshot.types.filter { $0.name != .nextState }
+            return types.map {
+                SynchronousBlock.statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                    )),
+                    value: .literal(value: $0.type.signalType.defaultValue)
+                ))
+            } + [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: VariableName(rawValue: "\(name)Ready")!)),
+                    value: .literal(value: .bit(value: .low))
+                ))
+            ]
+        }
+        let defaultAssignments: [SynchronousBlock] = [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesData0)),
+                value: .literal(value: .vector(value: .logics(value: LogicVector(values: literals))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentTargetState)),
+                value: .literal(value: .vector(value: .logics(value: LogicVector(values: literals))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe0)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesReady0)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .finished)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .pendingStateIndex)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            ))
+        ]
+        let internalState = [
+            SynchronousBlock.ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn0))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .resetRead)))
+                ))
+            ))
+        ]
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(
+                reference: .variable(name: .initial)
+            ))),
+            code: .blocks(blocks: defaultAssignments + stateSignals + internalState)
+        )
+    }
+
 }
 
 extension SignalType {

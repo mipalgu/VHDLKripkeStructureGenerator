@@ -126,6 +126,18 @@ extension VariableName {
     /// The `SetRead` constant.
     @usableFromInline static let setRead = VariableName(rawValue: "SetRead")!
 
+    /// The `targetStatesdata0` signal.
+    @usableFromInline static let targetStatesData0 = VariableName(rawValue: "targetStatesdata0")!
+
+    /// The `targetStatesen0` signal.
+    @usableFromInline static let targetStatesEn0 = VariableName(rawValue: "targetStatesen0")!
+
+    /// The `targetStatesready0` signal.
+    @usableFromInline static let targetStatesReady0 = VariableName(rawValue: "targetStatesready0")!
+
+    /// The `targetStateswe0` signal.
+    @usableFromInline static let targetStatesWe0 = VariableName(rawValue: "targetStateswe0")!
+
     /// The `VerifyDuplicate` constant.
     @usableFromInline static let verifyDuplicate = VariableName(rawValue: "VerifyDuplicate")!
 
