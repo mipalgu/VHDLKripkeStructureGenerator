@@ -117,4 +117,65 @@ extension WhenCase {
         )
     }
 
+    init<T>(
+        sequentialGeneratorStartStateFor state: State, in representation: T
+    ) where T: MachineVHDLRepresentable {
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let name = state.name.rawValue
+        let types = writeSnapshot.types.filter { $0.name != .nextState }
+        let statements = types.map {
+            let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true, adding: 1)!
+            let value = Expression.reference(variable: .indexed(
+                name: .reference(variable: .variable(reference: .variable(name: .currentTargetState))),
+                index: indexes
+            ))
+            let bits = $0.type.bits
+            guard bits <= 1 else {
+                let type = SignalType.ranged(type: .stdLogicVector(
+                    size: .downto(
+                        upper: .literal(value: .integer(value: bits - 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    )
+                ))
+                return SynchronousBlock.statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                    )),
+                    value: type.conversion(value: value, to: $0.type.signalType)
+                ))
+            }
+            return SynchronousBlock.statement(statement: .assignment(
+                name: .variable(reference: .variable(
+                    name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                )),
+                value: SignalType.stdLogic.conversion(value: value, to: $0.type.signalType)
+            ))
+        }
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(reference: .variable(
+                name: VariableName(rawValue: "Start\(name)")!
+            )))),
+            code: .blocks(blocks: statements + [
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: VariableName(rawValue: "\(name)Ready")!)),
+                    value: .literal(value: .bit(value: .high))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(variable: .variable(reference: .variable(
+                        name: .incrementIndex
+                    )))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesWe0)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesReady0)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+            ])
+        )
+    }
+
 }
