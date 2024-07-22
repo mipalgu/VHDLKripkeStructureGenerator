@@ -256,11 +256,13 @@ extension ArchitectureHead {
         let constants: [VariableName] = [
             .initial, .setRead, .resetRead, .incrementIndex, .setJob, .checkIfFinished, .hasFinished
         ]
-        let stateInternals = machine.states.compactMap {
-            VariableName(rawValue: "Start\($0.name.rawValue)")
+        let stateInternals = machine.states.flatMap {
+            [
+                VariableName(rawValue: "Start\($0.name.rawValue)")!,
+                VariableName(rawValue: "Reset\($0.name.rawValue)")!,
+            ]
         }
         guard
-            stateInternals.count == machine.states.count,
             let internalStateName = VariableName(
                 rawValue: "\(representation.entity.name.rawValue)GeneratorInternalState_t"
             ),

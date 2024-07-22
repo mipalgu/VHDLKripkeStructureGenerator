@@ -164,7 +164,7 @@ extension WhenCase {
                 .statement(statement: .assignment(
                     name: .variable(reference: .variable(name: .currentState)),
                     value: .reference(variable: .variable(reference: .variable(
-                        name: .incrementIndex
+                        name: VariableName(rawValue: "Reset\(name)")!
                     )))
                 )),
                 .statement(statement: .assignment(

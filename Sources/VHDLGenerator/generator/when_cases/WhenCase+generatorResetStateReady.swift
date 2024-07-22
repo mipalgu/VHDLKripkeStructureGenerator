@@ -130,4 +130,45 @@ extension WhenCase {
         )
     }
 
+    init(generatorResetState state: State) {
+        let name = state.name.rawValue
+        self.init(
+            condition: .expression(expression: .reference(variable: .variable(reference: .variable(
+                name: VariableName(rawValue: "Reset\(name)")!
+            )))),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifStatement(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)Busy")!
+                        ))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(
+                                name: VariableName(rawValue: "\(name)Ready")!
+                            )),
+                            value: .literal(value: .bit(value: .low))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .incrementIndex)
+                            ))
+                        ))
+                    ])
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesWe0)),
+                    value: .literal(value: .bit(value: .low))
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStatesReady0)),
+                    value: .literal(value: .bit(value: .low))
+                ))
+            ])
+        )
+    }
+
 }

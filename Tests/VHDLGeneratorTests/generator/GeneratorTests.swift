@@ -106,7 +106,7 @@ final class GeneratorTests: XCTestCase {
         end PingMachineGenerator;
 
         architecture Behavioral of PingMachineGenerator is
-            type PingMachineGeneratorInternalState_t is (Initial, SetRead, ResetRead, IncrementIndex, SetJob, CheckIfFinished, HasFinished, StartInitial, StartWaitForPong);
+            type PingMachineGeneratorInternalState_t is (Initial, SetRead, ResetRead, IncrementIndex, SetJob, CheckIfFinished, HasFinished, StartInitial, ResetInitial, StartWaitForPong, ResetWaitForPong);
             signal currentState: PingMachineGeneratorInternalState_t := Initial;
             signal pendingStateIndex: unsigned(3 downto 0);
             signal currentTargetState: std_logic_vector(2 downto 0);
@@ -337,14 +337,28 @@ final class GeneratorTests: XCTestCase {
                             Initialping <= currentTargetState(2);
                             InitialexecuteOnEntry <= stdLogicToBool(currentTargetState(0));
                             InitialReady <= '1';
-                            currentState <= IncrementIndex;
+                            currentState <= ResetInitial;
+                            targetStateswe0 <= '0';
+                            targetStatesready0 <= '0';
+                        when ResetInitial =>
+                            if (InitialBusy = '1') then
+                                InitialReady <= '0';
+                                currentState <= IncrementIndex;
+                            end if;
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '0';
                         when StartWaitForPong =>
                             WaitForPongping <= currentTargetState(2);
                             WaitForPongexecuteOnEntry <= stdLogicToBool(currentTargetState(0));
                             WaitForPongReady <= '1';
-                            currentState <= IncrementIndex;
+                            currentState <= ResetWaitForPong;
+                            targetStateswe0 <= '0';
+                            targetStatesready0 <= '0';
+                        when ResetWaitForPong =>
+                            if (WaitForPongBusy = '1') then
+                                WaitForPongReady <= '0';
+                                currentState <= IncrementIndex;
+                            end if;
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '0';
                         when CheckIfFinished =>

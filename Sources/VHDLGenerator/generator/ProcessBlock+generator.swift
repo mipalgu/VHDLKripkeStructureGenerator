@@ -107,8 +107,11 @@ extension ProcessBlock {
         else {
             return nil
         }
-        let stateInternals = machine.states.map {
-            WhenCase(sequentialGeneratorStartStateFor: $0, in: representation)
+        let stateInternals = machine.states.flatMap {
+            [
+                WhenCase(sequentialGeneratorStartStateFor: $0, in: representation),
+                WhenCase(generatorResetState: $0)
+            ]
         }
         self.init(
             sensitivityList: [clk],
