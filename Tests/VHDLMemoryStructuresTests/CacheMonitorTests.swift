@@ -162,6 +162,8 @@ final class CacheMonitorTests: XCTestCase {
                                 enables <= lastEnabled(0 downto 0) & "0";
                             end if;
                             internalState <= WaitWhileBusy;
+                        when others =>
+                            null;
                     end case;
                 end if;
             end process;

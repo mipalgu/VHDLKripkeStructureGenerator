@@ -119,7 +119,8 @@ extension ProcessBlock {
                         checkForDuplicates,
                         WhenCase(sequentialStateGeneratorAddToStatesFor: state, in: representation),
                         .sequentialStateGeneratorWaitForCacheToEnd,
-                        .stateGeneratorResetStateIndex
+                        .stateGeneratorResetStateIndex,
+                        .othersNull
                     ]
                 ))
             ))

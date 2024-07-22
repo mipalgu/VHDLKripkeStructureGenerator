@@ -359,6 +359,8 @@ final class GeneratorTests: XCTestCase {
                             finished <= '1';
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '0';
+                        when others =>
+                            null;
                     end case;
                 end if;
             end process;

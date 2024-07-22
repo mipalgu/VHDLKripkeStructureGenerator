@@ -527,6 +527,8 @@ final class StateGeneratorTests: XCTestCase {
                             startGeneration <= '0';
                             startCache <= '0';
                             internalState <= CheckForDuplicates;
+                        when others =>
+                            null;
                     end case;
                 end if;
             end process;

@@ -121,7 +121,8 @@ extension ProcessBlock {
                     cases: [initial, .generatorSetRead, .generatorResetRead, .generatorIncrementIndex, setJob]
                         + stateInternals + [
                             WhenCase(sequentialGeneratorCheckIfFinishedFor: representation),
-                            .sequentialGeneratorHasFinished
+                            .sequentialGeneratorHasFinished,
+                            .othersNull
                         ]
                 ))
             ))
