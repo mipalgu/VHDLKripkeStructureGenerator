@@ -89,7 +89,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             let runner = VHDLFile(runnerFor: representation),
             let ringletRunner = VHDLFile(ringletRunnerFor: representation),
             let types = VHDLFile(typesFor: representation),
-            let generator = VHDLFile(sequentialGeneratorFor: representation),
+            let generator = VHDLFile(generatorFor: representation),
             let targetStatesFiles = factory.targetStateCache(for: representation)
         else {
             return []
