@@ -76,6 +76,71 @@ extension WhenCase {
         let readSnapshot = Record(readSnapshotFor: state, in: representation)
         let readBits = readSnapshot.encodedBits
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
+        let comparisonLogic = SynchronousBlock.ifStatement(block: .ifElse(
+            condition: .conditional(condition: .comparison(value: .equality(
+                lhs: .reference(variable: .variable(reference: .variable(
+                    name: .targetStatesValueEn
+                ))),
+                rhs: .literal(value: .bit(value: .high))
+            ))),
+            ifBlock: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(
+                        reference: .variable(name: .targetStatesValue)
+                    )),
+                    rhs: writeSnapshot.reducedEncoding(
+                        for: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(
+                                reference: .variable(name: .ringlets)
+                            )),
+                            index: .index(value: .reference(
+                                variable: .variable(
+                                    reference: .variable(name: .ringletIndex)
+                                )
+                            ))
+                        )),
+                        offset: readBits,
+                        ignoring: [.nextState]
+                    )
+                ))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .setNextRinglet)))
+                )),
+                elseBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .statesIndex)),
+                    value: .binary(operation: .addition(
+                        lhs: .reference(variable: .variable(
+                            reference: .variable(name: .statesIndex)
+                        )),
+                        rhs: .literal(value: .integer(value: 1))
+                    ))
+                ))
+            )),
+            elseBlock: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .greaterThan(
+                    lhs: .reference(variable: .variable(
+                        reference: .variable(name: .statesIndex)
+                    )),
+                    rhs: .cast(operation: .unsigned(expression: .reference(
+                        variable: .variable(reference: .variable(name: .targetStatesLastAddress))
+                    )))
+                ))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .addToStates)))
+                )),
+                elseBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .statesIndex)),
+                    value: .binary(operation: .addition(
+                        lhs: .reference(variable: .variable(
+                            reference: .variable(name: .statesIndex)
+                        )),
+                        rhs: .literal(value: .integer(value: 1))
+                    ))
+                ))
+            ))
+        ))
         let ifStatement = SynchronousBlock.ifStatement(block: .ifStatement(
             condition: .logical(operation: .and(
                 lhs: .conditional(condition: .comparison(value: .equality(
@@ -122,90 +187,7 @@ extension WhenCase {
                             )),
                             rhs: .literal(value: .bit(value: .high))
                         ))),
-                        ifBlock: .ifStatement(block: .ifElse(
-                            condition: .conditional(condition: .comparison(value: .greaterThan(
-                                lhs: .reference(variable: .variable(
-                                    reference: .variable(name: .statesIndex)
-                                )),
-                                rhs: .cast(operation: .unsigned(expression: .reference(
-                                    variable: .variable(reference: .variable(name: .targetStatesLastAddress))
-                                )))
-                            ))),
-                            ifBlock: .statement(statement: .assignment(
-                                name: .variable(reference: .variable(name: .internalState)),
-                                value: .reference(variable: .variable(
-                                    reference: .variable(name: .addToStates)
-                                ))
-                            )),
-                            elseBlock: .ifStatement(block: .ifElse(
-                                condition: .conditional(condition: .comparison(value: .equality(
-                                    lhs: .reference(variable: .variable(reference: .variable(
-                                        name: .targetStatesValueEn
-                                    ))),
-                                    rhs: .literal(value: .bit(value: .high))
-                                ))),
-                                ifBlock: .ifStatement(block: .ifElse(
-                                    condition: .conditional(condition: .comparison(value: .equality(
-                                        lhs: .reference(variable: .variable(
-                                            reference: .variable(name: .targetStatesValue)
-                                        )),
-                                        rhs: writeSnapshot.reducedEncoding(
-                                            for: .reference(variable: .indexed(
-                                                name: .reference(variable: .variable(
-                                                    reference: .variable(name: .ringlets)
-                                                )),
-                                                index: .index(value: .reference(
-                                                    variable: .variable(
-                                                        reference: .variable(name: .ringletIndex)
-                                                    )
-                                                ))
-                                            )),
-                                            offset: readBits,
-                                            ignoring: [.nextState]
-                                        )
-                                    ))),
-                                    ifBlock: .blocks(blocks: [
-                                        .statement(statement: .assignment(
-                                            name: .variable(reference: .variable(name: .statesIndex)),
-                                            value: .literal(value: .vector(value: .indexed(
-                                                values: IndexedVector(
-                                                    values: [
-                                                        IndexedValue(index: .others, value: .bit(value: .low))
-                                                    ]
-                                                )
-                                            )))
-                                        )),
-                                        .statement(statement: .assignment(
-                                            name: .variable(reference: .variable(name: .ringletIndex)),
-                                            value: .binary(operation: .addition(
-                                                lhs: .reference(variable: .variable(
-                                                    reference: .variable(name: .ringletIndex)
-                                                )),
-                                                rhs: .literal(value: .integer(value: 1))
-                                            ))
-                                        ))
-                                    ]),
-                                    elseBlock: .statement(statement: .assignment(
-                                        name: .variable(reference: .variable(name: .statesIndex)),
-                                        value: .binary(operation: .addition(
-                                            lhs: .reference(variable: .variable(
-                                                reference: .variable(name: .statesIndex)
-                                            )),
-                                            rhs: .literal(value: .integer(value: 1))
-                                        ))
-                                    ))
-                                )),
-                                elseBlock: .statement(statement: .assignment(
-                                    name: .variable(reference: .variable(name: .statesIndex)),
-                                    value: .binary(operation: .addition(
-                                        lhs: .reference(variable: .variable(
-                                            reference: .variable(name: .statesIndex)
-                                        )),
-                                        rhs: .literal(value: .integer(value: 1))
-                                    ))
-                                ))
-                            ))
-                        )),
+                        ifBlock: comparisonLogic,
                         elseBlock: .statement(statement: .assignment(
                             name: .variable(reference: .variable(name: .ringletIndex)),
                             value: .binary(operation: .addition(

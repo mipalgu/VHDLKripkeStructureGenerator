@@ -153,6 +153,9 @@ public extension VariableName {
     /// The `Ringlet_t` type.
     static let ringletType = VariableName(rawValue: "Ringlet_t")!
 
+    /// The `SetNextRinglet` constant.
+    static let setNextRinglet = VariableName(rawValue: "SetNextRinglet")!
+
     /// The `state` signal.
     static let state = VariableName(rawValue: "state")!
 

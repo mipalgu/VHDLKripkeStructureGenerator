@@ -342,7 +342,7 @@ final class StateGeneratorTests: XCTestCase {
             signal cacheRead: boolean;
             signal statesIndex: unsigned(3 downto 0);
             signal ringletIndex: integer range 0 to 1;
-            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex);
+            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex, SetNextRinglet);
             signal internalState: InitialGeneratorInternalState_t := Initial;
             signal genRead: boolean;
             signal genReady: std_logic;
@@ -475,15 +475,14 @@ final class StateGeneratorTests: XCTestCase {
                                 elsif (ringletIndex = 1) then
                                     internalState <= WaitForCacheToEnd;
                                 elsif (ringlets(ringletIndex)(7) = '1') then
-                                    if (statesIndex > unsigned(targetStateslastAddress)) then
-                                        internalState <= AddToStates;
-                                    elsif (targetStatesvalue_en = '1') then
+                                    if (targetStatesvalue_en = '1') then
                                         if (targetStatesvalue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
-                                            statesIndex <= (others => '0');
-                                            ringletIndex <= ringletIndex + 1;
+                                            internalState <= SetNextRinglet;
                                         else
                                             statesIndex <= statesIndex + 1;
                                         end if;
+                                    elsif (statesIndex > unsigned(targetStateslastAddress)) then
+                                        internalState <= AddToStates;
                                     else
                                         statesIndex <= statesIndex + 1;
                                     end if;
@@ -497,6 +496,12 @@ final class StateGeneratorTests: XCTestCase {
                             startCache <= '0';
                             targetStateswe <= '0';
                             targetStatesready <= '1';
+                        when SetNextRinglet =>
+                            ringletIndex <= ringletIndex + 1;
+                            statesIndex <= (others => '0');
+                            targetStateswe <= '0';
+                            targetStatesready <= '1';
+                            internalState <= CheckForDuplicates;
                         when AddToStates =>
                             targetStatesdata <= encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6);
                             targetStateswe <= '1';
