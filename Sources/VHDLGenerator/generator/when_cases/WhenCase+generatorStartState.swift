@@ -124,133 +124,32 @@ extension WhenCase {
         let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         let name = state.name.rawValue
         let types = writeSnapshot.types.filter { $0.name != .nextState }
-        var currentIndex = 0
         let statements = types.map {
-            let type = $0.type.signalType
-            let value: Expression
-            let bits: Int
-            if $0.name == .state {
-                let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true)!
-                value = Expression.reference(variable: .indexed(
-                    name: .reference(variable: .variable(reference: .variable(
-                        name: .currentTargetState
-                    ))),
-                    index: indexes
+            let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true, adding: 1)!
+            let value = Expression.reference(variable: .indexed(
+                name: .reference(variable: .variable(reference: .variable(name: .currentTargetState))),
+                index: indexes
+            ))
+            let bits = $0.type.bits
+            guard bits <= 1 else {
+                let type = SignalType.ranged(type: .stdLogicVector(
+                    size: .downto(
+                        upper: .literal(value: .integer(value: bits - 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    )
                 ))
-                bits = $0.type.bits
-            } else {
-                switch type {
-                case .stdLogic, .stdULogic:
-                    let indexes = VectorIndex.range(value: .downto(
-                        upper: .literal(value: .integer(value: currentIndex + 1)),
-                        lower: .literal(value: .integer(value: currentIndex))
-                    ))
-                    bits = 2
-                    value = Expression.reference(variable: .indexed(
-                        name: .reference(variable: .variable(reference: .variable(
-                            name: .currentTargetState
-                        ))),
-                        index: indexes
-                    ))
-                case .ranged(let rangedType):
-                    switch rangedType {
-                    case .stdLogicVector(let size):
-                        bits = size.size!
-                        let indexPairs = (0..<bits).map {
-                            ($0 * 2 + currentIndex, $0 * 2 + 1 + currentIndex)
-                        }
-                        let values = indexPairs.map {
-                            Expression.functionCall(call: .custom(function: CustomFunctionCall(
-                                name: .encodedToStdLogic,
-                                parameters: [
-                                    Argument(argument: .reference(variable: .indexed(
-                                        name: .reference(variable: .variable(reference: .variable(
-                                            name: .currentTargetState
-                                        ))),
-                                        index: .range(value: .downto(
-                                            upper: .literal(value: .integer(value: $1)),
-                                            lower: .literal(value: .integer(value: $0))
-                                        ))
-                                    )))
-                                ]
-                            )))
-                        }
-                        value = values.joined {
-                            .binary(operation: .concatenate(lhs: $0, rhs: $1))
-                        }
-                    case .stdULogicVector(let size):
-                        bits = size.size!
-                        let indexPairs = (0..<bits).map {
-                            ($0 * 2 + currentIndex, $0 * 2 + 1 + currentIndex)
-                        }
-                        let values = indexPairs.map {
-                            Expression.functionCall(call: .custom(function: CustomFunctionCall(
-                                name: .encodedToStdULogic,
-                                parameters: [
-                                    Argument(argument: .reference(variable: .indexed(
-                                        name: .reference(variable: .variable(reference: .variable(
-                                            name: .currentTargetState
-                                        ))),
-                                        index: .range(value: .downto(
-                                            upper: .literal(value: .integer(value: $1)),
-                                            lower: .literal(value: .integer(value: $0))
-                                        ))
-                                    )))
-                                ]
-                            )))
-                        }
-                        value = values.joined {
-                            .binary(operation: .concatenate(lhs: $0, rhs: $1))
-                        }
-                    default:
-                        let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true)!
-                        let rhs = Expression.reference(variable: .indexed(
-                            name: .reference(variable: .variable(reference: .variable(
-                                name: .currentTargetState
-                            ))),
-                            index: indexes
-                        ))
-                        bits = $0.type.bits
-                        if bits > 1 {
-                            let type = SignalType.ranged(type: .stdLogicVector(
-                                size: .downto(
-                                    upper: .literal(value: .integer(value: bits - 1)),
-                                    lower: .literal(value: .integer(value: 0))
-                                )
-                            ))
-                            value = type.conversion(value: rhs, to: $0.type.signalType)
-                        } else {
-                            value = SignalType.stdLogic.conversion(value: rhs, to: $0.type.signalType)
-                        }
-                    }
-                default:
-                    let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true)!
-                    let rhs = Expression.reference(variable: .indexed(
-                        name: .reference(variable: .variable(reference: .variable(
-                            name: .currentTargetState
-                        ))),
-                        index: indexes
-                    ))
-                    bits = $0.type.bits
-                    if bits > 1 {
-                        let type = SignalType.ranged(type: .stdLogicVector(
-                            size: .downto(
-                                upper: .literal(value: .integer(value: bits - 1)),
-                                lower: .literal(value: .integer(value: 0))
-                            )
-                        ))
-                        value = type.conversion(value: rhs, to: $0.type.signalType)
-                    } else {
-                        value = SignalType.stdLogic.conversion(value: rhs, to: $0.type.signalType)
-                    }
-                }
+                return SynchronousBlock.statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                    )),
+                    value: type.conversion(value: value, to: $0.type.signalType)
+                ))
             }
-            currentIndex += bits
             return SynchronousBlock.statement(statement: .assignment(
                 name: .variable(reference: .variable(
                     name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
                 )),
-                value: value
+                value: SignalType.stdLogic.conversion(value: value, to: $0.type.signalType)
             ))
         }
         self.init(
