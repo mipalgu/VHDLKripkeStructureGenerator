@@ -125,7 +125,7 @@ extension WhenCase {
         let name = state.name.rawValue
         let types = writeSnapshot.types.filter { $0.name != .nextState }
         let statements = types.map {
-            let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true, adding: 1)!
+            let indexes = writeSnapshot.bitsIndex(for: $0.name, isDownto: true, adding: 0)!
             let value = Expression.reference(variable: .indexed(
                 name: .reference(variable: .variable(reference: .variable(name: .currentTargetState))),
                 index: indexes

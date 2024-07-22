@@ -334,14 +334,14 @@ final class GeneratorTests: XCTestCase {
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '1';
                         when StartInitial =>
-                            Initialping <= encodedToStdLogic(currentTargetState(3 downto 2));
+                            Initialping <= currentTargetState(2);
                             InitialexecuteOnEntry <= stdLogicToBool(currentTargetState(0));
                             InitialReady <= '1';
                             currentState <= IncrementIndex;
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '0';
                         when StartWaitForPong =>
-                            WaitForPongping <= encodedToStdLogic(currentTargetState(3 downto 2));
+                            WaitForPongping <= currentTargetState(2);
                             WaitForPongexecuteOnEntry <= stdLogicToBool(currentTargetState(0));
                             WaitForPongReady <= '1';
                             currentState <= IncrementIndex;
