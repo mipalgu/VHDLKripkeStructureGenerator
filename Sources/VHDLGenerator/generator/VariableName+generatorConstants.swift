@@ -147,4 +147,7 @@ extension VariableName {
     /// The `VerifyFinished` constant.
     @usableFromInline static let verifyFinished = VariableName(rawValue: "VerifyFinished")!
 
+    /// The `WaitForRead` constant.
+    @usableFromInline static let waitForRead = VariableName(rawValue: "WaitForRead")!
+
 }

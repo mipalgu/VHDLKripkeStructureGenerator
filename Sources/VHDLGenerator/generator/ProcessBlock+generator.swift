@@ -121,7 +121,10 @@ extension ProcessBlock {
                 )))),
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                    cases: [initial, .generatorSetRead, .generatorResetRead, .generatorIncrementIndex, setJob]
+                    cases: [
+                        initial, .generatorSetRead, .generatorResetRead, .generatorIncrementIndex,
+                        .generatorWaitForRead, setJob
+                    ]
                         + stateInternals + [
                             WhenCase(sequentialGeneratorCheckIfFinishedFor: representation),
                             .sequentialGeneratorHasFinished,

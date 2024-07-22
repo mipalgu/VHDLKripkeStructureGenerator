@@ -1,4 +1,4 @@
-// WhenCase+generatorSetRead.swift
+// WhenCase+generatorWaitForRead.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -57,9 +57,9 @@ import VHDLParsing
 
 extension WhenCase {
 
-    @usableFromInline static let generatorSetRead = WhenCase(
+    @usableFromInline static let generatorWaitForRead = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
-            reference: .variable(name: .setRead)
+            reference: .variable(name: .waitForRead)
         ))),
         code: .blocks(blocks: [
             .statement(statement: .assignment(
@@ -70,15 +70,9 @@ extension WhenCase {
                 name: .variable(reference: .variable(name: .targetStatesReady0)),
                 value: .literal(value: .bit(value: .high))
             )),
-            .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .comparison(value: .equality(
-                    lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn0))),
-                    rhs: .literal(value: .bit(value: .high))
-                ))),
-                ifBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentState)),
-                    value: .reference(variable: .variable(reference: .variable(name: .waitForRead)))
-                ))
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentState)),
+                value: .reference(variable: .variable(reference: .variable(name: .setJob)))
             ))
         ])
     )

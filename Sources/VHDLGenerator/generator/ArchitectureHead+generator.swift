@@ -254,7 +254,8 @@ extension ArchitectureHead {
     init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
         let machine: Machine = representation.machine
         let constants: [VariableName] = [
-            .initial, .setRead, .resetRead, .incrementIndex, .setJob, .checkIfFinished, .hasFinished
+            .initial, .setRead, .resetRead, .incrementIndex, .setJob, .checkIfFinished, .hasFinished,
+            .waitForRead
         ]
         let stateInternals = machine.states.flatMap {
             [

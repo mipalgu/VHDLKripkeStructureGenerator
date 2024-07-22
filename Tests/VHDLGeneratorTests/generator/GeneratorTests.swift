@@ -106,7 +106,7 @@ final class GeneratorTests: XCTestCase {
         end PingMachineGenerator;
 
         architecture Behavioral of PingMachineGenerator is
-            type PingMachineGeneratorInternalState_t is (Initial, SetRead, ResetRead, IncrementIndex, SetJob, CheckIfFinished, HasFinished, StartInitial, ResetInitial, StartWaitForPong, ResetWaitForPong);
+            type PingMachineGeneratorInternalState_t is (Initial, SetRead, ResetRead, IncrementIndex, SetJob, CheckIfFinished, HasFinished, WaitForRead, StartInitial, ResetInitial, StartWaitForPong, ResetWaitForPong);
             signal currentState: PingMachineGeneratorInternalState_t := Initial;
             signal pendingStateIndex: unsigned(3 downto 0);
             signal currentTargetState: std_logic_vector(2 downto 0);
@@ -297,7 +297,7 @@ final class GeneratorTests: XCTestCase {
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '1';
                             if (targetStatesen0 = '1') then
-                                currentState <= SetJob;
+                                currentState <= WaitForRead;
                             end if;
                         when ResetRead =>
                             targetStateswe0 <= '0';
@@ -310,6 +310,10 @@ final class GeneratorTests: XCTestCase {
                             targetStatesready0 <= '0';
                             pendingStateIndex <= pendingStateIndex + 1;
                             currentState <= ResetRead;
+                        when WaitForRead =>
+                            targetStateswe0 <= '0';
+                            targetStatesready0 <= '1';
+                            currentState <= SetJob;
                         when SetJob =>
                             if (targetStatesen0 = '1') then
                                 if (targetStatesvalue_en = '1' and targetStatesaddress0 <= targetStateslastAddress) then
