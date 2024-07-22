@@ -103,7 +103,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
                 let kripkeGenerator = VHDLFile(stateKripkeGeneratorFor: $0, in: representation),
                 let runner = VHDLFile(stateRunnerFor: $0, in: representation),
                 let cache = VHDLFile(ringletCacheFor: $0, in: representation),
-                let stateGenerator = VHDLFile(sequentialStateGeneratorFor: $0, in: representation)
+                let stateGenerator = VHDLFile(stateGeneratorFor: $0, in: representation)
             else {
                 return nil
             }
