@@ -156,6 +156,9 @@ public extension VariableName {
     /// The `SetNextRinglet` constant.
     static let setNextRinglet = VariableName(rawValue: "SetNextRinglet")!
 
+    /// The `SetNextTargetState` constant.
+    static let setNextTargetState = VariableName(rawValue: "SetNextTargetState")!
+
     /// The `state` signal.
     static let state = VariableName(rawValue: "state")!
 
@@ -212,6 +215,9 @@ public extension VariableName {
 
     /// The `WaitForNewData` type.
     static let waitForNewDataType = VariableName(rawValue: "WaitForNewData")!
+
+    /// The `WaitForRead` constant.
+    static let waitForRead = VariableName(rawValue: "WaitForRead")!
 
     /// The `WriteSnapshot_t` type.
     static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
