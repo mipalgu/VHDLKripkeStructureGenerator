@@ -342,7 +342,7 @@ final class StateGeneratorTests: XCTestCase {
             signal cacheRead: boolean;
             signal statesIndex: unsigned(3 downto 0);
             signal ringletIndex: integer range 0 to 1;
-            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex, SetNextTargetState, SetNextRinglet, WaitForRead);
+            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex, SetNextTargetState, SetNextRinglet, WaitForRead, WaitForReadEnable);
             signal internalState: InitialGeneratorInternalState_t := Initial;
             signal genRead: boolean;
             signal genReady: std_logic;
@@ -455,7 +455,7 @@ final class StateGeneratorTests: XCTestCase {
                             targetStateswe <= '0';
                         when WaitForCacheToStart =>
                             if (cacheBusy = '1') then
-                                internalState <= WaitForRead;
+                                internalState <= WaitForReadEnable;
                                 startCache <= '0';
                                 statesIndex <= (others => '0');
                                 ringletIndex <= 0;
@@ -468,6 +468,12 @@ final class StateGeneratorTests: XCTestCase {
                             busy <= '1';
                             cacheRead <= false;
                             targetStateswe <= '0';
+                        when WaitForReadEnable =>
+                            targetStateswe <= '0';
+                            targetStatesready <= '1';
+                            if (targetStatesen = '1') then
+                                internalState <= WaitForRead;
+                            end if;
                         when CheckForDuplicates =>
                             if (targetStatesen = '1' and targetStatesbusy = '0') then
                                 if (statesIndex = 12) then

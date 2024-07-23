@@ -144,7 +144,7 @@ extension ArchitectureHead {
                 nonEmptyValues: [
                     .initial, .checkForJob, .waitForRunnerToStart, .waitForRunnerToFinish,
                     .waitForCacheToStart, .waitForCacheToEnd, .checkForDuplicates, .error, .addToStates,
-                    .resetStateIndex, .setNextTargetState, .setNextRinglet, .waitForRead
+                    .resetStateIndex, .setNextTargetState, .setNextRinglet, .waitForRead, .waitForReadEnable
                 ]
             ),
             let addressBits = BitLiteral.bitsRequired(for: representation.machine.numberOfTargetStates)

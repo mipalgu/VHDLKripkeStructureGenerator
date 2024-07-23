@@ -116,6 +116,7 @@ extension ProcessBlock {
                         .sequentialStateGeneratorWaitForRunnerToStart,
                         .sequentialStateGeneratorWaitForRunnerToFinish,
                         .sequentialStateGeneratorWaitForCacheToStart,
+                        .stateGeneratorWaitForReadEnable,
                         checkForDuplicates,
                         .stateGeneratorSetNextTargetState,
                         .stateGeneratorWaitForRead,
