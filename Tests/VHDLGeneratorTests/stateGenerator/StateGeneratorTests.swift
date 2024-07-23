@@ -342,7 +342,7 @@ final class StateGeneratorTests: XCTestCase {
             signal cacheRead: boolean;
             signal statesIndex: unsigned(3 downto 0);
             signal ringletIndex: integer range 0 to 1;
-            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex, SetNextRinglet);
+            type InitialGeneratorInternalState_t is (Initial, CheckForJob, WaitForRunnerToStart, WaitForRunnerToFinish, WaitForCacheToStart, WaitForCacheToEnd, CheckForDuplicates, Error, AddToStates, ResetStateIndex, SetNextTargetState, SetNextRinglet, WaitForRead);
             signal internalState: InitialGeneratorInternalState_t := Initial;
             signal genRead: boolean;
             signal genReady: std_logic;
@@ -455,7 +455,7 @@ final class StateGeneratorTests: XCTestCase {
                             targetStateswe <= '0';
                         when WaitForCacheToStart =>
                             if (cacheBusy = '1') then
-                                internalState <= CheckForDuplicates;
+                                internalState <= WaitForRead;
                                 startCache <= '0';
                                 statesIndex <= (others => '0');
                                 ringletIndex <= 0;
@@ -479,15 +479,15 @@ final class StateGeneratorTests: XCTestCase {
                                         if (targetStatesvalue = encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6)) then
                                             internalState <= SetNextRinglet;
                                         else
-                                            statesIndex <= statesIndex + 1;
+                                            internalState <= SetNextTargetState;
                                         end if;
                                     elsif (statesIndex > unsigned(targetStateslastAddress)) then
                                         internalState <= AddToStates;
                                     else
-                                        statesIndex <= statesIndex + 1;
+                                        internalState <= SetNextTargetState;
                                     end if;
                                 else
-                                    ringletIndex <= ringletIndex + 1;
+                                    internalState <= SetNextRinglet;
                                 end if;
                             end if;
                             busy <= '1';
@@ -496,12 +496,21 @@ final class StateGeneratorTests: XCTestCase {
                             startCache <= '0';
                             targetStateswe <= '0';
                             targetStatesready <= '1';
+                        when SetNextTargetState =>
+                            statesIndex <= statesIndex + 1;
+                            targetStateswe <= '0';
+                            targetStatesready <= '1';
+                            internalState <= WaitForRead;
+                        when WaitForRead =>
+                            targetStateswe <= '0';
+                            targetStatesready <= '1';
+                            internalState <= CheckForDuplicates;
                         when SetNextRinglet =>
                             ringletIndex <= ringletIndex + 1;
                             statesIndex <= (others => '0');
                             targetStateswe <= '0';
                             targetStatesready <= '1';
-                            internalState <= CheckForDuplicates;
+                            internalState <= WaitForRead;
                         when AddToStates =>
                             targetStatesdata <= encodedToStdLogic(ringlets(ringletIndex)(3 to 4)) & ringlets(ringletIndex)(5) & ringlets(ringletIndex)(6);
                             targetStateswe <= '1';
@@ -531,7 +540,7 @@ final class StateGeneratorTests: XCTestCase {
                             cacheRead <= false;
                             startGeneration <= '0';
                             startCache <= '0';
-                            internalState <= CheckForDuplicates;
+                            internalState <= WaitForRead;
                         when others =>
                             null;
                     end case;

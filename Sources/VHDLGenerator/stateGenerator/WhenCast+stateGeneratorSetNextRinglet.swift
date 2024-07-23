@@ -86,7 +86,7 @@ extension WhenCase {
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .internalState)),
-                value: .reference(variable: .variable(reference: .variable(name: .checkForDuplicates)))
+                value: .reference(variable: .variable(reference: .variable(name: .waitForRead)))
             ))
         ])
     )

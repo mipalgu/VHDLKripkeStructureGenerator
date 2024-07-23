@@ -1,4 +1,4 @@
-// WhenCase+stateGeneratorResetStateIndex.swift
+// WhenCase+stateGeneratorSetNextTargetState.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,44 +53,30 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Utilities
 import VHDLParsing
 
 extension WhenCase {
 
-    @usableFromInline static let stateGeneratorResetStateIndex = WhenCase(
-        condition: .expression(expression: .reference(variable: .variable(reference: .variable(
-            name: .resetStateIndex
-        )))),
+    @usableFromInline static let stateGeneratorSetNextTargetState = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .setNextTargetState)
+        ))),
         code: .blocks(blocks: [
             .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .targetStatesReady)),
-                value: .literal(value: .bit(value: .high))
+                name: .variable(reference: .variable(name: .statesIndex)),
+                value: .binary(operation: .addition(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .statesIndex))),
+                    rhs: .literal(value: .integer(value: 1))
+                ))
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .targetStatesWe)),
                 value: .literal(value: .bit(value: .low))
             )),
             .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .statesIndex)),
-                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                ))))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .busy)),
+                name: .variable(reference: .variable(name: .targetStatesReady)),
                 value: .literal(value: .bit(value: .high))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .cacheRead)),
-                value: .literal(value: .boolean(value: false))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .startGeneration)),
-                value: .literal(value: .bit(value: .low))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .startCache)),
-                value: .literal(value: .bit(value: .low))
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .internalState)),

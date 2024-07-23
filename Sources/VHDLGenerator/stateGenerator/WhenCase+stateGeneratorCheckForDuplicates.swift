@@ -108,13 +108,8 @@ extension WhenCase {
                     value: .reference(variable: .variable(reference: .variable(name: .setNextRinglet)))
                 )),
                 elseBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .statesIndex)),
-                    value: .binary(operation: .addition(
-                        lhs: .reference(variable: .variable(
-                            reference: .variable(name: .statesIndex)
-                        )),
-                        rhs: .literal(value: .integer(value: 1))
-                    ))
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .setNextTargetState)))
                 ))
             )),
             elseBlock: .ifStatement(block: .ifElse(
@@ -131,13 +126,8 @@ extension WhenCase {
                     value: .reference(variable: .variable(reference: .variable(name: .addToStates)))
                 )),
                 elseBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .statesIndex)),
-                    value: .binary(operation: .addition(
-                        lhs: .reference(variable: .variable(
-                            reference: .variable(name: .statesIndex)
-                        )),
-                        rhs: .literal(value: .integer(value: 1))
-                    ))
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .setNextTargetState)))
                 ))
             ))
         ))
@@ -189,13 +179,10 @@ extension WhenCase {
                         ))),
                         ifBlock: comparisonLogic,
                         elseBlock: .statement(statement: .assignment(
-                            name: .variable(reference: .variable(name: .ringletIndex)),
-                            value: .binary(operation: .addition(
-                                lhs: .reference(variable: .variable(
-                                    reference: .variable(name: .ringletIndex)
-                                )),
-                                rhs: .literal(value: .integer(value: 1))
-                            ))
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(reference: .variable(
+                                name: .setNextRinglet
+                            )))
                         ))
                     ))
                 ))
