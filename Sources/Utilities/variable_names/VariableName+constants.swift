@@ -135,8 +135,14 @@ public extension VariableName {
     /// The `readCache` signal.
     static let readCache = VariableName(rawValue: "readCache")!
 
+    /// The `readEnable` signal.
+    static let readEnable = VariableName(rawValue: "readEnable")!
+
     /// The `ReadSnapshot_t` type.
     static let readSnapshotType = VariableName(rawValue: "ReadSnapshot_t")!
+
+    /// The `readValue` signal.
+    static let readValue = VariableName(rawValue: "readValue")!
 
     /// The `remainder` signal.
     static let remainder = VariableName(rawValue: "remainder")!

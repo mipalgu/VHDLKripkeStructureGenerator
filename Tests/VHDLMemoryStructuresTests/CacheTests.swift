@@ -109,6 +109,8 @@ final class CacheTests: XCTestCase {
             signal readCache: TargetStatesCacheCache_t;
             signal result: std_logic_vector(3 downto 0);
             signal remainder: std_logic_vector(3 downto 0);
+            signal readValue: integer range 0 to 3;
+            signal readEnable: integer range 0 to 3;
             signal unsignedLastAddress: unsigned(3 downto 0);
             signal currentIndex: unsigned(3 downto 0);
             type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, IncrementIndex, ResetEnables, Error);
@@ -198,12 +200,19 @@ final class CacheTests: XCTestCase {
                 do => currentValue
             );
             memoryAddress <= "0000000000000000000000000000" & result;
-            value <= readCache(to_integer(unsigned(remainder)));
-            value_en <= readEnables(to_integer(unsigned(remainder)));
+            value <= readCache(readValue);
+            value_en <= readEnables(readEnable);
             index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
             genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
             lastAddress <= std_logic_vector(unsignedLastAddress);
             currentIndex <= resize(to_unsigned(memoryIndex, 4) * 4, 4) + to_unsigned(cacheIndex, 4);
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    readValue <= to_integer(unsigned(result));
+                    readEnable <= to_integer(unsigned(remainder));
+                end if;
+            end process;
             process(clk)
             begin
                 if (rising_edge(clk)) then

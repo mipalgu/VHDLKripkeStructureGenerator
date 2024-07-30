@@ -235,28 +235,18 @@ extension AsynchronousBlock {
                 name: .variable(reference: .variable(name: .value)),
                 value: .expression(value: .reference(variable: .indexed(
                     name: .reference(variable: .variable(reference: .variable(name: .readCache))),
-                    index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
-                        name: .toInteger,
-                        parameters: [
-                            Argument(argument: .cast(operation: .unsigned(expression: .reference(
-                                variable: .variable(reference: .variable(name: .remainder))
-                            ))))
-                        ]
-                    ))))
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: .readValue)
+                    )))
                 )))
             )),
             .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .valueEn)),
                 value: .expression(value: .reference(variable: .indexed(
                     name: .reference(variable: .variable(reference: .variable(name: .readEnables))),
-                    index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
-                        name: .toInteger,
-                        parameters: [
-                            Argument(argument: .cast(operation: .unsigned(expression: .reference(
-                                variable: .variable(reference: .variable(name: .remainder))
-                            ))))
-                        ]
-                    ))))
+                    index: .index(value: .reference(variable: .variable(
+                        reference: .variable(name: .readEnable)
+                    )))
                 )))
             )),
             .statement(statement: .assignment(
@@ -343,7 +333,41 @@ extension AsynchronousBlock {
                 )))
             ))
         ]
-        self = .blocks(blocks: components + statements + [.process(block: process)])
+        let readProcess = ProcessBlock(
+            sensitivityList: [.clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: .clk))
+                )))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .readValue)),
+                        value: .functionCall(call: .custom(function: CustomFunctionCall(
+                            name: .toInteger,
+                            parameters: [
+                                Argument(argument: .cast(operation: .unsigned(expression: .reference(
+                                    variable: .variable(reference: .variable(name: .result))
+                                ))))
+                            ]
+                        )))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .readEnable)),
+                        value: .functionCall(call: .custom(function: CustomFunctionCall(
+                            name: .toInteger,
+                            parameters: [
+                                Argument(argument: .cast(operation: .unsigned(expression: .reference(
+                                    variable: .variable(reference: .variable(name: .remainder))
+                                ))))
+                            ]
+                        )))
+                    ))
+                ])
+            ))
+        )
+        self = .blocks(
+            blocks: components + statements + [.process(block: readProcess), .process(block: process)]
+        )
     }
 
     // swiftlint:enable force_unwrapping

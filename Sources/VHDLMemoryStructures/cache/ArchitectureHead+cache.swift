@@ -179,6 +179,12 @@ extension ArchitectureHead {
                 type: addressType, name: .remainder
             ))),
             .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: arraySize)), name: .readValue
+            ))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: arraySize)), name: .readEnable
+            ))),
+            .definition(value: .signal(value: LocalSignal(
                 type: unsignedAddressType, name: .unsignedLastAddress
             ))),
             .definition(value: .signal(value: LocalSignal(
