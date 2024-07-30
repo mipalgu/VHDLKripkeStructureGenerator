@@ -366,7 +366,7 @@ final class GeneratorTests: XCTestCase {
                             targetStateswe0 <= '0';
                             targetStatesready0 <= '0';
                         when CheckIfFinished =>
-                            if (InitialBusy = '0' and WaitForPongBusy = '0' and targetStatesvalue_en = '0' and targetStatesen0 = '1') then
+                            if (InitialBusy = '0' and WaitForPongBusy = '0' and targetStatesvalue_en /= '1' and targetStatesen0 = '1') then
                                 currentState <= HasFinished;
                             else
                                 currentState <= ResetRead;

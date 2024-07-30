@@ -168,9 +168,9 @@ extension WhenCase {
             )))
         }
         let otherConditionals = [
-            Expression.conditional(condition: .comparison(value: .equality(
+            Expression.conditional(condition: .comparison(value: .notEquals(
                 lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesValueEn))),
-                rhs: .literal(value: .bit(value: .low))
+                rhs: .literal(value: .bit(value: .high))
             ))),
             Expression.conditional(condition: .comparison(value: .equality(
                 lhs: .reference(variable: .variable(reference: .variable(name: .targetStatesEn0))),
