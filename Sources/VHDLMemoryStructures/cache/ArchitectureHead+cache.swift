@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Foundation
 import Utilities
 import VHDLParsing
 
@@ -71,7 +72,7 @@ extension ArchitectureHead {
             fatalError("Large element sizes are currently not supported!")
         }
         let encodedSize = size + 1
-        let elementsPerAddress = 31 / encodedSize
+        let elementsPerAddress = Int(exp2(log2(Double(31 / encodedSize)).rounded(.down)).rounded())
         let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
             ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
         let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
@@ -156,14 +157,11 @@ extension ArchitectureHead {
             upper: .literal(value: .integer(value: addressBits - 1)),
             lower: .literal(value: .integer(value: 0))
         )))
+        let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: addressBits - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
         guard
-            let denominatorConstant = ConstantSignal(
-                name: .denominator,
-                type: unsignedAddressType,
-                value: .literal(value: .vector(value: .bits(value: BitVector(
-                    values: BitLiteral.bitVersion(of: elementsPerAddress, bitsRequired: addressBits)
-                ))))
-            ),
             let internalStateType = EnumerationDefinition(
                 name: internalType,
                 nonEmptyValues: [
@@ -175,14 +173,10 @@ extension ArchitectureHead {
         }
         let dividerTypes = [
             HeadStatement.definition(value: .signal(value: LocalSignal(
-                type: unsignedAddressType, name: .unsignedAddress
-            ))),
-            .definition(value: .constant(value: denominatorConstant)),
-            .definition(value: .signal(value: LocalSignal(
-                type: unsignedAddressType, name: .result
+                type: addressType, name: .result
             ))),
             .definition(value: .signal(value: LocalSignal(
-                type: unsignedAddressType, name: .remainder
+                type: addressType, name: .remainder
             ))),
             .definition(value: .signal(value: LocalSignal(
                 type: unsignedAddressType, name: .unsignedLastAddress
@@ -198,7 +192,9 @@ extension ArchitectureHead {
             )))
         ]
         let components = [encoder, decoder, divider, bram].map {
-            HeadStatement.definition(value: .component(value: ComponentDefinition(entity: $0)))
+            HeadStatement.definition(value: .component(
+                value: ComponentDefinition(entity: $0)
+            ))
         }
         self.init(
             statements: cacheSignals + ramSignals + expanderTypes + decoderTypes + dividerTypes

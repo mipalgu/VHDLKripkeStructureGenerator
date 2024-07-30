@@ -93,24 +93,22 @@ final class CacheTests: XCTestCase {
         end TargetStatesCache;
 
         architecture Behavioral of TargetStatesCache is
-            type TargetStatesCacheCache_t is array (0 to 6) of std_logic_vector(2 downto 0);
+            type TargetStatesCacheCache_t is array (0 to 3) of std_logic_vector(2 downto 0);
             signal cache: TargetStatesCacheCache_t;
-            signal cacheIndex: integer range 0 to 6;
-            signal memoryIndex: integer range 0 to 2;
+            signal cacheIndex: integer range 0 to 3;
+            signal memoryIndex: integer range 0 to 3;
             signal genIndex: std_logic_vector(31 downto 0);
             signal di: std_logic_vector(31 downto 0);
             signal index: std_logic_vector(31 downto 0);
             signal weBRAM: std_logic;
             signal currentValue: std_logic_vector(31 downto 0);
             signal memoryAddress: std_logic_vector(31 downto 0);
-            type TargetStatesCacheEnables_t is array (0 to 6) of std_logic;
+            type TargetStatesCacheEnables_t is array (0 to 3) of std_logic;
             signal enables: TargetStatesCacheEnables_t;
             signal readEnables: TargetStatesCacheEnables_t;
             signal readCache: TargetStatesCacheCache_t;
-            signal unsignedAddress: unsigned(3 downto 0);
-            constant denominator: unsigned(3 downto 0) := "0111";
-            signal result: unsigned(3 downto 0);
-            signal remainder: unsigned(3 downto 0);
+            signal result: std_logic_vector(3 downto 0);
+            signal remainder: std_logic_vector(3 downto 0);
             signal unsignedLastAddress: unsigned(3 downto 0);
             signal currentIndex: unsigned(3 downto 0);
             type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, IncrementIndex, ResetEnables, Error);
@@ -125,12 +123,6 @@ final class CacheTests: XCTestCase {
                     in2en: in std_logic;
                     in3: in std_logic_vector(2 downto 0);
                     in3en: in std_logic;
-                    in4: in std_logic_vector(2 downto 0);
-                    in4en: in std_logic;
-                    in5: in std_logic_vector(2 downto 0);
-                    in5en: in std_logic;
-                    in6: in std_logic_vector(2 downto 0);
-                    in6en: in std_logic;
                     data: out std_logic_vector(31 downto 0)
                 );
             end component;
@@ -144,22 +136,17 @@ final class CacheTests: XCTestCase {
                     out2: out std_logic_vector(2 downto 0);
                     out2en: out std_logic;
                     out3: out std_logic_vector(2 downto 0);
-                    out3en: out std_logic;
-                    out4: out std_logic_vector(2 downto 0);
-                    out4en: out std_logic;
-                    out5: out std_logic_vector(2 downto 0);
-                    out5en: out std_logic;
-                    out6: out std_logic_vector(2 downto 0);
-                    out6en: out std_logic
+                    out3en: out std_logic
                 );
             end component;
             component TargetStatesCacheDivider is
+                generic(
+                    divisor: integer range 0 to 4
+                );
                 port(
-                    clk: in std_logic;
-                    numerator: in unsigned(3 downto 0);
-                    denominator: in unsigned(3 downto 0);
-                    result: out unsigned(3 downto 0);
-                    remainder: out unsigned(3 downto 0)
+                    numerator: in std_logic_vector(3 downto 0);
+                    result: out std_logic_vector(3 downto 0);
+                    remainder: out std_logic_vector(3 downto 0)
                 );
             end component;
             component TargetStatesCacheBRAM is
@@ -181,12 +168,6 @@ final class CacheTests: XCTestCase {
                 in2en => enables(2),
                 in3 => cache(3),
                 in3en => enables(3),
-                in4 => cache(4),
-                in4en => enables(4),
-                in5 => cache(5),
-                in5en => enables(5),
-                in6 => cache(6),
-                in6en => enables(6),
                 data => di
             );
             TargetStatesCacheDecoder_inst: component TargetStatesCacheDecoder port map (
@@ -199,17 +180,11 @@ final class CacheTests: XCTestCase {
                 out2en => readEnables(2),
                 out3 => readCache(3),
                 out3en => readEnables(3),
-                out4 => readCache(4),
-                out4en => readEnables(4),
-                out5 => readCache(5),
-                out5en => readEnables(5),
-                out6 => readCache(6),
-                out6en => readEnables(6)
             );
-            TargetStatesCacheDivider_inst: component TargetStatesCacheDivider port map (
-                clk => clk,
-                numerator => unsignedAddress,
-                denominator => denominator,
+            TargetStatesCacheDivider_inst: component TargetStatesCacheDivider generic map (
+                divisor => 2
+            ) port map (
+                numerator => address,
                 result => result,
                 remainder => remainder
             );
@@ -220,14 +195,13 @@ final class CacheTests: XCTestCase {
                 di => di,
                 do => currentValue
             );
-            unsignedAddress <= unsigned(address);
             memoryAddress <= "0000000000000000000000000000" & std_logic_vector(result);
-            value <= readCache(to_integer(remainder));
-            value_en <= readEnables(to_integer(remainder));
+            value <= readCache(to_integer(unsigned(remainder)));
+            value_en <= readEnables(to_integer(unsigned(remainder)));
             index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
             genIndex <= std_logic_vector(to_unsigned(memoryIndex, 32));
             lastAddress <= std_logic_vector(unsignedLastAddress);
-            currentIndex <= resize(to_unsigned(memoryIndex, 4) * denominator, 4) + to_unsigned(cacheIndex, 4);
+            currentIndex <= resize(to_unsigned(memoryIndex, 4) * 4, 4) + to_unsigned(cacheIndex, 4);
             process(clk)
             begin
                 if (rising_edge(clk)) then
