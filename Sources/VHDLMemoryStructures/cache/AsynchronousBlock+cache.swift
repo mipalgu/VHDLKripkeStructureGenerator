@@ -245,7 +245,7 @@ extension AsynchronousBlock {
                 value: .expression(value: .reference(variable: .indexed(
                     name: .reference(variable: .variable(reference: .variable(name: .readEnables))),
                     index: .index(value: .reference(variable: .variable(
-                        reference: .variable(name: .readEnable)
+                        reference: .variable(name: .readValue)
                     )))
                 )))
             )),
@@ -339,30 +339,17 @@ extension AsynchronousBlock {
                 condition: .conditional(condition: .edge(value: .rising(expression: .reference(
                     variable: .variable(reference: .variable(name: .clk))
                 )))),
-                ifBlock: .blocks(blocks: [
-                    .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: .readValue)),
-                        value: .functionCall(call: .custom(function: CustomFunctionCall(
-                            name: .toInteger,
-                            parameters: [
-                                Argument(argument: .cast(operation: .unsigned(expression: .reference(
-                                    variable: .variable(reference: .variable(name: .result))
-                                ))))
-                            ]
-                        )))
-                    )),
-                    .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: .readEnable)),
-                        value: .functionCall(call: .custom(function: CustomFunctionCall(
-                            name: .toInteger,
-                            parameters: [
-                                Argument(argument: .cast(operation: .unsigned(expression: .reference(
-                                    variable: .variable(reference: .variable(name: .remainder))
-                                ))))
-                            ]
-                        )))
-                    ))
-                ])
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .readValue)),
+                    value: .functionCall(call: .custom(function: CustomFunctionCall(
+                        name: .toInteger,
+                        parameters: [
+                            Argument(argument: .cast(operation: .unsigned(expression: .reference(
+                                variable: .variable(reference: .variable(name: .remainder))
+                            ))))
+                        ]
+                    )))
+                ))
             ))
         )
         self = .blocks(
