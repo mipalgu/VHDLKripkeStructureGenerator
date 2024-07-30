@@ -179,15 +179,17 @@ final class CacheTests: XCTestCase {
                 out2 => readCache(2),
                 out2en => readEnables(2),
                 out3 => readCache(3),
-                out3en => readEnables(3),
+                out3en => readEnables(3)
             );
-            TargetStatesCacheDivider_inst: component TargetStatesCacheDivider generic map (
-                divisor => 2
-            ) port map (
-                numerator => address,
-                result => result,
-                remainder => remainder
-            );
+            TargetStatesCacheDivider_inst: component TargetStatesCacheDivider
+                generic map (
+                    divisor => 2
+                )
+                port map (
+                    numerator => address,
+                    result => result,
+                    remainder => remainder
+                );
             TargetStatesCacheBRAM_inst: component TargetStatesCacheBRAM port map (
                 clk => clk,
                 we => weBRAM,
@@ -195,7 +197,7 @@ final class CacheTests: XCTestCase {
                 di => di,
                 do => currentValue
             );
-            memoryAddress <= "0000000000000000000000000000" & std_logic_vector(result);
+            memoryAddress <= "0000000000000000000000000000" & result;
             value <= readCache(to_integer(unsigned(remainder)));
             value_en <= readEnables(to_integer(unsigned(remainder)));
             index <= memoryAddress when ready = '1' and we /= '1' and internalState = WaitForNewData else genIndex;
@@ -229,10 +231,10 @@ final class CacheTests: XCTestCase {
                             end if;
                             weBRAM <= '0';
                         when WriteElement =>
-                            if (memoryIndex = 2) then
+                            if (memoryIndex = 3) then
                                 internalState <= Error;
                                 weBRAM <= '0';
-                            elsif (cacheIndex = 6) then
+                            elsif (cacheIndex = 3) then
                                 weBRAM <= '1';
                                 internalState <= ResetEnables;
                                 if (unsignedLastAddress < currentIndex) then

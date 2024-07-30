@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Foundation
 import Utilities
 import VHDLParsing
 
@@ -356,7 +357,7 @@ extension WhenCase {
             fatalError("Currently cannot support element sizes greater than 31 bits")
         }
         let encodedSize = size + 1
-        let elementsPerAddress = 31 / encodedSize
+        let elementsPerAddress = Int(exp2(log2(Double(31 / encodedSize)).rounded(.down)).rounded())
         let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
             ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
         self.init(

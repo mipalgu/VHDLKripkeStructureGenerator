@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Foundation
 import Utilities
 import VHDLParsing
 
@@ -86,7 +87,8 @@ extension AsynchronousBlock {
             return nil
         }
         let encodedSize = size + 1
-        let elementsPerAddress = 31 / encodedSize
+        let divisor = log2(Double(31 / encodedSize)).rounded(.down)
+        let elementsPerAddress = Int(exp2(divisor).rounded())
         let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
         guard addressBits <= 32 else {
             fatalError("The number of addresses in \(name.rawValue) exceeds a 32-bit resolution!")
@@ -149,19 +151,9 @@ extension AsynchronousBlock {
         ))
         let dividerMappings = [
             VariableMap(
-                lhs: .variable(reference: .variable(name: .clk)),
-                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .clk))))
-            ),
-            VariableMap(
                 lhs: .variable(reference: .variable(name: .numerator)),
                 rhs: .expression(value: .reference(
-                    variable: .variable(reference: .variable(name: .unsignedAddress))
-                ))
-            ),
-            VariableMap(
-                lhs: .variable(reference: .variable(name: .denominator)),
-                rhs: .expression(value: .reference(
-                    variable: .variable(reference: .variable(name: .denominator))
+                    variable: .variable(reference: .variable(name: .address))
                 ))
             ),
             VariableMap(
@@ -180,7 +172,13 @@ extension AsynchronousBlock {
         let dividerInstantiation = AsynchronousBlock.component(block: ComponentInstantiation(
             label: dividerInst,
             name: divider,
-            port: PortMap(variables: dividerMappings)
+            port: PortMap(variables: dividerMappings),
+            generic: GenericMap(variables: [
+                GenericVariableMap(
+                    lhs: .variable(reference: .variable(name: .divisor)),
+                    rhs: .literal(value: .integer(value: Int(divisor)))
+                )
+            ])
         ))
         let bramMappings = [
             VariableMap(
@@ -221,9 +219,7 @@ extension AsynchronousBlock {
         ))
         let components = [encoderInstantiation, decoderInstantiation, dividerInstantiation, bramInstantiation]
         let padding = 32 - addressBits
-        let resultsCast = Expression.cast(operation: .stdLogicVector(
-            expression: .reference(variable: .variable(reference: .variable(name: .result)))
-        ))
+        let resultsCast = Expression.reference(variable: .variable(reference: .variable(name: .result)))
         let memoryAddress: Expression = padding == 0 ? resultsCast : .binary(operation: .concatenate(
             lhs: .literal(value: .vector(value: .bits(value: BitVector(
                 values: [BitLiteral](repeating: .low, count: padding)
@@ -232,12 +228,6 @@ extension AsynchronousBlock {
         ))
         let statements = [
             AsynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .unsignedAddress)),
-                value: .expression(value: .cast(operation: .unsigned(
-                    expression: .reference(variable: .variable(reference: .variable(name: .address)))
-                )))
-            )),
-            .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .memoryAddress)),
                 value: .expression(value: memoryAddress)
             )),
@@ -248,9 +238,9 @@ extension AsynchronousBlock {
                     index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
                         name: .toInteger,
                         parameters: [
-                            Argument(argument: .reference(
+                            Argument(argument: .cast(operation: .unsigned(expression: .reference(
                                 variable: .variable(reference: .variable(name: .remainder))
-                            ))
+                            ))))
                         ]
                     ))))
                 )))
@@ -262,9 +252,9 @@ extension AsynchronousBlock {
                     index: .index(value: .functionCall(call: .custom(function: CustomFunctionCall(
                         name: .toInteger,
                         parameters: [
-                            Argument(argument: .reference(
+                            Argument(argument: .cast(operation: .unsigned(expression: .reference(
                                 variable: .variable(reference: .variable(name: .remainder))
-                            ))
+                            ))))
                         ]
                     ))))
                 )))
@@ -335,9 +325,7 @@ extension AsynchronousBlock {
                                             Argument(argument: .literal(value: .integer(value: addressBits)))
                                         ]
                                     ))),
-                                    rhs: .reference(variable: .variable(
-                                        reference: .variable(name: .denominator)
-                                    ))
+                                    rhs: .literal(value: .integer(value: elementsPerAddress))
                                 ))
                             ),
                             Argument(argument: .literal(value: .integer(value: addressBits)))
