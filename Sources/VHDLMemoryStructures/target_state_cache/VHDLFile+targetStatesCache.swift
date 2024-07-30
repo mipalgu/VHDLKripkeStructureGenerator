@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Foundation
 import Utilities
 import VHDLMachines
 import VHDLParsing
@@ -79,7 +80,9 @@ extension VHDLFile {
             return nil
         }
         let numberOfElements = representation.machine.numberOfTargetStates
-        let elementsPerAddress = 31 / representation.machine.targetStateBits
+        let elementsPerAddress = Int(
+            exp2(log2(Double(31 / representation.machine.targetStateBits)).rounded(.down)).rounded()
+        )
         let numberOfAddresses = numberOfElements.isMultiple(of: elementsPerAddress)
             ? numberOfElements / elementsPerAddress : numberOfElements / elementsPerAddress + 1
         self.init(bramName: name, numberOfAddresses: numberOfAddresses)
@@ -94,7 +97,7 @@ extension VHDLFile {
             return nil
         }
         let encodedSize = representation.machine.targetStateBits
-        let numberOfElements = 31 / encodedSize
+        let numberOfElements = Int(exp2(log2(Double(31 / encodedSize)).rounded(.down)).rounded())
         let elementSize = encodedSize - 1
         self.init(encoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
     }
@@ -108,7 +111,7 @@ extension VHDLFile {
             return nil
         }
         let encodedSize = representation.machine.targetStateBits
-        let numberOfElements = 31 / encodedSize
+        let numberOfElements = Int(exp2(log2(Double(31 / encodedSize)).rounded(.down)).rounded())
         let elementSize = encodedSize - 1
         self.init(decoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
     }
