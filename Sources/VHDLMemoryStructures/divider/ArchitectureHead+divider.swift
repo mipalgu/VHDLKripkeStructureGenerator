@@ -1,4 +1,4 @@
-// Architecture+divider.swift
+// ArchitectureHead+divider.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -56,24 +56,36 @@
 import Utilities
 import VHDLParsing
 
-/// Add divider circuit generation.
-extension Architecture {
+/// Add divider circuit creation.
+extension ArchitectureHead {
 
-    /// Create a divider circuit implementation.
-    /// - Parameters:
-    ///   - name: The name of the entity this circuit implements.
-    ///   - size: The size of the numerator.
+    /// Create the head for a divider circuit.
+    /// - Parameter size: The size of the numerator to divide.
     @inlinable
-    init?(dividerName name: VariableName, size: Int) {
+    init?(dividerSize size: Int) {
         guard size > 0, size <= 32 else {
             return nil
         }
-        guard
-            let head = ArchitectureHead(dividerSize: size), let body = AsynchronousBlock(dividerSize: size)
-        else {
+        guard size <= 15 else {
+            self.init(statements: [])
+            return
+        }
+        guard let zero = ConstantSignal(
+            name: .zero,
+            type: .ranged(type: .stdLogicVector(size: .downto(
+                upper: .binary(operation: .subtraction(
+                    lhs: .literal(value: .integer(value: size - 1)),
+                    rhs: .reference(variable: .variable(reference: .variable(name: .divisor)))
+                )),
+                lower: .literal(value: .integer(value: 0))
+            ))),
+            value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                values: [IndexedValue(index: .others, value: .literal(value: .bit(value: .low)))]
+            ))))
+        ) else {
             return nil
         }
-        self.init(body: body, entity: name, head: head, name: .behavioral)
+        self.init(statements: [.definition(value: .constant(value: zero))])
     }
 
 }

@@ -1,4 +1,4 @@
-// Architecture+divider.swift
+// DividerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,27 +53,77 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import Utilities
+import TestUtils
 import VHDLParsing
+import XCTest
 
-/// Add divider circuit generation.
-extension Architecture {
+/// Test divider generation.
+final class DividerTests: XCTestCase {
 
-    /// Create a divider circuit implementation.
-    /// - Parameters:
-    ///   - name: The name of the entity this circuit implements.
-    ///   - size: The size of the numerator.
-    @inlinable
-    init?(dividerName name: VariableName, size: Int) {
-        guard size > 0, size <= 32 else {
-            return nil
+    /// Test small divider.
+    func testEvenDivider() {
+        guard let result = VHDLFile(dividerName: .nullRepresentation, size: 8) else {
+            XCTFail("Failed to create divider.")
+            return
         }
-        guard
-            let head = ArchitectureHead(dividerSize: size), let body = AsynchronousBlock(dividerSize: size)
-        else {
-            return nil
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+
+        entity NullRepresentation is
+            generic(
+                divisor: integer range 0 to 4
+            );
+            port(
+                numerator: in std_logic_vector(7 downto 0);
+                result: out std_logic_vector(7 downto 0);
+                remainder: out std_logic_vector(7 downto 0)
+            );
+        end NullRepresentation;
+
+        architecture Behavioral of NullRepresentation is
+            constant ZERO: std_logic_vector(7 - divisor downto 0) := (others => '0');
+        begin
+            result <= std_logic_vector(shift_right(unsigned(numerator), divisor));
+            remainder <= ZERO & numerator(divisor - 1 downto 0);
+        end Behavioral;
+
+        """
+        XCTAssertEqual(result.rawValue, expected)
+    }
+
+    /// Test large divider performs no division.
+    func testLargeDivider() {
+        guard let result = VHDLFile(dividerName: .nullRepresentation, size: 32) else {
+            XCTFail("Failed to create divider.")
+            return
         }
-        self.init(body: body, entity: name, head: head, name: .behavioral)
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+
+        entity NullRepresentation is
+            generic(
+                divisor: integer range 0 to 4
+            );
+            port(
+                numerator: in std_logic_vector(31 downto 0);
+                result: out std_logic_vector(31 downto 0);
+                remainder: out std_logic_vector(31 downto 0)
+            );
+        end NullRepresentation;
+
+        architecture Behavioral of NullRepresentation is
+            \("")
+        begin
+            result <= numerator;
+            remainder <= (others => '0');
+        end Behavioral;
+
+        """
+        XCTAssertEqual(result.rawValue, expected)
     }
 
 }

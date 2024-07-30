@@ -93,6 +93,9 @@ public extension VariableName {
     /// The `denominator` signal.
     static let denominator = VariableName(rawValue: "denominator")!
 
+    /// The `divisor` signal.
+    static let divisor = VariableName(rawValue: "divisor")!
+
     /// The `executeOnEntry` signal.
     static let executeOnEntry = VariableName(rawValue: "executeOnEntry")!
 
@@ -159,6 +162,9 @@ public extension VariableName {
     /// The `SetNextTargetState` constant.
     static let setNextTargetState = VariableName(rawValue: "SetNextTargetState")!
 
+    /// The `shift_right` function.
+    static let shiftRight = VariableName(rawValue: "shift_right")!
+
     /// The `state` signal.
     static let state = VariableName(rawValue: "state")!
 
@@ -224,6 +230,9 @@ public extension VariableName {
 
     /// The `WriteSnapshot_t` type.
     static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
+
+    /// The `ZERO` constant.
+    static let zero = VariableName(rawValue: "ZERO")!
 
     /// Appends a string to the end of a `VariableName`.
     /// - Parameters:

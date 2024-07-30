@@ -53,6 +53,7 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import Foundation
 import Utilities
 import VHDLParsing
 
@@ -63,21 +64,25 @@ extension Entity {
         guard size > 0, size <= 32 else {
             return nil
         }
-        let type = SignalType.ranged(type: .unsigned(size: .downto(
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(
             upper: .literal(value: .integer(value: size - 1)),
             lower: .literal(value: .integer(value: 0))
         )))
+        let generics = [
+            GenericTypeDeclaration(name: .divisor, type: .ranged(type: .integer(size: .to(
+                lower: .literal(value: .integer(value: 0)),
+                upper: .literal(value: .integer(value: 4))
+            ))))
+        ]
         let signals = [
-            PortSignal(type: .stdLogic, name: .clk, mode: .input),
             PortSignal(type: type, name: .numerator, mode: .input),
-            PortSignal(type: type, name: .denominator, mode: .input),
             PortSignal(type: type, name: .result, mode: .output),
             PortSignal(type: type, name: .remainder, mode: .output)
         ]
         guard let block = PortBlock(signals: signals) else {
             return nil
         }
-        self.init(name: name, port: block)
+        self.init(name: name, port: block, generic: GenericBlock(types: generics))
     }
 
 }
