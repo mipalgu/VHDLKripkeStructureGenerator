@@ -192,11 +192,11 @@ extension AsynchronousBlock {
                 )
             }
         }
-        let index: Expression
+        let index: VHDLParsing.Expression
         if variables.isEmpty {
             index = .literal(value: .integer(value: 0))
         } else {
-            guard let arrayIndex = Expression(arrayIndexFor: variables) else {
+            guard let arrayIndex = VHDLParsing.Expression(arrayIndexFor: variables) else {
                 return nil
             }
             index = arrayIndex
@@ -282,11 +282,11 @@ extension AsynchronousBlock {
             return nil
         }
         let clk = machine.clocks[machine.drivingClock]
-        let index: Expression
+        let index: VHDLParsing.Expression
         if variables.isEmpty {
             index = .literal(value: .integer(value: 0))
         } else {
-            guard let arrayIndex = Expression(arrayIndexFor: variables) else {
+            guard let arrayIndex = VHDLParsing.Expression(arrayIndexFor: variables) else {
                 return nil
             }
             index = arrayIndex
@@ -337,11 +337,11 @@ extension AsynchronousBlock {
     init?<T>(
         expanderInstantiationFor state: State, in representation: T, variables: [Type]
     ) where T: MachineVHDLRepresentable {
-        let index: Expression
+        let index: VHDLParsing.Expression
         if variables.isEmpty {
             index = .literal(value: .integer(value: 0))
         } else {
-            guard let arrayIndex = Expression(arrayIndexFor: variables) else {
+            guard let arrayIndex = VHDLParsing.Expression(arrayIndexFor: variables) else {
                 return nil
             }
             index = arrayIndex
@@ -395,7 +395,7 @@ extension Type {
         signalType.upperTypeIndex
     }
 
-    func stateAccess(iterators: [VariableName]) -> Expression {
+    func stateAccess(iterators: [VariableName]) -> VHDLParsing.Expression {
         signalType.stateAccess(iterators: iterators)
     }
 
@@ -433,7 +433,7 @@ extension SignalType {
         }
     }
 
-    func stateAccess(iterators: [VariableName]) -> Expression {
+    func stateAccess(iterators: [VariableName]) -> VHDLParsing.Expression {
         guard iterators.count == 1 else {
             guard case .ranged(let type) = self else {
                 fatalError("Incorrect number of iterators \(iterators.count) to mutate type \(self)!")
@@ -522,8 +522,8 @@ extension RangedType {
         }
     }
 
-    func stateAccess(iterators: [VariableName]) -> Expression {
-        let fn: (Int) -> Expression
+    func stateAccess(iterators: [VariableName]) -> VHDLParsing.Expression {
+        let fn: (Int) -> VHDLParsing.Expression
         let numberOfIndexes: Int
         switch self {
         case .bitVector(let size), .signed(let size), .unsigned(let size):
@@ -547,7 +547,7 @@ extension RangedType {
 
 }
 
-extension Expression {
+extension VHDLParsing.Expression {
 
     init?(arrayIndexFor types: [Type]) {
         guard !types.isEmpty else {
