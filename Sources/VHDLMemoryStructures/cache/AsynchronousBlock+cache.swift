@@ -220,12 +220,13 @@ extension AsynchronousBlock {
         let components = [encoderInstantiation, decoderInstantiation, dividerInstantiation, bramInstantiation]
         let padding = 32 - addressBits
         let resultsCast = Expression.reference(variable: .variable(reference: .variable(name: .result)))
-        let memoryAddress: Expression = padding == 0 ? resultsCast : .binary(operation: .concatenate(
-            lhs: .literal(value: .vector(value: .bits(value: BitVector(
-                values: [BitLiteral](repeating: .low, count: padding)
-            )))),
-            rhs: resultsCast
-        ))
+        let memoryAddress: VHDLParsing.Expression = padding == 0 ? resultsCast
+            : .binary(operation: .concatenate(
+                lhs: .literal(value: .vector(value: .bits(value: BitVector(
+                    values: [BitLiteral](repeating: .low, count: padding)
+                )))),
+                rhs: resultsCast
+            ))
         let statements = [
             AsynchronousBlock.statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .memoryAddress)),

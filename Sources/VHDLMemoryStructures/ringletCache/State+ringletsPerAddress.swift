@@ -60,7 +60,7 @@ import VHDLParsing
 
 extension State {
 
-    func entireCache<T>(in representation: T) -> Expression where T: MachineVHDLRepresentable {
+    func entireCache<T>(in representation: T) -> VHDLParsing.Expression where T: MachineVHDLRepresentable {
         let ringletsPerAddress = self.ringletsPerAddress(in: representation)
         let machine = representation.machine
         let ringletAccess = (0..<(ringletsPerAddress - 1)).map {
