@@ -75,10 +75,10 @@ extension SignalType {
             switch type {
             case .bitVector(let size), .signed(let size), .unsigned(let size):
                 return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
-                    "[BitLiteral](repeating: .low, count: \(size.size!))))"
+                    "[BitLiteral](repeating: .low, count: \(size.size!)))))"
             case .stdLogicVector(let size), .stdULogicVector(let size):
                 return "SignalLiteral.vector(value: .logics(value: LogicVector(values: " +
-                    "[LogicLiteral](repeating: .low, count: \(size.size!))))"
+                    "[LogicLiteral](repeating: .low, count: \(size.size!)))))"
             case .integer:
                 return "SignalLiteral.integer(value: 0)"
             }
