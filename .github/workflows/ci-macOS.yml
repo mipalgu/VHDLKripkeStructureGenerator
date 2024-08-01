@@ -10,7 +10,7 @@ jobs:
   build_macos:
     strategy:
       matrix:
-        os: [macos-14]
+        os: [macos-13, macos-14, macos-latest]
         build_mode: ["debug", "release"]
     name: Swift ${{ matrix.build_mode }} CI for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
