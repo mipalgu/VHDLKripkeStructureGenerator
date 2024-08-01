@@ -62,6 +62,12 @@ extension VHDLFile {
     public init?<T>(
         stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
+        self.init(sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize)
+    }
+
+    public init?<T>(
+        concurrentStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
         guard
             let body = AsynchronousBlock(
                 stateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
@@ -79,6 +85,37 @@ extension VHDLFile {
         let includes = [
             Include.library(value: .ieee),
             .include(statement: .stdLogic1164),
+            .include(statement: typesInclude),
+            .include(statement: .primitiveTypes)
+        ]
+        self.init(
+            architectures: [Architecture(body: body, entity: entity.name, head: head, name: .behavioral)],
+            entities: [entity],
+            includes: includes
+        )
+    }
+
+    public init?<T>(
+        sequentialStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        guard
+            let body = AsynchronousBlock(
+                sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            ),
+            let head = ArchitectureHead(
+                sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            ),
+            let entity = Entity(sequentialStateGeneratorFor: state, in: representation),
+            let typesInclude = UseStatement(
+                rawValue: "use work.\(representation.entity.name.rawValue)Types.all;"
+            )
+        else {
+            return nil
+        }
+        let includes = [
+            Include.library(value: .ieee),
+            .include(statement: .stdLogic1164),
+            .include(statement: .numericStd),
             .include(statement: typesInclude),
             .include(statement: .primitiveTypes)
         ]

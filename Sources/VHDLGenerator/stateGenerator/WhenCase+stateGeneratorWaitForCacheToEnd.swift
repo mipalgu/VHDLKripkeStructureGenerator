@@ -58,6 +58,44 @@ import VHDLParsing
 
 extension WhenCase {
 
+    @usableFromInline static let sequentialStateGeneratorWaitForCacheToEnd = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .waitForCacheToEnd)
+        ))),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startCache)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .cacheRead)),
+                value: .literal(value: .boolean(value: false))
+            )),
+            .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .cacheBusy))),
+                    rhs: .literal(value: .bit(value: .low))
+                ))),
+                ifBlock: .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(variable: .variable(reference: .variable(name: .checkForJob)))
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesReady)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
     @usableFromInline static let stateGeneratorWaitForCacheToEnd = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
             reference: .variable(name: .waitForCacheToEnd)

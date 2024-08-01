@@ -58,6 +58,82 @@ import VHDLParsing
 
 extension WhenCase {
 
+    @usableFromInline static let sequentialStateGeneratorCheckForJob = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .checkForJob)
+        ))),
+        code: .blocks(blocks: [
+            .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                ifBlock: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .read))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .startCache)),
+                            value: .literal(value: .bit(value: .high))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .busy)),
+                            value: .literal(value: .bit(value: .low))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .startGeneration)),
+                            value: .literal(value: .bit(value: .low))
+                        ))
+                    ]),
+                    elseBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .busy)),
+                            value: .literal(value: .bit(value: .high))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .startGeneration)),
+                            value: .literal(value: .bit(value: .high))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .waitForRunnerToStart)
+                            ))
+                        ))
+                    ])
+                )),
+                elseBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .startGeneration)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .startCache)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .cacheRead)),
+                        value: .literal(value: .boolean(value: true))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ])
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesReady)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
     @usableFromInline static let stateGeneratorCheckForJob = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
             reference: .variable(name: .checkForJob)

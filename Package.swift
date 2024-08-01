@@ -38,7 +38,16 @@ let package = Package(
                 .target(name: "Utilities"),
                 .target(name: "KripkeStructureParser"),
                 .target(name: "VHDLGenerator"),
-                .product(name: "SwiftUtils", package: "SwiftUtils")
+                .product(name: "SwiftUtils", package: "SwiftUtils"),
+                .target(name: "VHDLMemoryStructures")
+            ]
+        ),
+        .target(
+            name: "VHDLMemoryStructures",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities")
             ]
         ),
         .target(
@@ -49,7 +58,8 @@ let package = Package(
                 .target(name: "VHDLKripkeStructureGeneratorProtocols"),
                 .target(name: "Utilities"),
                 .target(name: "KripkeStructureParser"),
-                .product(name: "SwiftUtils", package: "SwiftUtils")
+                .product(name: "SwiftUtils", package: "SwiftUtils"),
+                .target(name: "VHDLMemoryStructures")
             ]
         ),
         .target(
@@ -95,6 +105,16 @@ let package = Package(
                 .product(name: "SwiftUtils", package: "SwiftUtils"),
                 .target(name: "TestUtils"),
                 .target(name: "VHDLGenerator")
+            ]
+        ),
+        .testTarget(
+            name: "VHDLMemoryStructuresTests",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities"),
+                .target(name: "TestUtils"),
+                .target(name: "VHDLMemoryStructures")
             ]
         ),
         .testTarget(

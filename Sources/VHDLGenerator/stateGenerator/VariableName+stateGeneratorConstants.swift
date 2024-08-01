@@ -82,6 +82,9 @@ extension VariableName {
     /// The `hasDuplicate` signal.
     @usableFromInline static let hasDuplicate = VariableName(rawValue: "hasDuplicate")!
 
+    /// The `ResetStateIndex` constant.
+    @usableFromInline static let resetStateIndex = VariableName(rawValue: "ResetStateIndex")!
+
     /// The `runnerBusy` signal.
     @usableFromInline static let runnerBusy = VariableName(rawValue: "runnerBusy")!
 
@@ -99,6 +102,33 @@ extension VariableName {
 
     /// The `targetStates` signal.
     @usableFromInline static let targetStates = VariableName(rawValue: "targetStates")!
+
+    /// The `targetStatesaddress` signal.
+    @usableFromInline static let targetStatesAddress = VariableName(rawValue: "targetStatesaddress")!
+
+    /// The `targetStatesdata` signal.
+    @usableFromInline static let targetStatesData = VariableName(rawValue: "targetStatesdata")!
+
+    /// The `targetStatesready` signal.
+    @usableFromInline static let targetStatesReady = VariableName(rawValue: "targetStatesready")!
+
+    /// The `targetStateswe` signal.
+    @usableFromInline static let targetStatesWe = VariableName(rawValue: "targetStateswe")!
+
+    /// The `targetStatesen` signal.
+    @usableFromInline static let targetStatesEn = VariableName(rawValue: "targetStatesen")!
+
+    /// The `targetStatesvalue` signal.
+    @usableFromInline static let targetStatesValue = VariableName(rawValue: "targetStatesvalue")!
+
+    /// The `targetStatesvalue_en` signal.
+    @usableFromInline static let targetStatesValueEn = VariableName(rawValue: "targetStatesvalue_en")!
+
+    /// The `targetStatesbusy` signal.
+    @usableFromInline static let targetStatesBusy = VariableName(rawValue: "targetStatesbusy")!
+
+    /// The `targetStateslastAddress` signal.
+    @usableFromInline static let targetStatesLastAddress = VariableName(rawValue: "targetStateslastAddress")!
 
     /// The `WaitForCacheToEnd` constant.
     @usableFromInline static let waitForCacheToEnd = VariableName(rawValue: "WaitForCacheToEnd")!

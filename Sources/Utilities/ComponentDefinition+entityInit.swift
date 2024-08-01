@@ -59,7 +59,7 @@ import VHDLParsing
 extension ComponentDefinition {
 
     public init(entity: Entity) {
-        self.init(name: entity.name, port: entity.port)
+        self.init(name: entity.name, port: entity.port, generic: entity.generic)
     }
 
 }

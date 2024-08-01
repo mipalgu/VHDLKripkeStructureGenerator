@@ -58,6 +58,48 @@ import VHDLParsing
 
 extension WhenCase {
 
+    @usableFromInline static let sequentialStateGeneratorWaitForRunnerToStart = WhenCase(
+        condition: .expression(expression: .reference(variable: .variable(
+            reference: .variable(name: .waitForRunnerToStart)
+        ))),
+        code: .blocks(blocks: [
+            .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .runnerBusy))),
+                    rhs: .literal(value: .bit(value: .high))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(
+                            reference: .variable(name: .waitForRunnerToFinish)
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .startGeneration)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ])
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .startCache)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesReady)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .targetStatesWe)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
     @usableFromInline static let stateGeneratorWaitForRunnerToStart = WhenCase(
         condition: .expression(expression: .reference(variable: .variable(
             reference: .variable(name: .waitForRunnerToStart)

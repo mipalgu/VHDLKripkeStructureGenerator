@@ -98,4 +98,41 @@ extension ProcessBlock {
         )
     }
 
+    init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
+        let machine = representation.machine
+        let clk = machine.clocks[machine.drivingClock].name
+        guard
+            let initial = WhenCase(sequentialGeneratorInitialFor: representation),
+            let setJob = WhenCase(sequentialGeneratorSetJobFor: representation)
+        else {
+            return nil
+        }
+        let stateInternals = machine.states.flatMap {
+            [
+                WhenCase(sequentialGeneratorStartStateFor: $0, in: representation),
+                WhenCase(generatorResetState: $0)
+            ]
+        }
+        self.init(
+            sensitivityList: [clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
+                    variable: .variable(reference: .variable(name: clk))
+                )))),
+                ifBlock: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .currentState))),
+                    cases: [
+                        initial, .generatorSetRead, .generatorResetRead, .generatorIncrementIndex,
+                        .generatorWaitForRead, setJob
+                    ]
+                        + stateInternals + [
+                            WhenCase(sequentialGeneratorCheckIfFinishedFor: representation),
+                            .sequentialGeneratorHasFinished,
+                            .othersNull
+                        ]
+                ))
+            ))
+        )
+    }
+
 }

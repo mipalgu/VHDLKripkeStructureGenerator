@@ -55,6 +55,7 @@
 // 
 
 import VHDLMachines
+import VHDLMemoryStructures
 import VHDLParsing
 
 extension ArchitectureHead {
@@ -122,6 +123,64 @@ extension ArchitectureHead {
                 defaultValue: .literal(value: .vector(value: .hexademical(value: HexVector(values: [.zero]))))
             )))
         ] + internalStates + [
+            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .genRead))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .genReady))),
+            .definition(value: .component(value: ComponentDefinition(entity: cache))),
+            .definition(value: .component(value: ComponentDefinition(entity: runner)))
+        ])
+    }
+
+    init?<T>(
+        sequentialStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+    ) where T: MachineVHDLRepresentable {
+        guard
+            let runner = Entity(stateRunnerFor: state, in: representation),
+            let size = state.executionSize(in: representation, maxExecutionSize: maxExecutionSize).size,
+            let internalStateTypeName = VariableName(
+                rawValue: "\(state.name.rawValue)GeneratorInternalState_t"
+            ),
+            let internalStateEnumeration = EnumerationDefinition(
+                name: internalStateTypeName,
+                nonEmptyValues: [
+                    .initial, .checkForJob, .waitForRunnerToStart, .waitForRunnerToFinish,
+                    .waitForCacheToStart, .waitForCacheToEnd, .checkForDuplicates, .error, .addToStates,
+                    .resetStateIndex, .setNextTargetState, .setNextRinglet, .waitForRead, .waitForReadEnable
+                ]
+            ),
+            let addressBits = BitLiteral.bitsRequired(for: representation.machine.numberOfTargetStates)
+        else {
+            return nil
+        }
+        let addressType = SignalType.ranged(type: .unsigned(size: .downto(
+            upper: .literal(value: .integer(value: addressBits - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let executionIndexSize = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)), upper: .literal(value: .integer(value: size))
+        )
+        let cache = Entity(ringletCacheFor: state, representation: representation)
+        self.init(statements: [
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .startGeneration))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .startCache))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: VariableName(
+                    rawValue: "\(state.name.rawValue)_\(VariableName.stateExecutionType.rawValue)"
+                )!),
+                name: .ringlets
+            ))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .runnerBusy))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .cacheBusy))),
+            .definition(value: .signal(value: LocalSignal(type: .boolean, name: .cacheRead))),
+            .definition(value: .signal(value: LocalSignal(type: addressType, name: .statesIndex))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .ranged(type: .integer(size: executionIndexSize)), name: .ringletIndex
+            ))),
+            .definition(value: .type(value: .enumeration(value: internalStateEnumeration))),
+            .definition(value: .signal(value: LocalSignal(
+                type: .alias(name: internalStateTypeName),
+                name: .internalState,
+                defaultValue: .reference(variable: .variable(reference: .variable(name: .initial)))
+            ))),
             .definition(value: .signal(value: LocalSignal(type: .boolean, name: .genRead))),
             .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .genReady))),
             .definition(value: .component(value: ComponentDefinition(entity: cache))),

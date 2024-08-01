@@ -57,12 +57,15 @@
 import Foundation
 import KripkeStructureParser
 import SwiftUtils
-import VHDLKripkeStructureGeneratorProtocols
 import VHDLGenerator
+import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
+import VHDLMemoryStructures
 import VHDLParsing
 
 public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
+
+    let factory = MemoryStructureFactory()
 
     public init() {}
 
@@ -86,7 +89,8 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             let runner = VHDLFile(runnerFor: representation),
             let ringletRunner = VHDLFile(ringletRunnerFor: representation),
             let types = VHDLFile(typesFor: representation),
-            let generator = VHDLFile(generatorFor: representation)
+            let generator = VHDLFile(generatorFor: representation),
+            let targetStatesFiles = factory.targetStateCache(for: representation)
         else {
             return []
         }
@@ -119,7 +123,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         return [
             verifiedMachine, runner, ringletRunner, types, generator, bramInterface, .uartTransmitter,
             baudGenerator, bramTransmitter, bramInterfaceWrapper
-        ] + stateFiles.flatMap { $0 }
+        ] + targetStatesFiles + stateFiles.flatMap { $0 }
     }
 
     public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {

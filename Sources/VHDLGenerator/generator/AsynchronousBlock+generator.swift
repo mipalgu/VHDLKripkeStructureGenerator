@@ -203,4 +203,192 @@ extension AsynchronousBlock {
         )
     }
 
+    init?<T>(sequentialGeneratorFor representation: T) where T: MachineVHDLRepresentable {
+        guard let block = ProcessBlock(sequentialGeneratorFor: representation) else {
+            return nil
+        }
+        let machine = representation.machine
+        let clk = machine.clocks[machine.drivingClock]
+        let generatorInvocations = machine.states.enumerated().map {
+            let name = $1.name.rawValue
+            let entity = Entity(stateGeneratorFor: $1, in: representation)!.name
+            let writeSnapshot = Record(writeSnapshotFor: $1, in: representation)!
+            let types = writeSnapshot.types.filter { $0.name != .nextState }
+            let variableMapping = types.map {
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: $0.name)),
+                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(
+                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                    ))))
+                )
+            }
+            let index = $0 + 1
+            return AsynchronousBlock.component(block: ComponentInstantiation(
+                label: VariableName(rawValue: "\(name)_generator_inst")!,
+                name: entity,
+                port: PortMap(variables: [
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: clk.name)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: clk.name)
+                        )))
+                    )
+                ] + variableMapping + [
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .address)),
+                        rhs: .expression(value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)Address")!
+                        ))))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .ready)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "gen\(name)Ready")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .read)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "\(name)Read")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .busy)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "\(name)Busy")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesAddress)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesaddress\(index)")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesData)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesdata\(index)")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesWe)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStateswe\(index)")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesReady)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesready\(index)")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesBusy)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesbusy")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesValue)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesvalue")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesValueEn)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesvalue_en")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesLastAddress)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStateslastAddress")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .targetStatesEn)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "targetStatesen\(index)")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .value)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "\(name)Value")!)
+                        )))
+                    ),
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: .lastAddress)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "\(name)LastAddress")!)
+                        )))
+                    )
+                ])
+            ))
+        }
+        guard
+            let cache = VHDLFile(targetStatesCacheFor: representation)?.entities.first,
+            let monitorName = VariableName(
+                rawValue: representation.entity.name.rawValue + "TargetStatesCacheMonitor"
+            ),
+            let monitor = VHDLFile(
+                cacheMonitorName: monitorName, numberOfMembers: machine.states.count + 1, cache: cache
+            )?.entities.first
+        else {
+            return nil
+        }
+        let monitorMappings = monitor.port.signals.map {
+            guard $0.name != .clk else {
+                return VariableMap(
+                    lhs: .variable(reference: .variable(name: .clk)),
+                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .clk))))
+                )
+            }
+            return VariableMap(
+                lhs: .variable(reference: .variable(name: $0.name)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "targetStates\($0.name.rawValue)")!
+                ))))
+            )
+        }
+        let monitorInstance = AsynchronousBlock.component(block: ComponentInstantiation(
+            label: .cacheInst, name: monitorName, port: PortMap(variables: monitorMappings)
+        ))
+        let targetStateAssignment = [
+            AsynchronousBlock.statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "targetStatesaddress0")!)),
+                value: .expression(value: .cast(operation: .stdLogicVector(expression: .reference(
+                    variable: .variable(reference: .variable(name: .pendingStateIndex))
+                ))))
+            ))
+        ]
+        let stateAssignments = machine.states.flatMap {
+            let name = $0.name.rawValue
+            return [
+                AsynchronousBlock.statement(statement: .assignment(
+                    name: .variable(reference: .variable(
+                        name: VariableName(rawValue: "gen\(name)Ready")!
+                    )),
+                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                        value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)ReadReady")!
+                        ))),
+                        condition: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .currentState))),
+                            rhs: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
+                        ))),
+                        elseBlock: .expression(value: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "\(name)Ready")!
+                        ))))
+                    )))
+                ))
+            ]
+        }
+        self = .blocks(
+            blocks: generatorInvocations + [monitorInstance] + targetStateAssignment + stateAssignments
+                + [.process(block: block)]
+        )
+    }
+
 }

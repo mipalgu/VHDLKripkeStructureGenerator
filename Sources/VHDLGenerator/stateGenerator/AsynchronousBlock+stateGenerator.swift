@@ -199,41 +199,150 @@ extension AsynchronousBlock {
         ])
     }
 
-}
-
-extension ProcessBlock {
-
     init?<T>(
-        stateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
+        sequentialStateGeneratorFor state: State, in representation: T, maxExecutionSize: Int? = nil
     ) where T: MachineVHDLRepresentable {
-        guard let checkForDuplicates = WhenCase(
-            stateGeneratorCheckForDuplicatesFor: state, in: representation, maxExecutionSize: maxExecutionSize
-        ) else {
+        guard
+            let process = ProcessBlock(
+                sequentialStateGeneratorFor: state, in: representation, maxExecutionSize: maxExecutionSize
+            ),
+            let writeSnapshot = Record(writeSnapshotFor: state, in: representation)
+        else {
             return nil
         }
-        let clk = representation.machine.clocks[representation.machine.drivingClock].name
-        self.init(
-            sensitivityList: [clk],
-            code: .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .edge(value: .rising(expression: .reference(
-                    variable: .variable(reference: .variable(name: clk))
-                )))),
-                ifBlock: .caseStatement(block: CaseStatement(
-                    condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
-                    cases: [
-                        .stateGeneratorInitial,
-                        .stateGeneratorCheckForJob,
-                        .stateGeneratorWaitForRunnerToStart,
-                        .stateGeneratorWaitForRunnerToFinish,
-                        .stateGeneratorWaitForCacheToStart,
-                        checkForDuplicates,
-                        WhenCase(stateGeneratorAddToStatesFor: state, in: representation),
-                        .stateGeneratorWaitForCacheToEnd,
-                        .othersNull
-                    ]
-                ))
-            ))
-        )
+        let machine = representation.machine
+        let validSignals = writeSnapshot.types.filter { $0.name != .nextState }
+        let snapshotMappings = validSignals.map {
+            let ref = VariableReference.variable(reference: .variable(name: $0.name))
+            return VariableMap(lhs: ref, rhs: .expression(value: .reference(variable: ref)))
+        }
+        let clk = machine.clocks[machine.drivingClock].name
+        let runner = PortMap(variables: [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: clk)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: clk))))
+            )
+        ] + snapshotMappings + [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .ready)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .startGeneration)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .ringlets)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .ringlets)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .busy)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .runnerBusy)
+                )))
+            )
+        ])
+        let cache = PortMap(variables: [
+            VariableMap(
+                lhs: .variable(reference: .variable(name: clk)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: clk))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .newRinglets)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .ringlets)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .readAddress)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .address))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .value)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .value))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .read)),
+                rhs: .expression(value: .reference(variable: .variable(reference: .variable(name: .genRead))))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .ready)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .genReady)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .busy)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .cacheBusy)
+                )))
+            ),
+            VariableMap(
+                lhs: .variable(reference: .variable(name: .lastAddress)),
+                rhs: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .lastAddress)
+                )))
+            )
+        ])
+        let genReadAssignment = AsynchronousBlock.statement(statement: .assignment(
+            name: .variable(reference: .variable(name: .genRead)),
+            value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                value: .literal(value: .boolean(value: true)),
+                condition: .logical(operation: .and(
+                    lhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .read))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    rhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                        rhs: .reference(variable: .variable(reference: .variable(name: .checkForJob)))
+                    )))
+                )),
+                elseBlock: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .cacheRead)
+                )))
+            )))
+        ))
+        let genReadyAssignment = AsynchronousBlock.statement(statement: .assignment(
+            name: .variable(reference: .variable(name: .genReady)),
+            value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
+                value: .literal(value: .bit(value: .high)),
+                condition: .logical(operation: .and(
+                    lhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    rhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                        rhs: .reference(variable: .variable(reference: .variable(name: .checkForJob)))
+                    )))
+                )),
+                elseBlock: .expression(value: .reference(variable: .variable(
+                    reference: .variable(name: .startCache)
+                )))
+            )))
+        ))
+        self = .blocks(blocks: [
+            .component(block: ComponentInstantiation(
+                label: VariableName(rawValue: "runner_inst")!,
+                name: VariableName(rawValue: "\(state.name.rawValue)StateRunner")!,
+                port: runner
+            )),
+            .component(block: ComponentInstantiation(
+                label: VariableName(rawValue: "cache_inst")!,
+                name: VariableName(rawValue: "\(state.name.rawValue)RingletCache")!,
+                port: cache
+            )),
+            genReadAssignment,
+            genReadyAssignment,
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "targetStatesaddress")!)),
+                value: .expression(value: .cast(operation: .stdLogicVector(expression: .reference(
+                    variable: .variable(reference: .variable(name: .statesIndex))
+                ))))
+            )),
+            .process(block: process)
+        ])
     }
 
 }
