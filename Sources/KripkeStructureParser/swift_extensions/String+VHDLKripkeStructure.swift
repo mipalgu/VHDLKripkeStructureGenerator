@@ -461,7 +461,7 @@ extension String {
 
         \(stateSignalDefinitions.joined(separator: "\n").indent(amount: 1))
 
-            static let readExternals: [VariableName: [SignalType]] = [\(readExternals)]
+            static let readExternals: [VariableName: SignalType] = [\(readExternals)]
 
             init?(state: LogicVector) {
                 switch state.values {
