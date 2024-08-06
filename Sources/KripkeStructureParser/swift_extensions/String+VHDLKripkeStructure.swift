@@ -124,6 +124,89 @@ extension String {
     }
     """
 
+    static let typeExtensions = """
+    extension SignalType {
+
+        var allValues: [SignalLiteral] {
+            switch self {
+            case .bit:
+                return [.bit(value: .low), .bit(value: .high)]
+            case .boolean:
+                return [.boolean(value: false), .boolean(value: true)]
+            case .stdLogic, .stdULogic:
+                return [.logic(value: .low), .logic(value: .high), .logic(value: .highImpedance)]
+            case .integer:
+                return (Int32.min...Int32.max).map { .integer(value: Int($0)) }
+            case .natural:
+                return (0...Int32.max).map { .integer(value: Int($0)) }
+            case .positive:
+                return (1...Int32.max).map { .integer(value: Int($0)) }
+            case .real:
+                fatalError("Not supported!")
+            case .ranged(let type):
+                return type.allValues
+            }
+        }
+
+    }
+
+    extension RangedType {
+
+        var allValues: [SignalLiteral] {
+            let values: [[SignalLiteral]]
+            switch self {
+            case .bitVector(let size), .signed(let size), .unsigned(let size):
+                values = (0..<size.size!).map { _ in SignalType.bit.allValues}
+            case .integer:
+                fatalError("Not supported")
+            case .stdLogicVector(let size), .stdULogicVector(let size):
+                values = (0..<size.size!).map { _ in SignalType.stdLogic.allValues}
+            }
+            var indexes = Array(repeating: 0, count: values.count)
+            var allValues: [SignalLiteral] = []
+            let maxIndex = values[0].count - 1
+            while true {
+                let combination = indexes.enumerated().map { values[$0][$1] }
+                switch self {
+                case .bitVector, .signed, .unsigned:
+                    allValues.append(SignalLiteral.vector(value: .bits(
+                        value: BitVector(values: combination.map { $0.asBit })
+                    )))
+                case .stdLogicVector, .stdULogicVector:
+                    allValues.append(SignalLiteral.vector(value: .logics(
+                        value: LogicVector(values: combination.map { $0.asLogic })
+                    )))
+                default:
+                    fatalError()
+                }
+                guard let mutatingIndex = indexes.firstIndex(where: { $0 < maxIndex }) else {
+                    return allValues
+                }
+                indexes[mutatingIndex] += 1
+            }
+        }
+
+    }
+
+    extension SignalLiteral {
+
+        var asBit: BitLiteral {
+            guard case .bit(let value) = self else {
+                fatalError()
+            }
+            return value
+        }
+
+        var asLogic: LogicLiteral {
+            guard case .logic(let value) = self else {
+                fatalError()
+            }
+            return value
+        }
+
+    }
+    """
+
     init<T>(vhdlKripkeStructureFor representation: T) where T: MachineVHDLRepresentable {
         let includes = """
         import VHDLKripkeStructures
@@ -166,6 +249,8 @@ extension String {
         \(dictionaryExtensions)
 
         \(nameExtension)
+
+        \(String.typeExtensions)
 
         """
     }
@@ -284,6 +369,35 @@ extension String {
         \(internalDefinitions.joined(separator: ",\n").indent(amount: 2))
             ]
 
+            static var cache: [Set<VariableName>: [[VariableName: SignalLiteral]]] = [:]
+
+            static func allReadExternalValues(excluding: Set<VariableName>) -> [[VariableName: SignalLiteral]] {
+                if let cached = cache[excluding] {
+                    return cached
+                }
+                let validExternals = VariableName.readExternals.filter { !excluding.contains($0.key) }
+                let validValues: [VariableName: [SignalLiteral]] = Dictionary<VariableName, [SignalLiteral]>(uniqueKeysWithValues: validExternals.map {
+                    ($0.key, $0.value.allValues)
+                })
+                var allConfigurations: [[VariableName: SignalLiteral]] = []
+                var indexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, 0) })
+                let maxIndexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, $0.value.count - 1) })
+                while true {
+                    let configuration = [VariableName: SignalLiteral](uniqueKeysWithValues: indexes.flatMap {
+                        [
+                            ($0.key, validValues[$0.key]![$0.value]),
+                            (VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!, validValues[$0.key]![$0.value])
+                        ]
+                    })
+                    allConfigurations.append(configuration)
+                    guard let mutatingIndex = indexes.first(where: { $0.value < maxIndexes[$0.key]! })?.key else {
+                        cache[excluding] = allConfigurations
+                        return allConfigurations
+                    }
+                    indexes[mutatingIndex]! += 1
+                }
+            }
+
         }
         """
     }
@@ -320,6 +434,22 @@ extension String {
                 self = .\($0.name.rawValue)
             """
         }
+        let allReadExternals = machine.externalSignals.filter { $0.mode != .output }
+        let readExternals = allReadExternals.map {
+            "\($0.name.rawValue): SignalType(rawValue: \"\($0.type.rawValue)\")!"
+        }
+        .joined(separator: ", ")
+        let stateReadExternals = machine.states.map {
+            let externals = $0.externalVariables.filter { allReadExternals.map(\.name).contains($0) }
+                .map(\.rawValue)
+                .joined(separator: ", ")
+            return """
+            case .\($0.name.rawValue):
+                return [\(externals)]
+            """
+        }
+        .joined(separator: "\n")
+        .indent(amount: 2)
         self = """
         extension VariableName {
 
@@ -331,11 +461,21 @@ extension String {
 
         \(stateSignalDefinitions.joined(separator: "\n").indent(amount: 1))
 
+            static let readExternals: [VariableName: [SignalType]] = [\(readExternals)]
+
             init?(state: LogicVector) {
                 switch state.values {
         \(vectorCases.joined(separator: "\n").indent(amount: 2))
                 default:
                     return nil
+                }
+            }
+
+            static func readExternals(state: VariableName) -> Set<VariableName> {
+                switch state {
+        \(stateReadExternals)
+                default:
+                    fatalError()
                 }
             }
 
@@ -377,19 +517,20 @@ extension String {
         extension KripkeStructure {
 
             public convenience init(structure: \(representation.entity.name.rawValue)KripkeStructure) {
-                let defaultProperties = [VariableName: SignalLiteral].defaultProperties
                 let initialRinglets = structure.\(initialState.name.rawValue.lowercased())Ringlets.filter { ringlet in
                     ringlet.read.currentState == .\(initialState.name.rawValue) && ringlet.read.executeOnEntry
         \(initialExternals.isEmpty ? "" : "&& \(externalPropertiesGuard.indent(amount: 4))")
                 }
-                let initialNodes: Set<Node> = Set(initialRinglets.map {
-                    Node(
-                        type: .read,
-                        currentState: $0.read.currentState,
-                        executeOnEntry: $0.read.executeOnEntry,
-                        nextState: $0.read.currentState,
-                        properties: $0.read.properties.merging(defaultProperties) { val1, _ in val1 }
-                    )
+                let initialNodes: Set<Node> = Set(initialRinglets.flatMap { ringlet in
+                    [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial)).map {
+                        Node(
+                            type: .read,
+                            currentState: ringlet.read.currentState,
+                            executeOnEntry: ringlet.read.executeOnEntry,
+                            nextState: ringlet.read.currentState,
+                            properties: [VariableName: SignalLiteral].defaultProperties.merging($0) { $1 }.merging(ringlet.read.properties) { $1 }
+                        )
+                    }
                 })
                 var nodes: Set<Node> = initialNodes
                 var edges: [Node: [Edge]] = [:]
@@ -402,6 +543,18 @@ extension String {
                             && node.currentState == ringlet.readNode.currentState
                             && node.type == .read
                             && ringlet.readNode.properties.allSatisfy { node.properties[$0] == $1 }
+                    }
+                    .flatMap { node in
+                        [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState)).map { value in
+                            Node(
+                                properties: value,
+                                previousProperties: node.properties,
+                                type: node.type,
+                                currentState: node.currentState,
+                                executeOnEntry: node.executeOnEntry,
+                                nextState: node.nextState
+                            )
+                        }
                     }
                     let writeNodes = readNodes.map {
                         Node(
@@ -454,15 +607,17 @@ extension String {
                                     return value1 == value2
                                 }
                         }
-                        let nextNodes = newNodes.map {
-                            Node(
-                                properties: $0.readNode.properties,
-                                previousProperties: writeNode.properties,
-                                type: .read,
-                                currentState: $0.readNode.currentState,
-                                executeOnEntry: $0.readNode.executeOnEntry,
-                                nextState: $0.readNode.currentState
-                            )
+                        let nextNodes = newNodes.flatMap { ringlet in
+                            [VariableName: SignalLiteral].allReadExternalValues(excluding:VariableName.readExternals(state: ringlet.readNode.currentState)).map {
+                                Node(
+                                    properties: $0.merging(ringlet.readNode.properties) { $1 },
+                                    previousProperties: writeNode.properties,
+                                    type: .read,
+                                    currentState: ringlet.readNode.currentState,
+                                    executeOnEntry: ringlet.readNode.executeOnEntry,
+                                    nextState: ringlet.readNode.currentState
+                                )
+                            }
                         }
                         nextNodes.forEach { nodes.insert($0) }
                         let unseenRinglets = newNodes.filter {
