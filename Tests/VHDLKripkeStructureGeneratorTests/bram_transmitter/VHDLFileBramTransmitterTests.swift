@@ -97,6 +97,7 @@ final class VHDLFileBramTransmitterTests: XCTestCase {
             signal currentData: std_logic_vector(31 downto 0);
             signal currentAddress: unsigned(31 downto 0) := x"00000000";
             signal currentByte: integer range -1 to 3 := 3;
+            signal txTrailer: std_logic;
             type BRAMTransmitter_CurrentState_t is (Initial, WaitForFinish, StartReadAddress, ReadAddress, WaitForButton, WaitForFree, WaitForBusy, FinishedTransmission);
             signal currentState: BRAMTransmitter_CurrentState_t := Initial;
             component BRAMInterface is
@@ -155,6 +156,7 @@ final class VHDLFileBramTransmitterTests: XCTestCase {
                         currentState <= Initial;
                         rdy <= '0';
                         finishedTx <= '0';
+                        txTrailer <= '0';
                     elsif (currentState = Initial) then
                         currentData <= (others => '0');
                         currentAddress <= (others => '0');
@@ -165,6 +167,7 @@ final class VHDLFileBramTransmitterTests: XCTestCase {
                         currentState <= WaitForFinish;
                         finishedTx <= '0';
                         rdy <= '0';
+                        txTrailer <= '0';
                     elsif (currentState = WaitForFinish) then
                         currentData <= (others => '0');
                         currentAddress <= (others => '0');
@@ -190,14 +193,19 @@ final class VHDLFileBramTransmitterTests: XCTestCase {
                                 currentState <= ReadAddress;
                                 finishedTx <= '0';
                             when ReadAddress =>
-                                currentData <= data;
                                 read <= '0';
                                 ready <= '0';
                                 finishedTx <= '0';
                                 if (data(0) = '1') then
+                                    currentData <= data;
                                     currentState <= WaitForButton;
-                                else
+                                elsif (txTrailer = '1') then
+                                    currentData <= data;
                                     currentState <= FinishedTransmission;
+                                else
+                                    currentData <= (0 => '0', others => '1');
+                                    txTrailer <= '1';
+                                    currentState <= WaitForButton;
                                 end if;
                             when WaitForButton =>
                                 read <= '0';

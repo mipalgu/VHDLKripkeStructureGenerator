@@ -89,6 +89,8 @@ extension VariableName {
 
     static let txReady = VariableName(rawValue: "txReady")!
 
+    static let txTrailer = VariableName(rawValue: "txTrailer")!
+
     static let uartInst = VariableName(rawValue: "uart_inst")!
 
     static let waitForBusy = VariableName(rawValue: "WaitForBusy")!

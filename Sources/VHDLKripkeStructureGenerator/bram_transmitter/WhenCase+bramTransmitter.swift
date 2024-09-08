@@ -90,12 +90,6 @@ extension WhenCase {
         )),
         code: .blocks(blocks: [
             .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentData)),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .data)
-                ))
-            )),
-            .statement(statement: .assignment(
                 name: .variable(reference: .variable(name: .read)),
                 value: .literal(value: .bit(value: .low))
             )),
@@ -115,17 +109,61 @@ extension WhenCase {
                     )),
                     rhs: .literal(value: .bit(value: .high))
                 ))),
-                ifBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentState)),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .waitForButton)
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentData)),
+                        value: .reference(variable: .variable(
+                            reference: .variable(name: .data)
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentState)),
+                        value: .reference(variable: .variable(
+                            reference: .variable(name: .waitForButton)
+                        ))
                     ))
-                )),
-                elseBlock: .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .currentState)),
-                    value: .reference(variable: .variable(
-                        reference: .variable(name: .finishedTransmission)
-                    ))
+                ]),
+                elseBlock: .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .txTrailer))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentData)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .data)
+                            ))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .finishedTransmission)
+                            ))
+                        ))
+                    ]),
+                    elseBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentData)),
+                            value: .literal(value: .vector(value: .indexed(values: IndexedVector(values: [
+                                IndexedValue(
+                                    index: .index(value: .literal(value: .integer(value: 0))),
+                                    value: .bit(value: .low)
+                                ),
+                                IndexedValue(index: .others, value: .bit(value: .high))
+                            ]))))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .txTrailer)),
+                            value: .literal(value: .bit(value: .high))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentState)),
+                            value: .reference(variable: .variable(
+                                reference: .variable(name: .waitForButton)
+                            ))
+                        ))
+                    ])
                 ))
             ))
         ])

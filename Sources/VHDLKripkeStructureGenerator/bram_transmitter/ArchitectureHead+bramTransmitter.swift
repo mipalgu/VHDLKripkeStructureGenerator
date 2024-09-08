@@ -92,6 +92,7 @@ extension ArchitectureHead {
                 name: .currentByte,
                 defaultValue: .literal(value: .integer(value: 3))
             ))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .txTrailer))),
             .definition(value: .type(value: .enumeration(value: EnumerationDefinition(
                 name: .bramTransmitterCurrentStateType,
                 nonEmptyValues: [

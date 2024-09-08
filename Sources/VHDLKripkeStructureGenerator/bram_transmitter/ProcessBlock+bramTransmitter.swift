@@ -81,6 +81,10 @@ extension ProcessBlock {
                         .statement(statement: .assignment(
                             name: .variable(reference: .variable(name: .finishedTx)),
                             value: .literal(value: .bit(value: .low))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .txTrailer)),
+                            value: .literal(value: .bit(value: .low))
                         ))
                     ]),
                     elseBlock: .ifStatement(block: .ifElse(
@@ -131,6 +135,10 @@ extension ProcessBlock {
                             )),
                             .statement(statement: .assignment(
                                 name: .variable(reference: .variable(name: .rdy)),
+                                value: .literal(value: .bit(value: .low))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .variable(reference: .variable(name: .txTrailer)),
                                 value: .literal(value: .bit(value: .low))
                             ))
                         ]),
