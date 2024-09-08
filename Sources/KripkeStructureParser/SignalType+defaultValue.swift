@@ -105,16 +105,16 @@ extension SignalLiteral {
             switch literal {
             case .bits(let value):
                 return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
-                    "[BitLiteral](repeating: .low, count: \(value.count))))"
+                    "[BitLiteral](repeating: .low, count: \(value.count)))))"
             case .logics(let value):
                 return "SignalLiteral.vector(value: .logics(value: LogicVector(values: " +
-                    "[LogicLiteral](repeating: .low, count: \(value.count))))"
+                    "[LogicLiteral](repeating: .low, count: \(value.count)))))"
             case .octal(let value):
                 return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
-                    "[BitLiteral](repeating: .low, count: \(value.values.count * 3))))"
+                    "[BitLiteral](repeating: .low, count: \(value.values.count * 3)))))"
             case .hexademical(let value):
                 return "SignalLiteral.vector(value: .bits(value: BitVector(values: " +
-                    "[BitLiteral](repeating: .low, count: \(value.values.count * 4))))"
+                    "[BitLiteral](repeating: .low, count: \(value.values.count * 4)))))"
             case .indexed:
                 fatalError("Cannot create default value for indexed vector.")
             }

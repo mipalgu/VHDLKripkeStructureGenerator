@@ -500,7 +500,7 @@ extension String {
             guard \(externalProperties) else {
                 return true
             }
-            return defaultProperties[$0] == $1
+            return [VariableName: SignalLiteral].defaultProperties[$0] == $1
         }
         """
         let stateRinglets = representation.machine.states.map {
