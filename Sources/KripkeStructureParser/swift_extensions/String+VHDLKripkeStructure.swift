@@ -536,8 +536,35 @@ extension String {
                 var edges: [Node: [Edge]] = [:]
                 var pendingRinglets: [any Ringlet] = initialRinglets
                 let allRinglets: [any Ringlet] = \(stateRinglets)
+                var seenRinglets: [any Ringlet] = []
+                seenRinglets.reserveCapacity(allRinglets.count)
+                let isSame: (any Ringlet, any Ringlet) -> Bool = {
+                    let lhsRead = $0.readNode
+                    let rhsRead = $1.readNode
+                    let isSame = lhsRead.currentState == rhsRead.currentState
+                        && lhsRead.executeOnEntry == rhsRead.executeOnEntry
+                        && lhsRead.externals == rhsRead.externals
+                        && lhsRead.properties.count == rhsRead.properties.count
+                        && lhsRead.properties.allSatisfy { rhsRead.properties[$0.key] == $0.value }
+                    guard isSame else {
+                        return false
+                    }
+                    let lhsWrite = $0.writeNode
+                    let rhsWrite = $1.writeNode
+                    return lhsWrite.currentState == rhsWrite.currentState
+                        && lhsWrite.executeOnEntry == rhsWrite.executeOnEntry
+                        && lhsWrite.externals == rhsWrite.externals
+                        && lhsWrite.nextStateName == rhsWrite.nextStateName
+                        && lhsWrite.properties.count == rhsWrite.properties.count
+                        && lhsWrite.properties.allSatisfy { rhsWrite.properties[$0.key] == $0.value }
+
+                }
                 repeat {
                     let ringlet = pendingRinglets.removeLast()
+                    guard !seenRinglets.contains(where: { isSame($0, ringlet) }) else {
+                        continue
+                    }
+                    seenRinglets.append(ringlet)
                     let readNodes: [Node] = nodes.filter { (node: Node) -> Bool in
                         node.executeOnEntry == ringlet.readNode.executeOnEntry
                             && node.currentState == ringlet.readNode.currentState
@@ -620,16 +647,8 @@ extension String {
                             }
                         }
                         nextNodes.forEach { nodes.insert($0) }
-                        let unseenRinglets = newNodes.filter {
-                            let newWriteNode = Node(
-                                properties: $0.writeNode.properties,
-                                previousProperties: $0.readNode.properties,
-                                type: .write,
-                                currentState: $0.writeNode.currentState,
-                                executeOnEntry: $0.writeNode.executeOnEntry,
-                                nextState: $0.writeNode.nextStateName
-                            )
-                            return !nodes.contains(newWriteNode)
+                        let unseenRinglets = newNodes.filter { ringlet in
+                            !seenRinglets.contains(where: { isSame($0, ringlet) })
                         }
                         pendingRinglets += unseenRinglets
                         let newEdges = nextNodes.map {
