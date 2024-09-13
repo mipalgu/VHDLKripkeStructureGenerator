@@ -71,6 +71,7 @@ final class ArrangementRunnerTests: XCTestCase {
         }
         let expected = """
         library IEEE;
+        use IEEE.math_real.all;
         use IEEE.std_logic_1164.all;
 
         entity PingPongArrangementRunner is
