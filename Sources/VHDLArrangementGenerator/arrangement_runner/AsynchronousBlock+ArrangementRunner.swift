@@ -1,4 +1,4 @@
-// ArrangementRunnerTests.swift
+// AsynchronousBlock+ArrangementRunner.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,44 +53,18 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import TestUtils
-@testable import VHDLArrangementGenerator
+import VHDLGenerator
 import VHDLMachines
 import VHDLParsing
-import XCTest
 
-final class ArrangementRunnerTests: XCTestCase {
+extension AsynchronousBlock {
 
-    func testRawValue() {
-        guard let result = VHDLFile(
-            arrangementRunerFor: Arrangement.pingPong,
-            name: .pingPong,
-            machines: [.pingMachine: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!]
-        ) else {
-            XCTFail("Failed to create VHDLFile.")
-            return
-        }
-        let expected = """
-        entity PingPongArrangementRunner is
-            port(
-                clk: in std_logic;
-                ready: in std_logic;
-                PingPong_READ_ping: in std_logic;
-                PingPong_READ_pong: in std_logic;
-                PingPong_WRITE_ping: out std_logic;
-                PingPong_WRITE_pong: out std_logic;
-                ping_machine_inst_READ_PingMachine_ping: in std_logic;
-                ping_machine_inst_READ_executeOnEntry: in boolean;
-                ping_machine_inst_READ_state: in std_logic_vector(0 downto 0);
-                ping_machine_inst_WRITE_PingMachine_ping: out std_logic;
-                ping_machine_inst_WRITE_executeOnEntry: out boolean;
-                ping_machine_inst_WRITE_state: out std_logic_vector(0 downto 0);
-                busy: out std_logic
-            );
-        end PingPongArrangementRunner;
-
-        """
-        XCTAssertEqual(result.rawValue, expected)
+    public init?(
+        arrangementRunerFor arrangement: Arrangement,
+        name: VariableName,
+        machines: [VariableName: any MachineVHDLRepresentable]
+    ) {
+        self = .blocks(blocks: [])
     }
 
 }

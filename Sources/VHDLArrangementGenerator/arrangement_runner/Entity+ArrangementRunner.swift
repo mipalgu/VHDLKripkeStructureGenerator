@@ -216,12 +216,14 @@ extension Entity {
         else {
             return nil
         }
+        let busySignal = [PortSignal(type: .stdLogic, name: .busy, mode: .output)]
+        let readySignal = PortSignal(type: .stdLogic, name: .ready, mode: .input)
+        let clockSignal = PortSignal(clock: drivingClock)
+        let arrangementSignals = externalsRead + globalsRead + externalsWrite + globalsWrite
+        let runnerInputs = [clockSignal, readySignal]
         self.init(
             name: VariableName(rawValue: "\(name)ArrangementRunner")!,
-            port: PortBlock(
-                signals: [PortSignal(clock: drivingClock)] + externalsRead + globalsRead + externalsWrite
-                    + globalsWrite + signals
-            )!
+            port: PortBlock(signals: runnerInputs + arrangementSignals + signals + busySignal)!
         )
     }
 

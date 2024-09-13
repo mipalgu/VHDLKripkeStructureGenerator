@@ -64,10 +64,26 @@ extension VHDLFile {
         name: VariableName,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) {
-        guard let entity = Entity(arrangementRunerFor: arrangement, name: name, machines: machines) else {
+        guard
+            let entity = Entity(arrangementRunerFor: arrangement, name: name, machines: machines),
+            let architecture = Architecture(arrangementRunerFor: arrangement, name: name, machines: machines)
+        else {
             return nil
         }
-        self.init(architectures: [], entities: [entity], includes: [])
+        let uniqueIncludes = Set(machines.values.flatMap { $0.machine.includes })
+        let includes = uniqueIncludes.sorted {
+            switch ($0, $1) {
+            case (.library, .include):
+                return true
+            case (.include, .library):
+                return false
+            case (.library(let lhs), .library(let rhs)):
+                return lhs < rhs
+            case (.include(let lhs), .include(let rhs)):
+                return lhs.rawValue.lowercased() < rhs.rawValue.lowercased()
+            }
+        }
+        self.init(architectures: [architecture], entities: [entity], includes: includes)
     }
 
 }
