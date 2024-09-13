@@ -169,6 +169,8 @@ final class ArrangementRunnerTests: XCTestCase {
                             ping_machine_inst_WRITE_PingMachine_ping <= ping_machine_instWriteSnapshot.PingMachine_ping;
                             ping_machine_inst_WRITE_executeOnEntry <= ping_machine_instWriteSnapshot.executeOnEntry;
                             ping_machine_inst_WRITE_state <= ping_machine_instNextState;
+                        when others =>
+                            null;
                     end case;
                 end if;
             end process;

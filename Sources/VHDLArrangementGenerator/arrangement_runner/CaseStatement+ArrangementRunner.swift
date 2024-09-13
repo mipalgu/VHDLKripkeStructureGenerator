@@ -77,7 +77,8 @@ extension CaseStatement {
                 waitToStart,
                 .arrangementRunnerWaitForMachineStart,
                 .arrangementRunnerWaitForFinish,
-                setRingletValue
+                setRingletValue,
+                .othersNull
             ]
         )
     }
