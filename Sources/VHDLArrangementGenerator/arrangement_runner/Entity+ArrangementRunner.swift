@@ -59,7 +59,7 @@ import VHDLParsing
 
 extension Entity {
 
-    public init?<T>(
+    init?<T>(
         arrangementRunerFor representation: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {

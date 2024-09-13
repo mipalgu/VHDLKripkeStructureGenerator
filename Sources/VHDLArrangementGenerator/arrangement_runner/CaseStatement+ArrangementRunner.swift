@@ -58,7 +58,7 @@ import VHDLParsing
 
 extension CaseStatement {
 
-    public init?<T>(
+    init?<T>(
         arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {

@@ -60,7 +60,7 @@ import VHDLParsing
 
 extension ArchitectureHead {
 
-    public init?<T>(
+    init?<T>(
         arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
