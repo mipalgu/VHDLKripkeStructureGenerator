@@ -74,7 +74,12 @@ extension ArchitectureHead {
         guard
             runners.count == machines.count,
             let internalType = VariableName(rawValue: "\(name.rawValue)InternalState_t"),
-            let internalTypeEnum = EnumerationDefinition(name: internalType, nonEmptyValues: [.initial])
+            let internalTypeEnum = EnumerationDefinition(
+                name: internalType,
+                nonEmptyValues: [
+                    .initial, .waitToStart, .waitForMachineStart, .waitForFinish, .setRingletValue
+                ]
+            )
         else {
             return nil
         }
@@ -90,7 +95,68 @@ extension ArchitectureHead {
             defaultValue: .reference(variable: .variable(reference: .variable(name: .initial)))
         )))
         let internalDefinition = [internalStateType, internalState]
-        self.init(statements: internalDefinition + runnerComponents)
+        let machineSignals = arrangement.machines.flatMap {
+            let name = $0.key.name
+            let type = $0.key.type
+            guard let representation = machines[type] else {
+                fatalError("No representation for \(name)!")
+            }
+            let currentState: [Type] = representation.architectureHead.statements.compactMap {
+                switch $0 {
+                case .definition(value: .signal(let signal)):
+                    guard signal.name == .currentState else {
+                        return nil
+                    }
+                    return signal.type
+                default:
+                    return nil
+                }
+            }
+            guard currentState.count == 1 else {
+                fatalError("Invalid representation for \(name)!")
+            }
+            let stateType = currentState[0]
+            let types = [
+                HeadStatement.definition(value: .signal(value: LocalSignal(
+                    type: .member(components: [
+                        .work, VariableName(rawValue: "\(type.rawValue)Types")!, .readSnapshotType
+                    ]),
+                    name: VariableName(rawValue: "\(name.rawValue)ReadSnapshot")!
+                ))),
+                HeadStatement.definition(value: .signal(value: LocalSignal(
+                    type: .member(components: [
+                        .work, VariableName(rawValue: "\(type.rawValue)Types")!, .writeSnapshotType
+                    ]),
+                    name: VariableName(rawValue: "\(name.rawValue)WriteSnapshot")!
+                ))),
+                .definition(value: .signal(value: LocalSignal(
+                    type: stateType,
+                    name: VariableName(rawValue: "\(name.rawValue)PreviousRinglet")!
+                )))
+            ]
+            let machineSignals = representation.machine.machineSignals.map {
+                HeadStatement.definition(value: .signal(value: LocalSignal(
+                    type: $0.type,
+                    name: VariableName(rawValue: "\(name.rawValue)\($0.name.rawValue)")!
+                )))
+            }
+            let stateSignals = representation.machine.states.flatMap { state in
+                state.signals.map {
+                    HeadStatement.definition(value: .signal(value: LocalSignal(
+                        type: $0.type,
+                        name: VariableName(
+                            rawValue: "\(name.rawValue)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
+                        )!
+                    )))
+                }
+            }
+            return types + machineSignals + stateSignals
+        }
+        let controlSignals = [
+            HeadStatement.definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .reset))),
+            HeadStatement.definition(value: .signal(value: LocalSignal(type: .boolean, name: .finished)))
+        ]
+        self.init(statements: internalDefinition + machineSignals + controlSignals + runnerComponents)
     }
 
 }
