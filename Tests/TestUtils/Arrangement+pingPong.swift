@@ -76,4 +76,9 @@ extension Arrangement {
         clocks: [Machine.pingMachine.clocks[Machine.pingMachine.drivingClock]]
     )!
 
+    /// The `PingPong` Arrangement Representation.
+    public static var pingPongRepresentation = ArrangementRepresentation(
+        arrangement: .pingPong, name: .pingPong
+    )!
+
 }

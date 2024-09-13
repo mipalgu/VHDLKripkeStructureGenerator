@@ -59,19 +59,40 @@ import VHDLParsing
 
 extension AsynchronousBlock {
 
-    public init?(
-        arrangementRunnerFor arrangement: Arrangement,
-        name: VariableName,
+    public init?<T>(
+        arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
-    ) {
+    ) where T: ArrangementVHDLRepresentable {
         self = .blocks(blocks: [])
     }
 
-    init?(
-        asynchronousCodeInArrangementRunner arrangement: Arrangement,
-        name: VariableName,
+    init?<T>(
+        asynchronousCodeInArrangementRunner arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
-    ) {
+    ) where T: ArrangementVHDLRepresentable {
+        let runnerFiles: [(VariableName, VHDLFile)] = machines.sorted { $0.key < $1.key }.compactMap {
+            guard
+                let representation = $0.value as? MachineRepresentation,
+                let file = VHDLFile(ringletRunnerFor: representation)
+            else {
+                return nil
+            }
+            return ($0.key, file)
+        }
+        guard runnerFiles.count == machines.count else {
+            return nil
+        }
+        let runners = [VariableName: VHDLFile](uniqueKeysWithValues: runnerFiles)
+        // let components: [AsynchronousBlock] = arrangement.machines.compactMap {
+        //     let name = $0.key.name
+        //     let type = $0.key.type
+        //     guard let entity = runners[type]?.entities.first, let port = entity.port else {
+        //         return nil
+        //     }
+        //     let mappings = port.signals.map {
+        //         $0.
+        //     }
+        // }
         self = .blocks(blocks: [])
     }
 

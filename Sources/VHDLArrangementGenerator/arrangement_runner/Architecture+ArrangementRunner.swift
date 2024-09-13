@@ -59,15 +59,14 @@ import VHDLParsing
 
 extension Architecture {
 
-    public init?(
-        arrangementRunerFor arrangement: Arrangement,
-        name: VariableName,
+    public init?<T>(
+        arrangementRunerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
-    ) {
+    ) where T: ArrangementVHDLRepresentable {
         guard
-            let head = ArchitectureHead(arrangementRunnerFor: arrangement, name: name, machines: machines),
-            let body = AsynchronousBlock(arrangementRunnerFor: arrangement, name: name, machines: machines),
-            let entity = VariableName(rawValue: "\(name.rawValue)ArrangementRunner")
+            let head = ArchitectureHead(arrangementRunnerFor: arrangement, machines: machines),
+            let body = AsynchronousBlock(arrangementRunnerFor: arrangement, machines: machines),
+            let entity = VariableName(rawValue: "\(arrangement.name.rawValue)ArrangementRunner")
         else {
             return nil
         }

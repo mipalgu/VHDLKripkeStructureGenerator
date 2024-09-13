@@ -60,17 +60,17 @@ import VHDLParsing
 
 extension ArchitectureHead {
 
-    public init?(
-        arrangementRunnerFor arrangement: Arrangement,
-        name: VariableName,
+    public init?<T>(
+        arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
-    ) {
+    ) where T: ArrangementVHDLRepresentable {
         let runners: [VHDLFile] = machines.sorted { $0.key < $1.key }.compactMap {
             guard let representation = $0.value as? MachineRepresentation else {
                 return nil
             }
             return VHDLFile(ringletRunnerFor: representation)
         }
+        let name = arrangement.name
         guard
             runners.count == machines.count,
             let internalType = VariableName(rawValue: "\(name.rawValue)InternalState_t"),
@@ -95,7 +95,7 @@ extension ArchitectureHead {
             defaultValue: .reference(variable: .variable(reference: .variable(name: .initial)))
         )))
         let internalDefinition = [internalStateType, internalState]
-        let machineSignals = arrangement.machines.flatMap {
+        let machineSignals = arrangement.arrangement.machines.flatMap {
             let name = $0.key.name
             let type = $0.key.type
             guard let representation = machines[type] else {

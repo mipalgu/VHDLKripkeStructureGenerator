@@ -63,14 +63,16 @@ final class ArrangementRunnerTests: XCTestCase {
 
     func testRawValue() {
         guard let result = VHDLFile(
-            arrangementRunerFor: Arrangement.pingPong,
-            name: .pingPong,
+            arrangementRunerFor: Arrangement.pingPongRepresentation,
             machines: [.pingMachine: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!]
         ) else {
             XCTFail("Failed to create VHDLFile.")
             return
         }
         let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+
         entity PingPongArrangementRunner is
             port(
                 clk: in std_logic;
@@ -88,6 +90,32 @@ final class ArrangementRunnerTests: XCTestCase {
                 busy: out std_logic
             );
         end PingPongArrangementRunner;
+
+        architecture Behavioral of PingPongArrangementRunner is
+            type PingPongInternalState_t is (Initial, WaitToStart, WaitForMachineStart, WaitForFinish, SetRingletValue);
+            signal internalState: PingPongInternalState_t := Initial;
+            signal ping_machine_instReadSnapshot: work.PingMachineTypes.ReadSnapshot_t;
+            signal ping_machine_instWriteSnapshot: work.PingMachineTypes.WriteSnapshot_t;
+            signal ping_machine_instPreviousRinglet: std_logic_vector(0 downto 0);
+            signal reset: std_logic;
+            signal finished: boolean;
+            component PingMachineRingletRunner is
+                port(
+                    clk: in std_logic;
+                    reset: in std_logic := '0';
+                    state: in std_logic_vector(0 downto 0) := "0";
+                    ping: in std_logic;
+                    pong: in std_logic;
+                    previousRinglet: in std_logic_vector(0 downto 0) := "Z";
+                    readSnapshotState: out ReadSnapshot_t;
+                    writeSnapshotState: out WriteSnapshot_t;
+                    nextState: out std_logic_vector(0 downto 0);
+                    finished: out boolean := true
+                );
+            end component;
+        begin
+            
+        end Behavioral;
 
         """
         XCTAssertEqual(result.rawValue, expected)

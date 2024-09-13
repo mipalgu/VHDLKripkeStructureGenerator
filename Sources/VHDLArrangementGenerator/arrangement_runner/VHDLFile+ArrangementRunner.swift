@@ -59,14 +59,13 @@ import VHDLParsing
 
 extension VHDLFile {
 
-    public init?(
-        arrangementRunerFor arrangement: Arrangement,
-        name: VariableName,
+    public init?<T>(
+        arrangementRunerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
-    ) {
+    ) where T: ArrangementVHDLRepresentable {
         guard
-            let entity = Entity(arrangementRunerFor: arrangement, name: name, machines: machines),
-            let architecture = Architecture(arrangementRunerFor: arrangement, name: name, machines: machines)
+            let entity = Entity(arrangementRunerFor: arrangement, machines: machines),
+            let architecture = Architecture(arrangementRunerFor: arrangement, machines: machines)
         else {
             return nil
         }

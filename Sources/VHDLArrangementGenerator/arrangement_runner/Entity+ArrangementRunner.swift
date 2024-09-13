@@ -59,11 +59,12 @@ import VHDLParsing
 
 extension Entity {
 
-    public init?(
-        arrangementRunerFor arrangement: Arrangement,
-        name: VariableName,
+    public init?<T>(
+        arrangementRunerFor representation: T,
         machines: [VariableName: any MachineVHDLRepresentable]
-    ) {
+    ) where T: ArrangementVHDLRepresentable {
+        let arrangement = representation.arrangement
+        let name = representation.name
         let externalsRead = arrangement.externalSignals.filter { $0.mode != .output }.map {
             PortSignal(
                 type: $0.type,
