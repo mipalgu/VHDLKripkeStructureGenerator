@@ -57,6 +57,7 @@
 import Foundation
 import KripkeStructureParser
 import SwiftUtils
+import VHDLArrangementGenerator
 import VHDLGenerator
 import VHDLKripkeStructureGeneratorProtocols
 import VHDLMachines
@@ -126,6 +127,29 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         ] + targetStatesFiles + stateFiles.flatMap { $0 }
     }
 
+    public func generate<T>(
+        representation: T, machines: [VariableName: any MachineVHDLRepresentable]
+    ) -> [VHDLFile] where T: ArrangementVHDLRepresentable {
+        guard
+            let bram = VHDLFile(arrangementBRAMFor: representation, machines: machines),
+            let runner = VHDLFile(arrangementRunerFor: representation, machines: machines)
+        else {
+            fatalError("Failed to generate Arrangement Files!")
+        }
+        let machineFiles = machines.flatMap {
+            guard
+                let ringletRunner = VHDLFile(ringletRunnerFor: $1),
+                let runner = VHDLFile(runnerFor: $1),
+                let machine = VHDLFile(verifiable: $1),
+                let types = VHDLFile(typesFor: $1)
+            else {
+                fatalError("Failed to create machine files for \($0)!")
+            }
+            return [ringletRunner, runner, machine, types]
+        }
+        return [bram, runner] + machineFiles
+    }
+
     public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         guard representation.machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
             let stateAddresses = representation.machine.states.map {
@@ -174,6 +198,46 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         vhdlFolder.preferredFilename = "vhdl"
         let parent = FileWrapper(
             directoryWithFileWrappers: ["vhdl": vhdlFolder, "\(name)": package]
+        )
+        return parent
+    }
+
+    public func generateAll<T>(
+        representation: T, machines: [VariableName: any MachineVHDLRepresentable]
+    ) -> FileWrapper? where T: ArrangementVHDLRepresentable {
+        let vhdlFiles = self.generate(representation: representation, machines: machines)
+        let vhdlData: [(String, FileWrapper)] = vhdlFiles.compactMap { file in
+            guard let data = file.rawValue.data(using: .utf8) else {
+                return nil
+            }
+            let name: String
+            if let entity = file.entities.first {
+                name = entity.name.rawValue
+            } else if let package = file.packages.first {
+                name = package.name.rawValue
+            } else {
+                return nil
+            }
+            let wrapper = FileWrapper(regularFileWithContents: data)
+            wrapper.preferredFilename = "\(name).vhd"
+            return ("\(name).vhd", wrapper)
+        }
+        guard
+            vhdlData.count == vhdlFiles.count,
+            let primitiveTypesData = String.primitiveTypes.data(using: .utf8)
+        else {
+            return nil
+        }
+        let primitiveTypes = FileWrapper(regularFileWithContents: primitiveTypesData)
+        primitiveTypes.preferredFilename = "PrimitiveTypes.vhd"
+        let vhdlFolder = FileWrapper(
+            directoryWithFileWrappers: Dictionary(
+                uniqueKeysWithValues: vhdlData + [("PrimitiveTypes.vhd", primitiveTypes)]
+            )
+        )
+        vhdlFolder.preferredFilename = "vhdl"
+        let parent = FileWrapper(
+            directoryWithFileWrappers: ["vhdl": vhdlFolder]
         )
         return parent
     }
