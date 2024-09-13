@@ -98,6 +98,7 @@ final class ArrangementRunnerTests: XCTestCase {
             signal ping_machine_instReadSnapshot: work.PingMachineTypes.ReadSnapshot_t;
             signal ping_machine_instWriteSnapshot: work.PingMachineTypes.WriteSnapshot_t;
             signal ping_machine_instPreviousRinglet: std_logic_vector(0 downto 0);
+            signal ping_machine_instNextState: std_logic_vector(0 downto 0);
             signal reset: std_logic;
             signal finished: boolean;
             component PingMachineRingletRunner is
@@ -115,7 +116,18 @@ final class ArrangementRunnerTests: XCTestCase {
                 );
             end component;
         begin
-            
+            ping_machine_inst: component PingMachine port map (
+                clk => clk,
+                reset => reset,
+                state => ping_machine_inst_READ_state,
+                ping => PingPong_READ_ping,
+                pong => PingPong_READ_pong,
+                previousRinglet => ping_machine_instPreviousRinglet,
+                readSnapshotState => ping_machine_instReadSnapshot,
+                writeSnapshotState => ping_machine_instWriteSnapshot,
+                nextState => ping_machine_instNextState,
+                finished => finished
+            );
         end Behavioral;
 
         """

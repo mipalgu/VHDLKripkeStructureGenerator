@@ -132,6 +132,10 @@ extension ArchitectureHead {
                 .definition(value: .signal(value: LocalSignal(
                     type: stateType,
                     name: VariableName(rawValue: "\(name.rawValue)PreviousRinglet")!
+                ))),
+                .definition(value: .signal(value: LocalSignal(
+                    type: stateType,
+                    name: VariableName(rawValue: "\(name.rawValue)NextState")!
                 )))
             ]
             let machineSignals = representation.machine.machineSignals.map {

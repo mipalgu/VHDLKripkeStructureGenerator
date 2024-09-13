@@ -63,11 +63,11 @@ extension AsynchronousBlock {
         arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
-        self = .blocks(blocks: [])
+        self.init(asynchronousCodeInArrangementRunner: arrangement, machines: machines)
     }
 
     init?<T>(
-        asynchronousCodeInArrangementRunner arrangement: T,
+        asynchronousCodeInArrangementRunner representation: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
         let runnerFiles: [(VariableName, VHDLFile)] = machines.sorted { $0.key < $1.key }.compactMap {
@@ -83,17 +83,130 @@ extension AsynchronousBlock {
             return nil
         }
         let runners = [VariableName: VHDLFile](uniqueKeysWithValues: runnerFiles)
-        // let components: [AsynchronousBlock] = arrangement.machines.compactMap {
-        //     let name = $0.key.name
-        //     let type = $0.key.type
-        //     guard let entity = runners[type]?.entities.first, let port = entity.port else {
-        //         return nil
-        //     }
-        //     let mappings = port.signals.map {
-        //         $0.
-        //     }
-        // }
-        self = .blocks(blocks: [])
+        let arrangement = representation.arrangement
+        let components: [AsynchronousBlock] = arrangement.machines.compactMap {
+            let name = $0.key.name
+            let type = $0.key.type
+            let arrangementMappings = $0.value
+            guard let entity = runners[type]?.entities.first else {
+                return nil
+            }
+            let mappings: [VariableName: VariableName] = Dictionary(
+                uniqueKeysWithValues: arrangementMappings.mappings.map { ($0.destination, $0.source) }
+            )
+            let port = entity.port
+            let componentMappings = port.signals.map {
+                let signalName = $0.name
+                if let arrangementSignal = mappings[signalName] {
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(name: signalName)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(
+                                rawValue: "\(representation.name.rawValue)_READ_\(arrangementSignal.rawValue)"
+                            )!)
+                        )))
+                    )
+                }
+                switch signalName {
+                case .clk:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(name: signalName)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: .clk)
+                        )))
+                    )
+                case .reset:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(name: signalName)),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: .reset)
+                        )))
+                    )
+                case .state:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "\(name.rawValue)_READ_state")!)
+                        )))
+                    )
+                case .previousRinglet:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "\(name.rawValue)PreviousRinglet")!
+                            )
+                        )))
+                    )
+                case .readSnapshotState:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "\(name.rawValue)ReadSnapshot")!
+                            )
+                        )))
+                    )
+                case .writeSnapshotState:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "\(name.rawValue)WriteSnapshot")!
+                            )
+                        )))
+                    )
+                case .finished:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "finished")!
+                            )
+                        )))
+                    )
+                case .nextState:
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "\(name.rawValue)NextState")!
+                            )
+                        )))
+                    )
+                default:
+
+                    return VariableMap(
+                        lhs: .variable(reference: .variable(
+                            name: signalName
+                        )),
+                        rhs: .expression(value: .reference(variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "\(name.rawValue)_READ_\(signalName.rawValue)")!
+                            )
+                        )))
+                    )
+                }
+            }
+            return AsynchronousBlock.component(block: ComponentInstantiation(
+                label: name,
+                name: type,
+                port: PortMap(variables: componentMappings)
+            ))
+        }
+        self = .blocks(blocks: components)
     }
 
 }
