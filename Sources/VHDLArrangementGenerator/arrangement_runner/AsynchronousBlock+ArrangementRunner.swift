@@ -60,7 +60,15 @@ import VHDLParsing
 extension AsynchronousBlock {
 
     public init?(
-        arrangementRunerFor arrangement: Arrangement,
+        arrangementRunnerFor arrangement: Arrangement,
+        name: VariableName,
+        machines: [VariableName: any MachineVHDLRepresentable]
+    ) {
+        self = .blocks(blocks: [])
+    }
+
+    init?(
+        asynchronousCodeInArrangementRunner arrangement: Arrangement,
         name: VariableName,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) {

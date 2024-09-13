@@ -65,8 +65,8 @@ extension Architecture {
         machines: [VariableName: any MachineVHDLRepresentable]
     ) {
         guard
-            let head = ArchitectureHead(arrangementRunerFor: arrangement, name: name, machines: machines),
-            let body = AsynchronousBlock(arrangementRunerFor: arrangement, name: name, machines: machines),
+            let head = ArchitectureHead(arrangementRunnerFor: arrangement, name: name, machines: machines),
+            let body = AsynchronousBlock(arrangementRunnerFor: arrangement, name: name, machines: machines),
             let entity = VariableName(rawValue: "\(name.rawValue)ArrangementRunner")
         else {
             return nil

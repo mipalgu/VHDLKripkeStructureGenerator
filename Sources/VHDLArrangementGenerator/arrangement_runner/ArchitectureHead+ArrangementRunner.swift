@@ -61,7 +61,7 @@ import VHDLParsing
 extension ArchitectureHead {
 
     public init?(
-        arrangementRunerFor arrangement: Arrangement,
+        arrangementRunnerFor arrangement: Arrangement,
         name: VariableName,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) {
