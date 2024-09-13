@@ -83,7 +83,7 @@ extension Arrangement {
                     $0 + $1.type.signalType.encodedBits * 2
                 }
             }
-            guard let stateBits = BitLiteral.bitsRequired(for: machine.states.count - 1) else {
+            guard let stateBits = BitLiteral.bitsRequired(for: max(1, machine.states.count - 1)) else {
                 fatalError("Too few states.")
             }
             return $0 + machineBits + stateSignalBits + stateBits * 2 + 2
