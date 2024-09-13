@@ -52,7 +52,8 @@ let package = Package(
                 .target(name: "KripkeStructureParser"),
                 .target(name: "VHDLGenerator"),
                 .product(name: "SwiftUtils", package: "SwiftUtils"),
-                .target(name: "VHDLMemoryStructures")
+                .target(name: "VHDLMemoryStructures"),
+                .target(name: "VHDLArrangementGenerator")
             ]
         ),
         .target(
