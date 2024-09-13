@@ -63,7 +63,15 @@ extension AsynchronousBlock {
         arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
-        self.init(asynchronousCodeInArrangementRunner: arrangement, machines: machines)
+        guard
+            let asyncCode = AsynchronousBlock(
+                asynchronousCodeInArrangementRunner: arrangement, machines: machines
+            ),
+            let processBlock = ProcessBlock(arrangementRunnerFor: arrangement, machines: machines)
+        else {
+            return nil
+        }
+        self = .blocks(blocks: [asyncCode, .process(block: processBlock)])
     }
 
     init?<T>(
@@ -147,11 +155,7 @@ extension AsynchronousBlock {
                         lhs: .variable(reference: .variable(
                             name: signalName
                         )),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(
-                                name: VariableName(rawValue: "\(name.rawValue)ReadSnapshot")!
-                            )
-                        )))
+                        rhs: .open
                     )
                 case .writeSnapshotState:
                     return VariableMap(

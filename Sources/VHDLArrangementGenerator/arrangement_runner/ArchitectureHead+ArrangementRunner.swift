@@ -119,12 +119,6 @@ extension ArchitectureHead {
             let types = [
                 HeadStatement.definition(value: .signal(value: LocalSignal(
                     type: .member(components: [
-                        .work, VariableName(rawValue: "\(type.rawValue)Types")!, .readSnapshotType
-                    ]),
-                    name: VariableName(rawValue: "\(name.rawValue)ReadSnapshot")!
-                ))),
-                HeadStatement.definition(value: .signal(value: LocalSignal(
-                    type: .member(components: [
                         .work, VariableName(rawValue: "\(type.rawValue)Types")!, .writeSnapshotType
                     ]),
                     name: VariableName(rawValue: "\(name.rawValue)WriteSnapshot")!

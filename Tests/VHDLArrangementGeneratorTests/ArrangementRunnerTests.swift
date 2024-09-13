@@ -95,7 +95,6 @@ final class ArrangementRunnerTests: XCTestCase {
         architecture Behavioral of PingPongArrangementRunner is
             type PingPongInternalState_t is (Initial, WaitToStart, WaitForMachineStart, WaitForFinish, SetRingletValue);
             signal internalState: PingPongInternalState_t := Initial;
-            signal ping_machine_instReadSnapshot: work.PingMachineTypes.ReadSnapshot_t;
             signal ping_machine_instWriteSnapshot: work.PingMachineTypes.WriteSnapshot_t;
             signal ping_machine_instPreviousRinglet: std_logic_vector(0 downto 0);
             signal ping_machine_instNextState: std_logic_vector(0 downto 0);
@@ -123,11 +122,56 @@ final class ArrangementRunnerTests: XCTestCase {
                 ping => PingPong_READ_ping,
                 pong => PingPong_READ_pong,
                 previousRinglet => ping_machine_instPreviousRinglet,
-                readSnapshotState => ping_machine_instReadSnapshot,
+                readSnapshotState => open,
                 writeSnapshotState => ping_machine_instWriteSnapshot,
                 nextState => ping_machine_instNextState,
                 finished => finished
             );
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    case internalState is
+                        when Initial =>
+                            reset <= '1';
+                            busy <= '0';
+                            internalState <= WaitToStart;
+                        when WaitToStart =>
+                            if (ready = '1' and finished) then
+                                reset <= '0';
+                                busy <= '1';
+                                internalState <= WaitForMachineStart;
+                                if (ping_machine_inst_READ_executeOnEntry) then
+                                    ping_machine_instPreviousRinglet <= ping_machine_inst_READ_state xor "1";
+                                else
+                                    ping_machine_instPreviousRinglet <= ping_machine_inst_READ_state;
+                                end if;
+                            else
+                                reset <= '1';
+                                busy <= '0';
+                                internalState <= WaitToStart;
+                            end if;
+                        when WaitForMachineStart =>
+                            reset <= '0';
+                            busy <= '1';
+                            internalState <= WaitForFinish;
+                        when WaitForFinish =>
+                            if (finished) then
+                                internalState <= SetRingletValue;
+                            else
+                                internalState <= WaitForFinish;
+                            end if;
+                            reset <= '0';
+                            busy <= '1';
+                        when SetRingletValue =>
+                            reset <= '0';
+                            busy <= '0';
+                            internalState <= WaitToStart;
+                            ping_machine_inst_WRITE_PingMachine_ping <= ping_machine_instWriteSnapshot.PingMachine_ping;
+                            ping_machine_inst_WRITE_executeOnEntry <= ping_machine_instWriteSnapshot.executeOnEntry;
+                            ping_machine_inst_WRITE_state <= ping_machine_instNextState;
+                    end case;
+                end if;
+            end process;
         end Behavioral;
 
         """
