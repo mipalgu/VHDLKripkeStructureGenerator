@@ -116,7 +116,7 @@ final class ArrangementRunnerTests: XCTestCase {
                 );
             end component;
         begin
-            ping_machine_inst: component PingMachine port map (
+            ping_machine_inst: component PingMachineRingletRunner port map (
                 clk => clk,
                 reset => reset,
                 state => ping_machine_inst_READ_state,

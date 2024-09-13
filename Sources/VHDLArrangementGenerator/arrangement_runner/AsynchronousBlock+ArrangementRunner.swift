@@ -202,7 +202,7 @@ extension AsynchronousBlock {
             }
             return AsynchronousBlock.component(block: ComponentInstantiation(
                 label: name,
-                name: type,
+                name: entity.name,
                 port: PortMap(variables: componentMappings)
             ))
         }
