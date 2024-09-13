@@ -1,4 +1,4 @@
-// VariableName+constants.swift
+// ArrangementRunnerTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,56 +53,42 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import TestUtils
+@testable import VHDLArrangementGenerator
+import VHDLMachines
 import VHDLParsing
+import XCTest
 
-// swiftlint:disable force_unwrapping
-// swiftlint:disable missing_docs
+final class ArrangementRunnerTests: XCTestCase {
 
-/// Constants in test targets.
-public extension VariableName {
+    func testRawValue() {
+        guard let result = VHDLFile(
+            arrangementRunerFor: Arrangement.pingPong,
+            name: .pingPong,
+            machines: [.pingMachine: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!]
+        ) else {
+            XCTFail("Failed to create VHDLFile.")
+            return
+        }
+        let expected = """
+        entity PingPongArrangementRunner is
+            port(
+                clk: in std_logic;
+                PingPong_READ_ping: in std_logic;
+                PingPong_READ_pong: in std_logic;
+                PingPong_WRITE_ping: out std_logic;
+                PingPong_WRITE_pong: out std_logic;
+                ping_machine_inst_READ_PingMachine_ping: in std_logic;
+                ping_machine_inst_READ_executeOnEntry: in boolean;
+                ping_machine_inst_READ_state: in std_logic_vector(0 downto 0);
+                ping_machine_inst_WRITE_PingMachine_ping: out std_logic;
+                ping_machine_inst_WRITE_executeOnEntry: out boolean;
+                ping_machine_inst_WRITE_state: out std_logic_vector(0 downto 0)
+            );
+        end PingPongArrangementRunner;
 
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let calculateIsEven = VariableName(rawValue: "CalculateIsEven")!
-
-    static let count = VariableName(rawValue: "count")!
-
-    static let ieee = VariableName(rawValue: "IEEE")!
-
-    static let isEven = VariableName(rawValue: "isEven")!
-
-    static let isEvenMachine = VariableName(rawValue: "IsEvenMachine")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let `internal` = VariableName(rawValue: "Internal")!
-
-    static let ping = VariableName(rawValue: "ping")!
-
-    static let pingMachine = VariableName(rawValue: "PingMachine")!
-
-    static let pingPong = VariableName(rawValue: "PingPong")!
-
-    static let pong = VariableName(rawValue: "pong")!
-
-    static let onEntry = VariableName(rawValue: "OnEntry")!
-
-    static let onExit = VariableName(rawValue: "OnExit")!
-
-    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
-
-    static let waitForPong = VariableName(rawValue: "WaitForPong")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`.
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `z`.
-    static let z = VariableName(rawValue: "z")!
+        """
+        XCTAssertEqual(result.rawValue, expected)
+    }
 
 }
-
-// swiftlint:enable missing_docs
-// swiftlint:enable force_unwrapping

@@ -1,4 +1,4 @@
-// VariableName+constants.swift
+// Arrangement+pingPong.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,56 +53,27 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
+import VHDLMachines
 import VHDLParsing
 
-// swiftlint:disable force_unwrapping
-// swiftlint:disable missing_docs
+/// Add test arrangements.
+extension Arrangement {
 
-/// Constants in test targets.
-public extension VariableName {
-
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let calculateIsEven = VariableName(rawValue: "CalculateIsEven")!
-
-    static let count = VariableName(rawValue: "count")!
-
-    static let ieee = VariableName(rawValue: "IEEE")!
-
-    static let isEven = VariableName(rawValue: "isEven")!
-
-    static let isEvenMachine = VariableName(rawValue: "IsEvenMachine")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let `internal` = VariableName(rawValue: "Internal")!
-
-    static let ping = VariableName(rawValue: "ping")!
-
-    static let pingMachine = VariableName(rawValue: "PingMachine")!
-
-    static let pingPong = VariableName(rawValue: "PingPong")!
-
-    static let pong = VariableName(rawValue: "pong")!
-
-    static let onEntry = VariableName(rawValue: "OnEntry")!
-
-    static let onExit = VariableName(rawValue: "OnExit")!
-
-    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
-
-    static let waitForPong = VariableName(rawValue: "WaitForPong")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`.
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `z`.
-    static let z = VariableName(rawValue: "z")!
+    /// The `PingPong` Arrangement.
+    public static let pingPong = Arrangement(
+        mappings: [
+            MachineInstance(
+                name: VariableName(rawValue: "ping_machine_inst")!, type: .pingMachine
+            ): MachineMapping(
+                machine: .pingMachine,
+                with: Machine.pingMachine.externalSignals.map {
+                    VariableMapping(source: $0.name, destination: $0.name)
+                }
+            )!
+        ],
+        externalSignals: [],
+        signals: Machine.pingMachine.externalSignals.map { LocalSignal(type: $0.type, name: $0.name) },
+        clocks: [Machine.pingMachine.clocks[Machine.pingMachine.drivingClock]]
+    )!
 
 }
-
-// swiftlint:enable missing_docs
-// swiftlint:enable force_unwrapping

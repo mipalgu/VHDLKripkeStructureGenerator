@@ -30,6 +30,19 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package
         // depends on.
         .target(
+            name: "VHDLArrangementGenerator",
+            dependencies: [
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "VHDLKripkeStructureGeneratorProtocols"),
+                .target(name: "Utilities"),
+                .target(name: "KripkeStructureParser"),
+                .product(name: "SwiftUtils", package: "SwiftUtils"),
+                .target(name: "VHDLMemoryStructures"),
+                .target(name: "VHDLGenerator")
+            ]
+        ),
+        .target(
             name: "VHDLKripkeStructureGenerator",
             dependencies: [
                 .product(name: "VHDLMachines", package: "VHDLMachines"),
@@ -92,6 +105,19 @@ let package = Package(
                 .product(name: "VHDLMachines", package: "VHDLMachines"),
                 .product(name: "VHDLParsing", package: "VHDLParsing"),
                 .product(name: "SwiftUtils", package: "SwiftUtils")
+            ]
+        ),
+        .testTarget(
+            name: "VHDLArrangementGeneratorTests",
+            dependencies: [
+                .target(name: "VHDLGenerator"),
+                .product(name: "VHDLMachines", package: "VHDLMachines"),
+                .product(name: "VHDLParsing", package: "VHDLParsing"),
+                .target(name: "Utilities"),
+                .target(name: "KripkeStructureParser"),
+                .product(name: "SwiftUtils", package: "SwiftUtils"),
+                .target(name: "TestUtils"),
+                .target(name: "VHDLArrangementGenerator")
             ]
         ),
         .testTarget(

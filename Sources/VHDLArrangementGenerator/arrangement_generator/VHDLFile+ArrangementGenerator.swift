@@ -1,4 +1,4 @@
-// VariableName+constants.swift
+// VHDLFile+ArrangementGenerator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,56 +53,15 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import VHDLParsing
-
-// swiftlint:disable force_unwrapping
-// swiftlint:disable missing_docs
-
-/// Constants in test targets.
-public extension VariableName {
-
-    static let clk = VariableName(rawValue: "clk")!
-
-    static let calculateIsEven = VariableName(rawValue: "CalculateIsEven")!
-
-    static let count = VariableName(rawValue: "count")!
-
-    static let ieee = VariableName(rawValue: "IEEE")!
-
-    static let isEven = VariableName(rawValue: "isEven")!
-
-    static let isEvenMachine = VariableName(rawValue: "IsEvenMachine")!
-
-    static let initial = VariableName(rawValue: "Initial")!
-
-    static let `internal` = VariableName(rawValue: "Internal")!
-
-    static let ping = VariableName(rawValue: "ping")!
-
-    static let pingMachine = VariableName(rawValue: "PingMachine")!
-
-    static let pingPong = VariableName(rawValue: "PingPong")!
-
-    static let pong = VariableName(rawValue: "pong")!
-
-    static let onEntry = VariableName(rawValue: "OnEntry")!
-
-    static let onExit = VariableName(rawValue: "OnExit")!
-
-    static let stdLogic1164 = VariableName(rawValue: "std_logic_1164")!
-
-    static let waitForPong = VariableName(rawValue: "WaitForPong")!
-
-    /// A variable `x`.
-    static let x = VariableName(rawValue: "x")!
-
-    /// A variable `y`.
-    static let y = VariableName(rawValue: "y")!
-
-    /// A variable `z`.
-    static let z = VariableName(rawValue: "z")!
-
-}
-
-// swiftlint:enable missing_docs
-// swiftlint:enable force_unwrapping
+//
+// - ArrangementGenerator Tracks the next ringlet to be executed and controls access to storage. This file
+// controls the execution of the entire generator. The control flow centrally exists within this file which
+// delegates to all other entities.
+//
+// - ArrangementRunner Executes combined state of machines 1 ringlet at a time. This contains parallel
+// execution over all external variables (true externals --- external to the arrangmenet!). Replicates
+// the number of machine runners for the state-space of the external variables.
+//
+// - Ringlet Runner (from VHDLGenerator) represents single machine execution (all externals + machines + state
+// variables). Executes single ringlet.
+//
