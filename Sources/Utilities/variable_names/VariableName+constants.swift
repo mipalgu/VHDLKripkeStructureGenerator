@@ -234,6 +234,9 @@ public extension VariableName {
     /// The `WaitForReadEnable` constant.
     static let waitForReadEnable = VariableName(rawValue: "WaitForReadEnable")!
 
+    /// The `work` constant.
+    static let work = VariableName(rawValue: "work")!
+
     /// The `WriteSnapshot_t` type.
     static let writeSnapshotType = VariableName(rawValue: "WriteSnapshot_t")!
 
