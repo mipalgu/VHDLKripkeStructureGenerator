@@ -69,7 +69,7 @@ extension ArchitectureHead {
             return nil
         }
         guard size <= 30 else {
-            self.init(statements: [])
+            self.init(largeCacheName: name, elementSize: size, numberOfElements: numberOfElements)
             return
         }
         let encodedSize = size + 1
@@ -204,6 +204,73 @@ extension ArchitectureHead {
             statements: cacheSignals + ramSignals + expanderTypes + decoderTypes + dividerTypes
                 + logicSignals + components
         )
+    }
+
+    @inlinable
+    init?(largeCacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        let addressesPerElement = Int((Double(size) / 31.0).rounded(.up))
+        guard
+            size > 30,
+            let encoder = Entity(
+                encoderName: VariableName(rawValue: "\(name)Encoder")!, numberOfElements: 1, elementSize: size
+            ),
+            let decoder = Entity(
+                decoderName: VariableName(rawValue: "\(name)Decoder")!, numberOfElements: 1, elementSize: size
+            ),
+            let bram = Entity(
+                bramName: VariableName(rawValue: "\(name)BRAM")!,
+                numberOfAddresses: numberOfElements * addressesPerElement
+            )
+        else {
+            return nil
+        }
+        let encodedType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: size - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let memorySize = VectorSize.to(
+            lower: .literal(value: .integer(value: 0)),
+            upper: .literal(value: .integer(value: addressesPerElement - 1))
+        )
+        let memoryType = SignalType.ranged(type: .integer(size: memorySize))
+        let internalStateType = VariableName(rawValue: "\(name)InternalState_t")!
+        let statements: [HeadStatement] = [
+            .definition(value: .signal(value: LocalSignal(type: encodedType, name: .readValue))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .readEnable))),
+            .definition(value: .signal(value: LocalSignal(type: encodedType, name: .writeValue))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .writeEnable))),
+            .definition(value: .type(value: .array(value: ArrayDefinition(
+                name: .valuesType,
+                size: [memorySize],
+                elementType: .signal(type: .logicVector32)
+            )))),
+            .definition(value: .signal(value: LocalSignal(type: .alias(name: .valuesType), name: .values))),
+            .definition(value: .signal(
+                value: LocalSignal(type: .alias(name: .valuesType), name: .currentValues)
+            )),
+            .definition(value: .signal(value: LocalSignal(type: memoryType, name: .memoryIndex))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .currentAddress))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .addressBRAM))),
+            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .weBRAM))),
+            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .di))),
+            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .valueBRAM))),
+            .definition(value: .type(value: .enumeration(value: EnumerationDefinition(
+                name: internalStateType,
+                nonEmptyValues: [
+                    .initial, .waitForNewDataType, .writeElement, .waitOneCycle, .setReadAddress,
+                    .readElement, .error
+                ]
+            )!))),
+            .definition(value: .signal(
+                value: LocalSignal(type: .alias(name: internalStateType), name: .internalState)
+            )),
+            .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .maxAddress)))
+        ]
+        let components = [encoder, decoder, bram].map {
+            HeadStatement.definition(value: .component(value: ComponentDefinition(entity: $0)))
+        }
+        self.init(statements: statements + components)
     }
 
     // swiftlint:enable function_body_length

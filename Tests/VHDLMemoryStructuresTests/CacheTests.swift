@@ -338,8 +338,8 @@ final class CacheTests: XCTestCase {
                 port(
                     data0: in std_logic_vector(31 downto 0);
                     data1: in std_logic_vector(31 downto 0);
-                    out: out std_logic_vector(57 downto 0);
-                    outen: out std_logic
+                    out0: out std_logic_vector(57 downto 0);
+                    out0en: out std_logic
                 );
             end component;
             component TargetStatesCacheBRAM is

@@ -60,8 +60,17 @@ import VHDLParsing
 /// Add cache constants.
 extension VariableName {
 
+    /// The `addressBRAM` signal.
+    @usableFromInline static let addressBRAM = VariableName(rawValue: "addressBRAM")!
+
+    /// The `currentAddress` signal.
+    @usableFromInline static let currentAddress = VariableName(rawValue: "currentAddress")!
+
     /// The `currentValue` signal.
     @usableFromInline static let currentValue = VariableName(rawValue: "currentValue")!
+
+    /// The `currentValues` signal.
+    @usableFromInline static let currentValues = VariableName(rawValue: "currentValues")!
 
     /// The `enables` signal.
     @usableFromInline static let enables = VariableName(rawValue: "enables")!
@@ -69,11 +78,17 @@ extension VariableName {
     /// The `IncrementIndex` signal.
     @usableFromInline static let incrementIndex = VariableName(rawValue: "IncrementIndex")!
 
+    /// The `maxAddress` signal.
+    @usableFromInline static let maxAddress = VariableName(rawValue: "maxAddress")!
+
     /// The `memoryAddress` signal.
     @usableFromInline static let memoryAddress = VariableName(rawValue: "memoryAddress")!
 
     /// The `memoryOffset` signal.
     @usableFromInline static let memoryOffset = VariableName(rawValue: "memoryOffset")!
+
+    /// The `ReadElement` case.
+    @usableFromInline static let readElement = VariableName(rawValue: "ReadElement")!
 
     /// The `readEnables` signal.
     @usableFromInline static let readEnables = VariableName(rawValue: "readEnables")!
@@ -83,6 +98,9 @@ extension VariableName {
 
     /// The `resetEnables` signal.
     @usableFromInline static let resetEnables = VariableName(rawValue: "ResetEnables")!
+
+    /// The `SetReadAddress` case.
+    @usableFromInline static let setReadAddress = VariableName(rawValue: "SetReadAddress")!
 
     /// The `stateIndex` signal.
     @usableFromInline static let stateIndex = VariableName(rawValue: "stateIndex")!
@@ -95,11 +113,29 @@ extension VariableName {
         rawValue: "TargetStatesCache_InternalState_t"
     )!
 
+    /// The `valueBRAM` signal.
+    @usableFromInline static let valueBRAM = VariableName(rawValue: "valueBRAM")!
+
+    /// The `values` signal.
+    @usableFromInline static let values = VariableName(rawValue: "values")!
+
+    /// The `Values_t` type.
+    @usableFromInline static let valuesType = VariableName(rawValue: "Values_t")!
+
+    /// The `WaitOneCycle` case.
+    @usableFromInline static let waitOneCycle = VariableName(rawValue: "WaitOneCycle")!
+
     /// The `weBRAM` signal.
     @usableFromInline static let weBRAM = VariableName(rawValue: "weBRAM")!
 
     /// The `workingStates` signal.
     @usableFromInline static let workingStates = VariableName(rawValue: "workingStates")!
+
+    /// The `writeEnable` signal.
+    @usableFromInline static let writeEnable = VariableName(rawValue: "writeEnable")!
+
+    /// The `writeValue` signal.
+    @usableFromInline static let writeValue = VariableName(rawValue: "writeValue")!
 
 }
 
