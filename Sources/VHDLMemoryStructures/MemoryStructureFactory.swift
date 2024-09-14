@@ -76,7 +76,7 @@ public struct MemoryStructureFactory {
         }
         let elementsPerAddress = 31 / size
         guard elementsPerAddress > 0 else {
-            return nil
+            return self.createLargeCache(name: name, elementSize: size, numberOfElements: numberOfElements)
         }
         let numberOfAddresses: Int
         if numberOfElements.isMultiple(of: elementsPerAddress) {
@@ -103,6 +103,29 @@ public struct MemoryStructureFactory {
             return nil
         }
         return [cache, decoder, encoder, divider, bram]
+    }
+
+    @inlinable
+    func createLargeCache(name: VariableName, elementSize size: Int, numberOfElements: Int) -> [VHDLFile]? {
+        print("Creating large cache \(name) containing \(numberOfElements) elements of size \(size) bits.")
+        let addressesPerElement = Int((Double(size) / 31.0).rounded(.up))
+        let numberOfAddresses = addressesPerElement * numberOfElements
+        guard
+            let cache = VHDLFile(cacheName: name, elementSize: size, numberOfElements: numberOfElements),
+            let decoderName = VariableName(rawValue: name.rawValue + "Decoder"),
+            let encoderName = VariableName(rawValue: name.rawValue + "Encoder"),
+            let bramName = VariableName(rawValue: name.rawValue + "BRAM"),
+            let decoder = VHDLFile(
+                decoderName: decoderName, numberOfElements: numberOfElements, elementSize: size
+            ),
+            let encoder = VHDLFile(
+                encoderName: encoderName, numberOfElements: numberOfElements, elementSize: size
+            ),
+            let bram = VHDLFile(bramName: bramName, numberOfAddresses: numberOfAddresses)
+        else {
+            return nil
+        }
+        return [cache, decoder, encoder, bram]
     }
 
     /// Create the target states cache for a machine.
