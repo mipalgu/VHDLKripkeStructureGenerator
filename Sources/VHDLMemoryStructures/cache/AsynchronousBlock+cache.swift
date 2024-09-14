@@ -67,7 +67,8 @@ extension AsynchronousBlock {
     @inlinable
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard size <= 30 else {
-            fatalError("Caches containing large elements are not yet supported!")
+            self = .blocks(blocks: [])
+            return
         }
         guard
             size > 0,

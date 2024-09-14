@@ -281,6 +281,178 @@ final class CacheTests: XCTestCase {
         XCTAssertEqual(result.rawValue, expected)
     }
 
+    /// Test cache generation.
+    func testLargeCacheGeneration() {
+        guard let result = VHDLFile(
+            cacheName: .targetStatesCache, elementSize: 58, numberOfElements: 5
+        ) else {
+            XCTFail("Failed to create cache!")
+            return
+        }
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use IEEE.numeric_std.all;
+
+        entity TargetStatesCache is
+            port(
+                clk: in std_logic;
+                address: in std_logic_vector(2 downto 0);
+                data: in std_logic_vector(57 downto 0);
+                we: in std_logic;
+                ready: in std_logic;
+                busy: out std_logic;
+                value: out std_logic_vector(57 downto 0);
+                value_en: out std_logic;
+                lastAddress: out std_logic_vector(2 downto 0)
+            );
+        end TargetStatesCache;
+
+        architecture Behavioral of TargetStatesCache is
+            signal readValue: std_logic_vector(57 downto 0);
+            signal readEnable: std_logic;
+            signal writeValue: std_logic_vector(57 downto 0);
+            signal writeEnable: std_logic;
+            signal currentValue0: std_logic_vector(31 downto 0);
+            signal currentValue1: std_logic_vector(31 downto 0);
+            type Values_t is array (0 to 1) of std_logic_vector(31 downto 0);
+            signal values: Values_t;
+            signal memoryIndex: integer range 0 to 1;
+            signal currentAddress: std_logic_vector(31 downto 0);
+            signal addressBRAM: std_logic_vector(31 downto 0);
+            signal weBRAM: std_logic;
+            signal unsignedAddress: unsigned(31 downto 0);
+            signal di: std_logic_vector(31 downto 0);
+            signal valueBRAM: std_logic_vector(31 downto 0);
+            type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, WaitOneCycle, SetReadAddress, ReadElement, Error);
+            signal internalState: TargetStatesCacheInternalState_t;
+            signal maxAddress: unsigned(31 downto 0);
+            component TargetStatesCacheEncoder is
+                port(
+                    in0: in std_logic_vector(57 downto 0);
+                    in0en: in std_logic;
+                    data0: out std_logic_vector(31 downto 0);
+                    data1: out std_logic_vector(31 downto 0)
+                );
+            end component;
+            component TargetStatesCacheDecoder is
+                port(
+                    data0: in std_logic_vector(31 downto 0);
+                    data1: in std_logic_vector(31 downto 0);
+                    out: out std_logic_vector(57 downto 0);
+                    outen: out std_logic
+                );
+            end component;
+            component TargetStatesCacheBRAM is
+                port(
+                    clk: in std_logic;
+                    we: in std_logic;
+                    addr: in std_logic_vector(31 downto 0);
+                    di: in std_logic_vector(31 downto 0);
+                    do: out std_logic_vector(31 downto 0)
+                );
+            end component;
+        begin
+            TargetStatesCacheEncoder_inst: component TargetStatesCacheEncoder port map (
+                in0 => writeValue,
+                in0en => writeEnable,
+                data0 => values(0),
+                data1 => values(1)
+            );
+            TargetStatesCacheDecoder_inst: component TargetStatesCacheDecoder port map (
+                data0 => currentValue0,
+                data1 => currentValue1,
+                out0 => readValue,
+                out0en => readEnable
+            );
+            TargetStatesCacheBRAM_inst: component TargetStatesCacheBRAM port map (
+                clk => clk,
+                we => weBRAM,
+                addr => addressBRAM,
+                di => di,
+                do => valueBRAM
+            );
+            addressBRAM <= std_logic_vector(unsigned(currentAddress) + to_unsigned(memoryIndex, 32));
+            unsignedAddress <= unsigned("00000000000000000000000000000" & address);
+            lastAddress <= std_logic_vector(maxAddress);
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    case internalState is
+                        when Initial =>
+                            writeValue <= (others => '0');
+                            writeEnable <= '0';
+                            currentValue0 <= (others => '0');
+                            currentValue1 <= (others => '1');
+                            memoryIndex <= 0;
+                            currentAddress <= (others => '0');
+                            internalState <= WaitForNewData;
+                            weBRAM <= '0';
+                            maxAddress <= (others => '0');
+                        when WaitForNewData =>
+                            if (ready = '1' and we = '1') then
+                                internalState <= WriteElement;
+                                busy <= '1';
+                                currentAddress <= std_logic_vector(unsignedAddress * 2);
+                                writeValue <= data;
+                                if (maxAddress < unsignedAddress) then
+                                    maxAddress <= unsignedAddress;
+                                end if;
+                            elsif (ready = '1' and we = '0') then
+                                internalState <= ReadElement;
+                                busy <= '1';
+                                currentAddress <= std_logic_vector(unsignedAddress * 2);
+                            else
+                                internalState <= WaitForNewData;
+                                busy <= '0';
+                            end if;
+                            memoryIndex <= 0;
+                            weBRAM <= '0';
+                        when SetReadAddress =>
+                            if (memoryIndex = 1) then
+                                internalState <= WaitOneCycle;
+                                busy <= '0';
+                                value_en <= readEnable;
+                                value <= values(0) & values(1);
+                            else
+                                memoryIndex <= memoryIndex + 1;
+                                internalState <= ReadElement;
+                                busy <= '1';
+                            end if;
+                            weBRAM <= '0';
+                        when ReadElement =>
+                            internalState <= SetReadAddress;
+                            values(memoryIndex) <= valueBRAM;
+                            busy <= '1';
+                            weBRAM <= '0';
+                        when WriteElement =>
+                            if memoryIndex = 1 then
+                                internalState <= WaitOneCycle;
+                                weBRAM <= '0';
+                                busy <= '0';
+                            else
+                                memoryIndex <= memoryIndex + 1;
+                                weBRAM <= '1';
+                                busy <= '1';
+                                di <= values(memoryIndex);
+                            end if;
+                        when WaitOneCycle =>
+                            busy <= '0';
+                            weBRAM <= '0';
+                            internalState <= WaitForNewData;
+                        when others =>
+                            internalState <= Error;
+                            busy <= '1';
+                            weBRAM <= '0';
+                    end case;
+                end if;
+            end process;
+        end Behavioral;
+
+        """
+        XCTAssertEqual(result.rawValue, expected)
+    }
+
     // swiftlint:enable line_length
     // swiftlint:enable function_body_length
 

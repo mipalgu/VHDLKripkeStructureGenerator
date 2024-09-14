@@ -69,7 +69,8 @@ extension ArchitectureHead {
             return nil
         }
         guard size <= 30 else {
-            fatalError("Large element sizes are currently not supported!")
+            self.init(statements: [])
+            return
         }
         let encodedSize = size + 1
         let elementsPerAddress = Int(exp2(log2(Double(31 / encodedSize)).rounded(.down)).rounded())
