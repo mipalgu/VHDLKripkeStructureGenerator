@@ -359,8 +359,8 @@ final class CacheTests: XCTestCase {
                 data1 => values(1)
             );
             TargetStatesCacheDecoder_inst: component TargetStatesCacheDecoder port map (
-                data0 => currentValue0,
-                data1 => currentValue1,
+                data0 => currentValues(0),
+                data1 => currentValues(1),
                 out0 => readValue,
                 out0en => readEnable
             );

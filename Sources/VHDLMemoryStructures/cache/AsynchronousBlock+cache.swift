@@ -67,7 +67,7 @@ extension AsynchronousBlock {
     @inlinable
     init?(cacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard size <= 30 else {
-            self = .blocks(blocks: [])
+            self.init(largeCacheName: name, elementSize: size, numberOfElements: numberOfElements)
             return
         }
         guard
@@ -357,6 +357,152 @@ extension AsynchronousBlock {
         self = .blocks(
             blocks: components + statements + [.process(block: readProcess), .process(block: process)]
         )
+    }
+
+    @inlinable
+    init?(largeCacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        guard size > 30 else {
+            return nil
+        }
+        let addressPerElements = Int((Double(size) / 31.0).rounded(.up))
+        let encoderMappings = (0..<addressPerElements).map {
+            VariableMap(
+                lhs: .variable(reference: .variable(name: VariableName(rawValue: "data\($0)")!)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .values))),
+                    index: .index(value: .literal(value: .integer(value: $0)))
+                )))
+            )
+        }
+        let encoder = ComponentInstantiation(
+            label: VariableName(rawValue: name.rawValue + "Encoder_inst")!,
+            name: VariableName(rawValue: name.rawValue + "Encoder")!,
+            port: PortMap(variables: [
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "in0")!)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .writeValue)))
+                    )
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "in0en")!)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .writeEnable)))
+                    )
+                )
+            ] + encoderMappings)
+        )
+        let decoderMappings = (0..<addressPerElements).map {
+            VariableMap(
+                lhs: .variable(reference: .variable(name: VariableName(rawValue: "data\($0)")!)),
+                rhs: .expression(value: .reference(variable: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .currentValues))),
+                    index: .index(value: .literal(value: .integer(value: $0)))
+                )))
+            )
+        }
+        let decoder = ComponentInstantiation(
+            label: VariableName(rawValue: name.rawValue + "Decoder_inst")!,
+            name: VariableName(rawValue: name.rawValue + "Decoder")!,
+            port: PortMap(variables: decoderMappings + [
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "out0")!)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .readValue)))
+                    )
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: VariableName(rawValue: "out0en")!)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .readEnable)))
+                    )
+                )
+            ])
+        )
+        let bram = ComponentInstantiation(
+            label: VariableName(rawValue: name.rawValue + "BRAM_inst")!,
+            name: VariableName(rawValue: name.rawValue + "BRAM")!,
+            port: PortMap(variables: [
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .clk)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .clk)))
+                    )
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .we)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .weBRAM)))
+                    )
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .addr)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .addressBRAM)))
+                    )
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .di)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .di)))
+                    )
+                ),
+                VariableMap(
+                    lhs: .variable(reference: .variable(name: .do)),
+                    rhs: .expression(
+                        value: .reference(variable: .variable(reference: .variable(name: .valueBRAM)))
+                    )
+                )
+            ])
+        )
+        let components = [encoder, decoder, bram].map {
+            AsynchronousBlock.component(block: $0)
+        }
+        let elementAddressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
+        let padding = 32 - elementAddressBits
+        let fullAddress: Expression
+        if padding == 0 {
+            fullAddress = .reference(variable: .variable(reference: .variable(name: .address)))
+        } else {
+            fullAddress = .binary(operation: .concatenate(
+                lhs: .literal(value: .vector(value: .bits(value: BitVector(
+                    values: [BitLiteral](repeating: .low, count: padding)
+                )))),
+                rhs: .reference(variable: .variable(reference: .variable(name: .address)))
+            ))
+        }
+        let assignments: [AsynchronousBlock] = [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .addressBRAM)),
+                value: .expression(value: .cast(operation: .stdLogicVector(
+                    expression: .binary(operation: .addition(
+                        lhs: .cast(operation: .unsigned(expression: .reference(variable: .variable(
+                            reference: .variable(name: .currentAddress)
+                        )))),
+                        rhs: .functionCall(call: .custom(function: CustomFunctionCall(
+                            name: .toUnsigned,
+                            parameters: [
+                                Argument(argument: .reference(
+                                    variable: .variable(reference: .variable(name: .memoryIndex))
+                                )),
+                                Argument(argument: .literal(value: .integer(value: 32)))
+                            ]
+                        )))
+                    ))
+                )))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .unsignedAddress)),
+                value: .expression(value: .cast(operation: .unsigned(expression: fullAddress)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .lastAddress)),
+                value: .expression(value: .cast(operation: .stdLogicVector(
+                    expression: .reference(variable: .variable(reference: .variable(name: .maxAddress)))
+                )))
+            ))
+        ]
+        self = .blocks(blocks: components + assignments)
     }
 
     // swiftlint:enable force_unwrapping
