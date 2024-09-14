@@ -160,4 +160,36 @@ final class EncoderTests: XCTestCase {
 
     // swiftlint:enable line_length
 
+    func testLargeEncoderCreation() {
+        guard let result = VHDLFile(
+            encoderName: .targetStatesEncoder, numberOfElements: 1, elementSize: 58
+        ) else {
+            XCTFail("Failed to create encoder!")
+            return
+        }
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+
+        entity TargetStatesEncoder is
+            port(
+                in0: in std_logic_vector(57 downto 0);
+                in0en: in std_logic;
+                data0: out std_logic_vector(31 downto 0);
+                data1: out std_logic_vector(31 downto 0)
+            );
+        end TargetStatesEncoder;
+
+        architecture Behavioral of TargetStatesEncoder is
+        \("    ")
+        begin
+            data0 <= in0(57 downto 27) & in0en;
+            data1 <= in0(26 downto 0) & "0000" & in0en;
+        end Behavioral;
+
+        """
+        XCTAssertEqual(expected, result.rawValue)
+        XCTAssertNil(VHDLFile(encoderName: .targetStatesEncoder, numberOfElements: 2, elementSize: 58))
+    }
+
 }

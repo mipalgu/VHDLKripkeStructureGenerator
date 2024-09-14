@@ -109,7 +109,7 @@ extension Architecture {
         let paddingAmount = numberOfAddresses * 31 - elementSize
         let outputs = (0..<numberOfAddresses).map {
             let topIndex = elementSize - 31 * $0 - 1
-            let bottomIndex = max(0, elementSize - 31 * $0 - 32)
+            let bottomIndex = max(0, elementSize - 31 * ($0 + 1))
             guard $0 == numberOfAddresses - 1, paddingAmount != 0 else {
                 return AsynchronousBlock.statement(statement: .assignment(
                     name: .variable(reference: .variable(name: VariableName(rawValue: "data\($0)")!)),
