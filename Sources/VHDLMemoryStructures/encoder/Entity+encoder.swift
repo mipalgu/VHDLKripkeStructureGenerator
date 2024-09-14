@@ -62,8 +62,12 @@ extension Entity {
     /// Create a generic encoder.
     @inlinable
     init?(encoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
-        guard numberOfElements > 0, elementSize > 0, (elementSize + 1) * numberOfElements <= 32 else {
+        guard numberOfElements > 0, elementSize > 0 else {
             return nil
+        }
+        guard (elementSize + 1) * numberOfElements <= 32 else {
+            self.init(largeEncoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
+            return
         }
         let decodedType = SignalType.ranged(type: .stdLogicVector(size: .downto(
             upper: .literal(value: .integer(value: elementSize - 1)),
@@ -79,6 +83,31 @@ extension Entity {
             ]
         }
         guard let port = PortBlock(signals: inputs + [output]) else {
+            return nil
+        }
+        self.init(name: name, port: port)
+    }
+
+    @inlinable
+    init?(largeEncoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
+        guard numberOfElements == 1, elementSize > 31 else {
+            return nil
+        }
+        let decodedType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: elementSize - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let numberOfAddresses = Int((Double(elementSize) / 31.0).rounded(.up))
+        let outputs = (0..<numberOfAddresses).map {
+            PortSignal(type: .logicVector32, name: VariableName(rawValue: "data\($0)")!, mode: .output)
+        }
+        let inputs = [
+            // swiftlint:disable:next force_unwrapping
+            PortSignal(type: decodedType, name: VariableName(rawValue: "in0")!, mode: .input),
+            // swiftlint:disable:next force_unwrapping
+            PortSignal(type: .stdLogic, name: VariableName(rawValue: "in0en")!, mode: .input)
+        ]
+        guard let port = PortBlock(signals: inputs + outputs) else {
             return nil
         }
         self.init(name: name, port: port)

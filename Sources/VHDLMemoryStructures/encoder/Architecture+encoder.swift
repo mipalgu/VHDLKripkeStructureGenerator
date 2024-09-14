@@ -62,8 +62,12 @@ extension Architecture {
     /// Create a generic encoder.
     @inlinable
     init?(encoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
-        guard numberOfElements > 0, elementSize > 0, (elementSize + 1) * numberOfElements <= 32 else {
+        guard numberOfElements > 0, elementSize > 0 else {
             return nil
+        }
+        guard (elementSize + 1) * numberOfElements <= 32 else {
+            self.init(largeEncoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
+            return
         }
         let paddingAmount = 32 - (elementSize + 1) * numberOfElements
         // swiftlint:disable force_unwrapping
@@ -94,6 +98,65 @@ extension Architecture {
             value: .expression(value: statement)
         ))
         self.init(body: body, entity: name, head: ArchitectureHead(statements: []), name: .behavioral)
+    }
+
+    @inlinable
+    init?(largeEncoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
+        guard numberOfElements == 1, elementSize > 31 else {
+            return nil
+        }
+        let numberOfAddresses = Int((Double(elementSize) / 31.0).rounded(.up))
+        let paddingAmount = numberOfAddresses * 31 - elementSize
+        let outputs = (0..<numberOfAddresses).map {
+            let topIndex = elementSize - 31 * $0 - 1
+            let bottomIndex = max(0, elementSize - 31 * $0 - 32)
+            guard $0 == numberOfAddresses - 1, paddingAmount != 0 else {
+                return AsynchronousBlock.statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: VariableName(rawValue: "data\($0)")!)),
+                    value: .expression(value: .binary(operation: .concatenate(
+                        lhs: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(
+                                name: VariableName(rawValue: "in0")!
+                            ))),
+                            index: .range(value: .downto(
+                                upper: .literal(value: .integer(value: topIndex)),
+                                lower: .literal(value: .integer(value: bottomIndex))
+                            ))
+                        )),
+                        rhs: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "in0en")!)
+                        ))
+                    )))
+                ))
+            }
+            return AsynchronousBlock.statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "data\($0)")!)),
+                value: .expression(value: .binary(operation: .concatenate(
+                    lhs: .reference(variable: .indexed(
+                        name: .reference(variable: .variable(reference: .variable(
+                            name: VariableName(rawValue: "in0")!
+                        ))),
+                        index: .range(value: .downto(
+                            upper: .literal(value: .integer(value: topIndex)),
+                            lower: .literal(value: .integer(value: bottomIndex))
+                        ))
+                    )),
+                    rhs: .binary(operation: .concatenate(
+                        lhs: .literal(value: .vector(value: .bits(
+                            value: BitVector(values: [BitLiteral](repeating: .low, count: paddingAmount))
+                        ))),
+                        rhs: .reference(variable: .variable(
+                            reference: .variable(name: VariableName(rawValue: "in0en")!)
+                        ))
+                    ))
+                )))
+            ))
+        }
+        self.init(
+            body: .blocks(blocks: outputs),
+            entity: name,
+            head: ArchitectureHead(statements: []), name: .behavioral
+        )
     }
 
 }
