@@ -70,12 +70,14 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
 
     public init() {}
 
-    public func generate<T>(representation: T) -> [VHDLFile] where T: MachineVHDLRepresentable {
+    public func generate<T>(
+        representation: T, maxRAMAddresses: Int = 161280
+    ) -> [VHDLFile] where T: MachineVHDLRepresentable {
         self.generate(representation: representation, baudRate: 9600)
     }
 
     public func generate<T>(
-        representation: T, baudRate: UInt
+        representation: T, baudRate: UInt, maxAddresses: Int = 161280
     ) -> [VHDLFile] where T: MachineVHDLRepresentable {
         let machine = representation.machine
         guard machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
@@ -128,10 +130,14 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
     }
 
     public func generate<T>(
-        representation: T, machines: [VariableName: any MachineVHDLRepresentable]
+        representation: T,
+        machines: [VariableName: any MachineVHDLRepresentable],
+        maxRAMAddresses: Int = 161280
     ) -> [VHDLFile] where T: ArrangementVHDLRepresentable {
         guard
-            let bram = VHDLFile(arrangementBRAMFor: representation, machines: machines),
+            let bram = VHDLFile(
+                arrangementBRAMFor: representation, machines: machines, maxSize: maxRAMAddresses
+            ),
             let runner = VHDLFile(arrangementRunerFor: representation, machines: machines)
         else {
             fatalError("Failed to generate Arrangement Files!")
@@ -151,7 +157,9 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
     }
 
     public func generatePackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
-        guard representation.machine.states.allSatisfy({ $0.encodedNumberOfAddresses(in: representation) == 1 }) else {
+        guard representation.machine.states.allSatisfy({
+            $0.encodedNumberOfAddresses(in: representation) == 1
+        }) else {
             let stateAddresses = representation.machine.states.map {
                 "\($0.name.rawValue): \($0.encodedNumberOfAddresses(in: representation))"
             }
@@ -162,7 +170,9 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
         return generator.swiftPackage(representation: representation)
     }
 
-    public func generateAll<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
+    public func generateAll<T>(
+        representation: T, maxRAMAddresses: Int = 161280
+    ) -> FileWrapper? where T: MachineVHDLRepresentable {
         let vhdlFiles = self.generate(representation: representation)
         let vhdlData: [(String, FileWrapper)] = vhdlFiles.compactMap { file in
             guard let data = file.rawValue.data(using: .utf8) else {
@@ -203,7 +213,9 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
     }
 
     public func generateAll<T>(
-        representation: T, machines: [VariableName: any MachineVHDLRepresentable]
+        representation: T,
+        machines: [VariableName: any MachineVHDLRepresentable],
+        maxRAMAddresses: Int = 161280
     ) -> FileWrapper? where T: ArrangementVHDLRepresentable {
         let vhdlFiles = self.generate(representation: representation, machines: machines)
         let vhdlData: [(String, FileWrapper)] = vhdlFiles.compactMap { file in

@@ -64,14 +64,16 @@ public protocol KripkeStructureGenerator {
     /// Create the Kripke Structure Generator program in `VHDL`.
     /// - Parameter representation: The machine to generate the Kripke structure for.
     /// - Returns: The `VHDL` files that will generate the Kripke structure for `representation`.
-    func generate<T>(representation: T) -> [VHDLFile] where T: MachineVHDLRepresentable
+    func generate<T>(representation: T, maxRAMAddresses: Int) -> [VHDLFile] where T: MachineVHDLRepresentable
 
     /// Create the Kripke Structure Generator program in `VHDL`.
     /// - Parameter representation: The arrangement to generate the Kripke structure for.
     /// - Parameter machines: The machines that the arrangement uses.
     /// - Returns: The `VHDL` files that will generate the Kripke structure for `representation`.
     func generate<T>(
-        representation: T, machines: [VariableName: any MachineVHDLRepresentable]
+        representation: T,
+        machines: [VariableName: any MachineVHDLRepresentable],
+        maxRAMAddresses: Int
     ) -> [VHDLFile] where T: ArrangementVHDLRepresentable
 
 }
