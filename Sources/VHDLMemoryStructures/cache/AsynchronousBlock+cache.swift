@@ -361,7 +361,10 @@ extension AsynchronousBlock {
 
     @inlinable
     init?(largeCacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
-        guard size > 30 else {
+        guard
+            size > 30,
+            let process = ProcessBlock(cacheName: name, elementSize: size, numberOfElements: numberOfElements)
+        else {
             return nil
         }
         let addressPerElements = Int((Double(size) / 31.0).rounded(.up))
@@ -502,7 +505,8 @@ extension AsynchronousBlock {
                 )))
             ))
         ]
-        self = .blocks(blocks: components + assignments)
+        let processBlock = AsynchronousBlock.process(block: process)
+        self = .blocks(blocks: components + assignments + [processBlock])
     }
 
     // swiftlint:enable force_unwrapping

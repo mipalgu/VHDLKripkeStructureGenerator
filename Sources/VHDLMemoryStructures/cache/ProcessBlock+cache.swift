@@ -67,7 +67,8 @@ extension ProcessBlock {
             return nil
         }
         guard size <= 31 else {
-            fatalError("Currently cannot support element sizes greater than 31 bits")
+            self.init(largeCacheName: name, elementSize: size, numberOfElements: numberOfElements)
+            return
         }
         guard
             let writeElement = WhenCase(cacheWriteElementSize: size, numberOfElements: numberOfElements)
@@ -85,6 +86,27 @@ extension ProcessBlock {
                     cases: [
                         .cacheInitial, .cacheWaitForNewData, writeElement, .cacheIncrementIndex,
                         .cacheResetEnables, .cacheOthers
+                    ]
+                ))
+            ))
+        )
+    }
+
+    @inlinable
+    init?(largeCacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        guard size > 30 else {
+            return nil
+        }
+        self.init(
+            sensitivityList: [.clk],
+            code: .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(
+                    expression: .reference(variable: .variable(reference: .variable(name: .clk)))
+                ))),
+                ifBlock: .caseStatement(block: CaseStatement(
+                    condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
+                    cases: [
+                        .cacheOthers
                     ]
                 ))
             ))
