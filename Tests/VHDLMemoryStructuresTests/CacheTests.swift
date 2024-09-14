@@ -313,10 +313,9 @@ final class CacheTests: XCTestCase {
             signal readEnable: std_logic;
             signal writeValue: std_logic_vector(57 downto 0);
             signal writeEnable: std_logic;
-            signal currentValue0: std_logic_vector(31 downto 0);
-            signal currentValue1: std_logic_vector(31 downto 0);
             type Values_t is array (0 to 1) of std_logic_vector(31 downto 0);
             signal values: Values_t;
+            signal currentValues: Values_t;
             signal memoryIndex: integer range 0 to 1;
             signal currentAddress: std_logic_vector(31 downto 0);
             signal addressBRAM: std_logic_vector(31 downto 0);
@@ -413,7 +412,7 @@ final class CacheTests: XCTestCase {
                                 internalState <= WaitOneCycle;
                                 busy <= '0';
                                 value_en <= readEnable;
-                                value <= values(0) & values(1);
+                                value <= readValue;
                             else
                                 memoryIndex <= memoryIndex + 1;
                                 internalState <= ReadElement;
@@ -422,7 +421,7 @@ final class CacheTests: XCTestCase {
                             weBRAM <= '0';
                         when ReadElement =>
                             internalState <= SetReadAddress;
-                            values(memoryIndex) <= valueBRAM;
+                            currentValues(memoryIndex) <= valueBRAM;
                             busy <= '1';
                             weBRAM <= '0';
                         when WriteElement =>
