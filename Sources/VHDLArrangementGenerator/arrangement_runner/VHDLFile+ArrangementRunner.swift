@@ -69,7 +69,18 @@ extension VHDLFile {
         else {
             return nil
         }
-        let uniqueIncludes = Set(machines.values.flatMap { $0.machine.includes } + arrangement.includes)
+        let machineIncludes = arrangement.machines.map {
+            Include.include(statement: UseStatement(
+                nonEmptyComponents: [
+                    .module(name: VariableName(rawValue: "work")!),
+                    .module(name: VariableName(rawValue: "\($0.entity.name)Types")!),
+                    .all
+                ]
+            )!)
+        }
+        let uniqueIncludes = Set(
+            machines.values.flatMap { $0.machine.includes } + arrangement.includes + machineIncludes
+        )
         let includes = uniqueIncludes.sorted {
             switch ($0, $1) {
             case (.library, .include):

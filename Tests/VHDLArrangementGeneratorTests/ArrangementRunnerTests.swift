@@ -73,6 +73,7 @@ final class ArrangementRunnerTests: XCTestCase {
         library IEEE;
         use IEEE.math_real.all;
         use IEEE.std_logic_1164.all;
+        use work.PingMachineTypes.all;
 
         entity PingPongArrangementRunner is
             port(
