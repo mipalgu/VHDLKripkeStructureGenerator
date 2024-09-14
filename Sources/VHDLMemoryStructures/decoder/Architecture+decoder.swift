@@ -62,8 +62,12 @@ extension Architecture {
     /// The architecture for a generic decoder.
     @inlinable
     init?(decoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
-        guard numberOfElements > 0, elementSize > 0, (elementSize + 1) * numberOfElements <= 32 else {
+        guard numberOfElements > 0, elementSize > 0 else {
             return nil
+        }
+        guard (elementSize + 1) * numberOfElements <= 32 else {
+            self.init(largeDecoderName: name, numberOfElements: numberOfElements, elementSize: elementSize)
+            return
         }
         let statements = (0..<numberOfElements).flatMap {
             let topIndex = 32 - $0 * (elementSize + 1) - 1
@@ -92,6 +96,68 @@ extension Architecture {
         }
         let body = AsynchronousBlock.blocks(blocks: statements)
         self.init(body: body, entity: name, head: ArchitectureHead(statements: []), name: .behavioral)
+    }
+
+    @inlinable
+    init?(largeDecoderName name: VariableName, numberOfElements: Int, elementSize: Int) {
+        guard numberOfElements == 1, elementSize > 31 else {
+            return nil
+        }
+        let numberOfAddresses = Int((Double(elementSize) / 31.0).rounded(.up))
+        let paddingAmount = numberOfAddresses * 31 - elementSize
+        let ranges = (0..<numberOfAddresses).map {
+            let size: VectorSize
+            if $0 == numberOfAddresses - 1, paddingAmount != 0 {
+                size = VectorSize.downto(
+                    upper: .literal(value: .integer(value: 31)),
+                    lower: .literal(value: .integer(value: paddingAmount + 1))
+                )
+            } else {
+                size = VectorSize.downto(
+                    upper: .literal(value: .integer(value: 31)),
+                    lower: .literal(value: .integer(value: 1))
+                )
+            }
+            return Expression.reference(variable: .indexed(
+                name: .reference(variable: .variable(
+                    reference: .variable(name: VariableName(rawValue: "data\($0)")!)
+                )),
+                index: .range(value: size)
+            ))
+        }
+        let conditionals = (0..<numberOfAddresses).map {
+            let index = Expression.reference(variable: .indexed(
+                name: .reference(variable: .variable(reference: .variable(
+                    name: VariableName(rawValue: "data\($0)")!
+                ))),
+                index: .index(value: .literal(value: .integer(value: 0)))
+            ))
+            return Expression.conditional(condition: .comparison(value: .equality(
+                lhs: index,
+                rhs: .literal(value: .bit(value: .high))
+            )))
+        }
+        let expression = ranges.joined { Expression.binary(operation: .concatenate(lhs: $0, rhs: $1)) }
+        let enable = conditionals.joined { Expression.logical(operation: .and(lhs: $0, rhs: $1)) }
+        let statements: [AsynchronousBlock] = [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "out0")!)),
+                value: .expression(value: expression)
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: VariableName(rawValue: "out0en")!)),
+                value: .expression(value: .functionCall(call: .custom(function: CustomFunctionCall(
+                    name: .boolToStdLogic,
+                    parameters: [Argument(argument: enable)]
+                ))))
+            ))
+        ]
+        self.init(
+            body: .blocks(blocks: statements),
+            entity: name,
+            head: ArchitectureHead(statements: []),
+            name: .behavioral
+        )
     }
 
 }

@@ -130,6 +130,38 @@ final class DecoderTests: XCTestCase {
 
     // swiftlint:enable function_body_length
 
+    func testLargeDecoder() {
+        guard let result = VHDLFile(
+            decoderName: .targetStatesDecoder, numberOfElements: 1, elementSize: 58
+        ) else {
+            XCTFail("Failed to create decoder!")
+            return
+        }
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+        use work.PrimitiveTypes.all;
+
+        entity TargetStatesDecoder is
+            port(
+                data0: in std_logic_vector(31 downto 0);
+                data1: in std_logic_vector(31 downto 0);
+                out0: out std_logic_vector(57 downto 0);
+                out0en: out std_logic
+            );
+        end TargetStatesDecoder;
+
+        architecture Behavioral of TargetStatesDecoder is
+        \("    ")
+        begin
+            out0 <= data0(31 downto 1) & data1(31 downto 5);
+            out0en <= boolToStdLogic(data0(0) = '1' and data1(0) = '1');
+        end Behavioral;
+
+        """
+        XCTAssertEqual(expected, result.rawValue)
+    }
+
 }
 
 extension VariableName {

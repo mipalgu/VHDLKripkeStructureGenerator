@@ -86,10 +86,26 @@ extension VHDLFile {
         else {
             return nil
         }
+        let includes: [Include]
+        if size > 31 {
+            guard let primitiveInclude = UseStatement(
+                nonEmptyComponents: [.module(name: .work), .module(name: .primitiveTypes), .all]
+            ) else {
+                includes = []
+                return nil
+            }
+            includes = [
+                .library(value: .ieee),
+                .include(statement: .stdLogic1164),
+                .include(statement: primitiveInclude)
+            ]
+        } else {
+            includes = [.library(value: .ieee), .include(statement: .stdLogic1164)]
+        }
         self.init(
             architectures: [architecture],
             entities: [entity],
-            includes: [.library(value: .ieee), .include(statement: .stdLogic1164)]
+            includes: includes
         )
     }
 
