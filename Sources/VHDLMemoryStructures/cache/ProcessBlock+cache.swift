@@ -106,7 +106,7 @@ extension ProcessBlock {
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
                     cases: [
-                        .cacheOthers
+                        .largeCacheInitial, .cacheOthers
                     ]
                 ))
             ))
@@ -472,6 +472,63 @@ extension WhenCase {
             ])
         )
     }
+
+    @usableFromInline static let largeCacheInitial = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .initial)))
+        ),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .writeValue)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .writeEnable)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentValues)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [
+                        IndexedValue(
+                            index: .others,
+                            value: .literal(value: .vector(value: .indexed(
+                                values: IndexedVector(
+                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                )
+                            )))
+                        )
+                    ]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .memoryIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentAddress)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .maxAddress)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            ))
+        ])
+    )
 
     // swiftlint:enable function_body_length
 

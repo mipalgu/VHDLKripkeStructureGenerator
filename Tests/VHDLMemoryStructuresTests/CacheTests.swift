@@ -381,8 +381,7 @@ final class CacheTests: XCTestCase {
                         when Initial =>
                             writeValue <= (others => '0');
                             writeEnable <= '0';
-                            currentValue0 <= (others => '0');
-                            currentValue1 <= (others => '1');
+                            currentValues <= (others => (others => '0'));
                             memoryIndex <= 0;
                             currentAddress <= (others => '0');
                             internalState <= WaitForNewData;
