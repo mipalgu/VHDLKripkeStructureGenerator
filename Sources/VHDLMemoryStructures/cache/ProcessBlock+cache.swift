@@ -97,6 +97,8 @@ extension ProcessBlock {
         guard size > 30 else {
             return nil
         }
+        let setReadAddress = WhenCase(largeCacheSetReadAddressWithElementSize: size)
+        let writeElement = WhenCase(largeCacheWriteElementWithElementSize: size)
         self.init(
             sensitivityList: [.clk],
             code: .ifStatement(block: .ifStatement(
@@ -106,7 +108,8 @@ extension ProcessBlock {
                 ifBlock: .caseStatement(block: CaseStatement(
                     condition: .reference(variable: .variable(reference: .variable(name: .internalState))),
                     cases: [
-                        .largeCacheInitial, .cacheOthers
+                        .largeCacheInitial, .largeCacheWaitForNewData, setReadAddress, .largeCacheReadElement,
+                        writeElement, .largeCacheWaitOneCycle, .cacheOthers
                     ]
                 ))
             ))
@@ -367,6 +370,222 @@ extension WhenCase {
         ])
     )
 
+    @usableFromInline static let largeCacheInitial = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .initial)))
+        ),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .writeValue)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .writeEnable)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentValues)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [
+                        IndexedValue(
+                            index: .others,
+                            value: .literal(value: .vector(value: .indexed(
+                                values: IndexedVector(
+                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                                )
+                            )))
+                        )
+                    ]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .memoryIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .currentAddress)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .maxAddress)),
+                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
+                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
+                ))))
+            ))
+        ])
+    )
+
+    @usableFromInline static let largeCacheReadElement = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .readElement)))
+        ),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .setReadAddress)))
+            )),
+            .statement(statement: .assignment(
+                name: .indexed(
+                    name: .reference(variable: .variable(reference: .variable(name: .currentValues))),
+                    index: .index(
+                        value: .reference(variable: .variable(reference: .variable(name: .memoryIndex)))
+                    )
+                ),
+                value: .reference(variable: .variable(reference: .variable(name: .valueBRAM)))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .high))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
+    @usableFromInline static let largeCacheWaitForNewData = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
+        ),
+        code: .blocks(blocks: [
+            .ifStatement(block: .ifElse(
+                condition: .logical(operation: .and(
+                    lhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                        rhs: .literal(value: .bit(value: .high))
+                    ))),
+                    rhs: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .we))),
+                        rhs: .literal(value: .bit(value: .high))
+                    )))
+                )),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .writeElement)))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .high))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentAddress)),
+                        value: .cast(operation: .stdLogicVector(
+                            expression: .binary(operation: .multiplication(
+                                lhs: .reference(
+                                    variable: .variable(reference: .variable(name: .unsignedAddress))
+                                ),
+                                rhs: .literal(value: .integer(value: 2))
+                            ))
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .writeValue)),
+                        value: .reference(variable: .variable(reference: .variable(name: .data)))
+                    )),
+                    .ifStatement(block: .ifStatement(
+                        condition: .conditional(condition: .comparison(value: .lessThan(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .maxAddress))),
+                            rhs: .reference(variable: .variable(reference: .variable(name: .unsignedAddress)))
+                        ))),
+                        ifBlock: .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .maxAddress)),
+                            value: .reference(
+                                variable: .variable(reference: .variable(name: .unsignedAddress))
+                            )
+                        ))
+                    ))
+                ]),
+                elseBlock: .ifStatement(block: .ifElse(
+                    condition: .logical(operation: .and(
+                        lhs: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .ready))),
+                            rhs: .literal(value: .bit(value: .high))
+                        ))),
+                        rhs: .conditional(condition: .comparison(value: .equality(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .we))),
+                            rhs: .literal(value: .bit(value: .low))
+                        )))
+                    )),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(reference: .variable(name: .readElement)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .busy)),
+                            value: .literal(value: .bit(value: .high))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .currentAddress)),
+                            value: .cast(operation: .stdLogicVector(
+                                expression: .binary(operation: .multiplication(
+                                    lhs: .reference(
+                                        variable: .variable(reference: .variable(name: .unsignedAddress))
+                                    ),
+                                    rhs: .literal(value: .integer(value: 2))
+                                ))
+                            ))
+                        ))
+                    ]),
+                    elseBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(
+                                variable: .variable(reference: .variable(name: .waitForNewDataType))
+                            )
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .busy)),
+                            value: .literal(value: .bit(value: .low))
+                        ))
+                    ])
+                ))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .memoryIndex)),
+                value: .literal(value: .integer(value: 0))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            ))
+        ])
+    )
+
+    @usableFromInline static let largeCacheWaitOneCycle = WhenCase(
+        condition: .expression(
+            expression: .reference(variable: .variable(reference: .variable(name: .waitOneCycle)))
+        ),
+        code: .blocks(blocks: [
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .busy)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .weBRAM)),
+                value: .literal(value: .bit(value: .low))
+            )),
+            .statement(statement: .assignment(
+                name: .variable(reference: .variable(name: .internalState)),
+                value: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
+            ))
+        ])
+    )
+
     // swiftlint:disable function_body_length
 
     /// The `WriteElement` case in the cache process.
@@ -473,62 +692,120 @@ extension WhenCase {
         )
     }
 
-    @usableFromInline static let largeCacheInitial = WhenCase(
-        condition: .expression(
-            expression: .reference(variable: .variable(reference: .variable(name: .initial)))
-        ),
-        code: .blocks(blocks: [
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .writeValue)),
-                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                ))))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .writeEnable)),
-                value: .literal(value: .bit(value: .low))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentValues)),
-                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                    values: [
-                        IndexedValue(
-                            index: .others,
-                            value: .literal(value: .vector(value: .indexed(
-                                values: IndexedVector(
-                                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                                )
-                            )))
-                        )
-                    ]
-                ))))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .memoryIndex)),
-                value: .literal(value: .integer(value: 0))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentAddress)),
-                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                ))))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .internalState)),
-                value: .reference(variable: .variable(reference: .variable(name: .waitForNewDataType)))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .weBRAM)),
-                value: .literal(value: .bit(value: .low))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .maxAddress)),
-                value: .literal(value: .vector(value: .indexed(values: IndexedVector(
-                    values: [IndexedValue(index: .others, value: .bit(value: .low))]
-                ))))
+    @inlinable
+    init(largeCacheSetReadAddressWithElementSize size: Int) {
+        let addressesPerElement = Int((Double(size) / 31.0).rounded(.up))
+        self.init(
+            condition: .expression(
+                expression: .reference(variable: .variable(reference: .variable(name: .setReadAddress)))
+            ),
+            code: .blocks(blocks: [
+                .ifStatement(block: .ifElse(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .reference(variable: .variable(reference: .variable(name: .memoryIndex))),
+                        rhs: .literal(value: .integer(value: addressesPerElement - 1))
+                    ))),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(reference: .variable(name: .waitOneCycle)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .busy)),
+                            value: .literal(value: .bit(value: .low))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .valueEn)),
+                            value: .reference(variable: .variable(reference: .variable(name: .readEnable)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .value)),
+                            value: .reference(variable: .variable(reference: .variable(name: .readValue)))
+                        ))
+                    ]),
+                    elseBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .memoryIndex)),
+                            value: .binary(operation: .addition(
+                                lhs: .reference(
+                                    variable: .variable(reference: .variable(name: .memoryIndex))
+                                ),
+                                rhs: .literal(value: .integer(value: 1))
+                            ))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .internalState)),
+                            value: .reference(variable: .variable(reference: .variable(name: .readElement)))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .variable(reference: .variable(name: .busy)),
+                            value: .literal(value: .bit(value: .high))
+                        ))
+                    ])
+                )),
+                .statement(statement: .assignment(
+                    name: .variable(reference: .variable(name: .weBRAM)),
+                    value: .literal(value: .bit(value: .low))
+                ))
+            ])
+        )
+    }
+
+    @inlinable
+    init(largeCacheWriteElementWithElementSize size: Int) {
+        let addressesPerElement = Int((Double(size) / 31.0).rounded(.up))
+        self.init(
+            condition: .expression(
+                expression: .reference(variable: .variable(reference: .variable(name: .writeElement)))
+            ),
+            code: .ifStatement(block: .ifElse(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .reference(variable: .variable(reference: .variable(name: .memoryIndex))),
+                    rhs: .literal(value: .integer(value: addressesPerElement - 1))
+                ))),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalState)),
+                        value: .reference(variable: .variable(reference: .variable(name: .waitOneCycle)))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .weBRAM)),
+                        value: .literal(value: .bit(value: .low))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .low))
+                    ))
+                ]),
+                elseBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .memoryIndex)),
+                        value: .binary(operation: .addition(
+                            lhs: .reference(variable: .variable(reference: .variable(name: .memoryIndex))),
+                            rhs: .literal(value: .integer(value: 1))
+                        ))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .weBRAM)),
+                        value: .literal(value: .bit(value: .high))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .busy)),
+                        value: .literal(value: .bit(value: .high))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .variable(reference: .variable(name: .di)),
+                        value: .reference(variable: .indexed(
+                            name: .reference(variable: .variable(reference: .variable(name: .values))),
+                            index: .index(value: .reference(
+                                variable: .variable(reference: .variable(name: .memoryIndex))
+                            ))
+                        ))
+                    ))
+                ])
             ))
-        ])
-    )
+        )
+    }
 
     // swiftlint:enable function_body_length
 

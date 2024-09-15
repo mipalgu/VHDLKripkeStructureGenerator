@@ -424,7 +424,7 @@ final class CacheTests: XCTestCase {
                             busy <= '1';
                             weBRAM <= '0';
                         when WriteElement =>
-                            if memoryIndex = 1 then
+                            if (memoryIndex = 1) then
                                 internalState <= WaitOneCycle;
                                 weBRAM <= '0';
                                 busy <= '0';
