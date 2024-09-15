@@ -117,9 +117,3 @@ extension ProcessBlock {
     }
 
 }
-
-/// Add cache process cases.
-extension WhenCase {
-
-
-}
