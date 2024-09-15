@@ -92,6 +92,7 @@ extension ProcessBlock {
         )
     }
 
+    /// Generate a large cache.
     @inlinable
     init?(largeCacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
         guard size > 30 else {

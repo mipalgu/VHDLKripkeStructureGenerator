@@ -59,6 +59,8 @@ import Utilities
 import VHDLParsing
 import XCTest
 
+// swiftlint:disable type_body_length
+
 /// Test class for cache.
 final class CacheTests: XCTestCase {
 
@@ -455,3 +457,5 @@ final class CacheTests: XCTestCase {
     // swiftlint:enable function_body_length
 
 }
+
+// swiftlint:enable type_body_length
