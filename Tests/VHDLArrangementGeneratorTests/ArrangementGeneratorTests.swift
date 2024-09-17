@@ -1,4 +1,4 @@
-// VHDLFile+ArrangementGenerator.swift
+// ArrangementGeneratorTests.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,36 +53,69 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-//
-// - ArrangementGenerator Tracks the next ringlet to be executed and controls access to storage. This file
-// controls the execution of the entire generator. The control flow centrally exists within this file which
-// delegates to all other entities.
-//
-// - ArrangementRunner Executes combined state of machines 1 ringlet at a time. This contains parallel
-// execution over all external variables (true externals --- external to the arrangmenet!). Replicates
-// the number of machine runners for the state-space of the external variables.
-//
-// - Ringlet Runner (from VHDLGenerator) represents single machine execution (all externals + machines + state
-// variables). Executes single ringlet.
-//
-
+import TestUtils
+@testable import VHDLArrangementGenerator
 import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension VHDLFile {
+final class ArrangementGeneratorTests: XCTestCase {
 
-    public init?<T>(
-        generatorFor representation: T,
-        machines: [VariableName: any MachineVHDLRepresentable],
-        maxRAMAddresses: Int = 161280
-    ) where T: ArrangementVHDLRepresentable {
-        guard
-            let entity = Entity(generatorFor: representation, machines: machines),
-            let architecture = Architecture(generatorFor: representation, machines: machines)
-        else {
-            return nil
+    func testRawValue() {
+        guard let result = VHDLFile(
+            generatorFor: Arrangement.pingPongRepresentation,
+            machines: [.pingMachine: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!]
+        ) else {
+            XCTFail("Failed to create VHDLFile.")
+            return
         }
-        self.init(architectures: [architecture], entities: [entity], includes: representation.includes)
+        let expected = """
+        library IEEE;
+        use IEEE.std_logic_1164.all;
+
+        entity PingPongGenerator is
+            port(
+                clk: in std_logic;
+                address: in std_logic_vector(9 downto 0);
+                read: in std_logic;
+                ready: in std_logic;
+                data: out std_logic_vector(31 downto 0);
+                finished: out std_logic
+            );
+        end PingPongGenerator;
+
+        architecture Behavioral of PingPongGenerator is
+            signal ready: std_logic;
+            signal busy: std_logic;
+            signal PingPong_READ_ping: std_logic;
+            signal PingPong_READ_pong: std_logic;
+            signal PingPong_WRITE_ping: std_logic;
+            signal PingPong_WRITE_pong: std_logic;
+            signal PingPong_READ_PingMachine_state: std_logic_vector(1 downto 0);
+            signal PingPong_READ_PingMachine_executeOnEntry: std_logic;
+            signal PingPong_READ_PingMachine_pong: std_logic;
+            signal PingPong_WRITE_PingMachine_state: std_logic_vector(1 downto 0);
+            signal PingPong_WRITE_PingMachine_executeOnEntry: std_logic;
+            component PingPongArrangementRunner is
+                port(
+                    clk: in std_logic;
+                    ready: in std_logic;
+                    PingPong_READ_ping: in std_logic;
+                    PingPong_READ_pong: in std_logic;
+                    PingPong_WRITE_PingMachine_executeOnEntry: out std_logic;
+                    PingPong_WRITE_PingMachine_state: out std_logic_vector(1 downto 0);
+                    PingPong_READ_PingMachine_pong: in std_logic;
+                    PingPong_READ_PingMachine_executeOnEntry: in std_logic;
+                    PingPong_READ_PingMachine_state: in std_logic_vector(1 downto 0);
+                    PingPong_WRITE_ping: out std_logic;
+                    PingPong_WRITE_pong: out std_logic;
+                    busy: out std_logic;
+                );
+            end component;
+        end Behavioral;
+
+        """
+        XCTAssertEqual(result.rawValue, expected)
     }
 
 }

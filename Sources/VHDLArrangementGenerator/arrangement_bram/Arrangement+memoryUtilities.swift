@@ -62,12 +62,12 @@ extension Arrangement {
         let externalEncodedSize = self.externalSignals.reduce(0) {
             let bits = $1.type.signalType.encodedBits
             guard $1.mode != .input else {
-                return $0 * bits
+                return $0 + bits
             }
-            return $0 * bits * 2
+            return $0 + bits * 2
         }
         let globalEncodedSize = self.signals.reduce(0) {
-            $0 * $1.type.signalType.encodedBits * 2
+            $0 + $1.type.signalType.encodedBits * 2
         }
         let machineEncodedSize = self.machines.reduce(0) {
             let type = $1.key.type

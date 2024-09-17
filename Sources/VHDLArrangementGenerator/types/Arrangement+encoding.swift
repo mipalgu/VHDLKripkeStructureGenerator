@@ -165,12 +165,14 @@ extension ArrangementVHDLRepresentable {
         )
     }
 
+    /// The number of bits required to encode the arrangement.
     var encodedBits: Int {
         readSnapshot.encodedBits + writeSnapshot.encodedBits - 2 - 2 * self.arrangement.machines.reduce(0) {
             $0 + (BitLiteral.bitsRequired(for: $1.value.machine.states.count - 1) ?? 1)
         }
     }
 
+    /// The type of the encoded arrangement.
     var encodedType: SignalType {
         SignalType.ranged(type: .stdLogicVector(size: .downto(
             upper: .literal(value: .integer(value: self.encodedBits - 1)),
