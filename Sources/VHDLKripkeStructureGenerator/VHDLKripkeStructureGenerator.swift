@@ -138,7 +138,7 @@ public struct VHDLKripkeStructureGenerator: KripkeStructureGenerator {
             let bram = VHDLFile(
                 arrangementBRAMFor: representation, machines: machines, maxSize: maxRAMAddresses
             ),
-            let runner = VHDLFile(arrangementRunerFor: representation, machines: machines)
+            let runner = VHDLFile(arrangementRunnerFor: representation, machines: machines)
         else {
             fatalError("Failed to generate Arrangement Files!")
         }

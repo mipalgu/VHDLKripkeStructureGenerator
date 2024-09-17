@@ -63,7 +63,7 @@ final class ArrangementRunnerTests: XCTestCase {
 
     func testRawValue() {
         guard let result = VHDLFile(
-            arrangementRunerFor: Arrangement.pingPongRepresentation,
+            arrangementRunnerFor: Arrangement.pingPongRepresentation,
             machines: [.pingMachine: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!]
         ) else {
             XCTFail("Failed to create VHDLFile.")

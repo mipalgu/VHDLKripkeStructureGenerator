@@ -60,7 +60,7 @@ import VHDLParsing
 extension Architecture {
 
     init?<T>(
-        arrangementRunerFor arrangement: T,
+        arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
         guard

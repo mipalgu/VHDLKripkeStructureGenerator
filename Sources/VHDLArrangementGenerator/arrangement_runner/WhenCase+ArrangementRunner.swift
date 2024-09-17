@@ -134,7 +134,7 @@ extension WhenCase {
         let mappings = arrangement.arrangement.machines
         let statements: [SynchronousBlock] = mappings.flatMap {
             let name = $0.key.name
-            guard let entity = Entity(arrangementRunerFor: arrangement, machines: machines) else {
+            guard let entity = Entity(arrangementRunnerFor: arrangement, machines: machines) else {
                 fatalError("Failed to create entity.")
             }
             let port = entity.port

@@ -60,7 +60,7 @@ import VHDLParsing
 extension Entity {
 
     init?<T>(
-        arrangementRunerFor representation: T,
+        arrangementRunnerFor representation: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
         let arrangement = representation.arrangement

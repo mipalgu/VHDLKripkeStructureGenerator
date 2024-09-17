@@ -60,12 +60,12 @@ import VHDLParsing
 extension VHDLFile {
 
     public init?<T>(
-        arrangementRunerFor arrangement: T,
+        arrangementRunnerFor arrangement: T,
         machines: [VariableName: any MachineVHDLRepresentable]
     ) where T: ArrangementVHDLRepresentable {
         guard
-            let entity = Entity(arrangementRunerFor: arrangement, machines: machines),
-            let architecture = Architecture(arrangementRunerFor: arrangement, machines: machines)
+            let entity = Entity(arrangementRunnerFor: arrangement, machines: machines),
+            let architecture = Architecture(arrangementRunnerFor: arrangement, machines: machines)
         else {
             return nil
         }
