@@ -63,13 +63,18 @@ extension Architecture {
         machines: [VariableName: any MachineVHDLRepresentable],
         maxRAMAddresses: Int = 161280
     ) where T: ArrangementVHDLRepresentable {
-        guard let entityName = VariableName(rawValue: "\(representation.name)Generator") else {
+        guard
+            let entityName = VariableName(rawValue: "\(representation.name)Generator"),
+            let head = ArchitectureHead(
+                generatorFor: representation, machines: machines, maxRAMAddresses: maxRAMAddresses
+            )
+        else {
             return nil
         }
         self.init(
             body: .blocks(blocks: []),
             entity: entityName,
-            head: ArchitectureHead(statements: []),
+            head: head,
             name: .behavioral
         )
     }

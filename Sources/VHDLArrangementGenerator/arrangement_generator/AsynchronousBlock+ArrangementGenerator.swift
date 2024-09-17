@@ -1,4 +1,4 @@
-// VHDLFile+ArrangementGenerator.swift
+// AsynchronousBlock+ArrangementGenerator.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,40 +53,17 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-//
-// - ArrangementGenerator Tracks the next ringlet to be executed and controls access to storage. This file
-// controls the execution of the entire generator. The control flow centrally exists within this file which
-// delegates to all other entities.
-//
-// - ArrangementRunner Executes combined state of machines 1 ringlet at a time. This contains parallel
-// execution over all external variables (true externals --- external to the arrangmenet!). Replicates
-// the number of machine runners for the state-space of the external variables.
-//
-// - Ringlet Runner (from VHDLGenerator) represents single machine execution (all externals + machines + state
-// variables). Executes single ringlet.
-//
-
 import VHDLMachines
 import VHDLParsing
 
-extension VHDLFile {
+extension AsynchronousBlock {
 
-    public init?<T>(
+    init?<T>(
         generatorFor representation: T,
         machines: [VariableName: any MachineVHDLRepresentable],
         maxRAMAddresses: Int = 161280
     ) where T: ArrangementVHDLRepresentable {
-        guard
-            let entity = Entity(
-                generatorFor: representation, machines: machines, maxRAMAddresses: maxRAMAddresses
-            ),
-            let architecture = Architecture(
-                generatorFor: representation, machines: machines, maxRAMAddresses: maxRAMAddresses
-            )
-        else {
-            return nil
-        }
-        self.init(architectures: [architecture], entities: [entity], includes: representation.includes)
+        nil
     }
 
 }

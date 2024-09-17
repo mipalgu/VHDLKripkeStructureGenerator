@@ -112,6 +112,12 @@ final class ArrangementGeneratorTests: XCTestCase {
                     busy: out std_logic;
                 );
             end component;
+        begin
+            PingPongRunner_inst: PingPongArrangementRunner port map (
+                clk => clk,
+                ready => ready,
+                PingPong_READ_ping => PingPong_READ_ping,
+            );
         end Behavioral;
 
         """
