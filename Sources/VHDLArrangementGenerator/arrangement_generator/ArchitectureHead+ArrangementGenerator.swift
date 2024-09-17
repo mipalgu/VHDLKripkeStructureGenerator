@@ -63,11 +63,16 @@ extension ArchitectureHead {
         machines: [VariableName: any MachineVHDLRepresentable],
         maxRAMAddresses: Int = 161280
     ) where T: ArrangementVHDLRepresentable {
-        let runnerSignals: [HeadStatement] = [
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .ready))),
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .busy)))
-        ]
-        return nil
+        guard let runner = Entity(arrangementRunnerFor: representation, machines: machines) else {
+            return nil
+        }
+        let signals = runner.port.signals.filter { $0.name != .clk }.map {
+            HeadStatement.definition(value: .signal(value: LocalSignal(type: $0.type, name: $0.name)))
+        }
+        let component = HeadStatement.definition(
+            value: .component(value: ComponentDefinition(entity: runner))
+        )
+        self.init(statements: signals + [component])
     }
 
 }
