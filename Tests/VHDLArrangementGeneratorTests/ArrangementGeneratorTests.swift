@@ -61,6 +61,10 @@ import XCTest
 
 final class ArrangementGeneratorTests: XCTestCase {
 
+    // swiftlint:disable line_length
+    // swiftlint:disable function_body_length
+
+    /// Test generator creation.
     func testRawValue() {
         guard let result = VHDLFile(
             generatorFor: Arrangement.pingPongRepresentation,
@@ -72,6 +76,8 @@ final class ArrangementGeneratorTests: XCTestCase {
         let expected = """
         library IEEE;
         use IEEE.std_logic_1164.all;
+        use work.PrimitiveTypes.all;
+        use work.PingMachineTypes.all;
 
         entity PingPongGenerator is
             port(
@@ -85,43 +91,84 @@ final class ArrangementGeneratorTests: XCTestCase {
         end PingPongGenerator;
 
         architecture Behavioral of PingPongGenerator is
+            type MachineIndex_t is integer range 0 to 8;
+            signal machineIndex: MachineIndex_t;
             signal ready: std_logic;
+            signal PingPong_READ_ping: array (0 to 2) of std_logic;
+            signal PingPong_READ_pong: array (0 to 2) of std_logic;
+            signal PingPong_WRITE_ping: array (0 to 8) of std_logic;
+            signal PingPong_WRITE_pong: array (0 to 8) of std_logic;
+            signal ping_machine_inst_READ_PingMachine_ping: array (0 to 8) of std_logic;
+            signal ping_machine_inst_READ_executeOnEntry: array (0 to 8) of boolean;
+            signal ping_machine_inst_READ_state: array (0 to 8) of std_logic_vector(0 downto 0);
+            signal ping_machine_inst_WRITE_PingMachine_ping: array (0 to 8) of std_logic;
+            signal ping_machine_inst_WRITE_executeOnEntry: array (0 to 8) of boolean;
+            signal ping_machine_inst_WRITE_state: array (0 to 8) of std_logic_vector(0 downto 0);
             signal busy: std_logic;
-            signal PingPong_READ_ping: std_logic;
-            signal PingPong_READ_pong: std_logic;
-            signal PingPong_WRITE_ping: std_logic;
-            signal PingPong_WRITE_pong: std_logic;
-            signal PingPong_READ_PingMachine_state: std_logic_vector(1 downto 0);
-            signal PingPong_READ_PingMachine_executeOnEntry: std_logic;
-            signal PingPong_READ_PingMachine_pong: std_logic;
-            signal PingPong_WRITE_PingMachine_state: std_logic_vector(1 downto 0);
-            signal PingPong_WRITE_PingMachine_executeOnEntry: std_logic;
+            signal snapshot: array (0 to 8) of std_logic_vector(15 downto 0);
+            signal snapshotEnable: array (0 to 8) of std_logic;
+            type PingPongGenerator_InternalState_t is (Initial);
+            signal internalState: PingPongGenerator_InternalState_t := Initial;
             component PingPongArrangementRunner is
                 port(
                     clk: in std_logic;
                     ready: in std_logic;
                     PingPong_READ_ping: in std_logic;
                     PingPong_READ_pong: in std_logic;
-                    PingPong_WRITE_PingMachine_executeOnEntry: out std_logic;
-                    PingPong_WRITE_PingMachine_state: out std_logic_vector(1 downto 0);
-                    PingPong_READ_PingMachine_pong: in std_logic;
-                    PingPong_READ_PingMachine_executeOnEntry: in std_logic;
-                    PingPong_READ_PingMachine_state: in std_logic_vector(1 downto 0);
                     PingPong_WRITE_ping: out std_logic;
                     PingPong_WRITE_pong: out std_logic;
-                    busy: out std_logic;
+                    ping_machine_inst_READ_PingMachine_ping: in std_logic;
+                    ping_machine_inst_READ_executeOnEntry: in boolean;
+                    ping_machine_inst_READ_state: in std_logic_vector(0 downto 0);
+                    ping_machine_inst_WRITE_PingMachine_ping: out std_logic;
+                    ping_machine_inst_WRITE_executeOnEntry: out boolean;
+                    ping_machine_inst_WRITE_state: out std_logic_vector(0 downto 0);
+                    busy: out std_logic
                 );
             end component;
         begin
-            PingPongRunner_inst: PingPongArrangementRunner port map (
-                clk => clk,
-                ready => ready,
-                PingPong_READ_ping => PingPong_READ_ping,
-            );
+            PingPongRunner_inst0: for i0 in 0 to 2 generate
+                PingPongRunner_inst1: for i1 in 0 to 2 generate
+                    PingPongRunner_inst: PingPongArrangementRunner port map (
+                        clk => clk,
+                        ready => ready,
+                        PingPong_READ_ping => stdLogicTypes(i0),
+                        PingPong_READ_pong => stdLogicTypes(i1),
+                        PingPong_WRITE_ping => PingPong_WRITE_ping(i0 + 3 * i1),
+                        PingPong_WRITE_pong => PingPong_WRITE_pong(i0 + 3 * i1),
+                        ping_machine_inst_READ_PingMachine_ping => ping_machine_inst_READ_PingMachine_ping(i0 + 3 * i1),
+                        ping_machine_inst_READ_executeOnEntry => ping_machine_inst_READ_executeOnEntry(i0 + 3 * i1),
+                        ping_machine_inst_READ_state => ping_machine_inst_READ_state(i0 + 3 * i1),
+                        ping_machine_inst_WRITE_PingMachine_ping => ping_machine_inst_WRITE_PingMachine_ping(i0 + 3 * i1),
+                        ping_machine_inst_WRITE_executeOnEntry => ping_machine_inst_WRITE_executeOnEntry(i0 + 3 * i1),
+                        ping_machine_inst_WRITE_state => ping_machine_inst_WRITE_state(i0 + 3 * i1),
+                        busy => busy
+                    );
+                    snapshot(i0 + 3 * i1) <= stdLogicTypes(i0)
+                end generate PingPongRunner_inst1;
+            end generate PingPongRunner_inst0;
+            process(clk)
+            begin
+                if (rising_edge(clk)) then
+                    case internalState is
+                        when Initial =>
+                            ready <= '0';
+                            machineIndex <= 0;
+                            ping_machine_inst_READ_PingMachine_ping <= '0';
+                            ping_machine_inst_READ_executeOnEntry <= true;
+                            ping_machine_inst_READ_state <= work.PingMachineTypes.STATE_Initial;
+                        when others =>
+                            null;
+                    end case;
+                end if;
+            end process;
         end Behavioral;
 
         """
         XCTAssertEqual(result.rawValue, expected)
     }
+
+    // swiftlint:enable function_body_length
+    // swiftlint:enable line_length
 
 }

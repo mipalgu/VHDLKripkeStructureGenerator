@@ -98,6 +98,9 @@ extension VariableName {
     /// The `do` signal.
     public static let `do` = VariableName(rawValue: "do")!
 
+    /// The `enable` signal.
+    public static let enable = VariableName(rawValue: "enable")!
+
     /// The `encodedToStdLogic` function.
     public static let encodedToStdLogic = VariableName(rawValue: "encodedToStdLogic")!
 

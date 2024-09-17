@@ -1,4 +1,4 @@
-// VHDLFile+snapshotEncoder.swift
+// Include+Comparable.swift
 // VHDLKripkeStructureGenerator
 // 
 // Created by Morgan McColl.
@@ -53,31 +53,24 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import Utilities
 import VHDLParsing
 
-extension VHDLFile {
+/// Add comparable conformance.
+extension Include: Comparable {
 
-    public init?(
-        snapshotEncoderCalled name: VariableName,
-        port: PortBlock,
-        includes: [Include],
-        ignoreEncoding ignore: Set<VariableName>
-    ) {
-        guard
-            let entity = Entity(snapshotEncoderCalled: name, port: port, ignoreEncoding: ignore),
-            let architecture = Architecture(snapshotEncoderCalled: name, port: port, ignoreEncoding: ignore)
-        else {
-            return nil
+    /// Comparable conformance.
+    @inlinable
+    public static func < (lhs: Include, rhs: Include) -> Bool {
+        switch (lhs, rhs) {
+        case (.library(let lhsName), .library(let rhsName)):
+            return lhsName < rhsName
+        case (.include, .library):
+            return false
+        case (.library, .include):
+            return true
+        case (.include(let lhsStatement), .include(let rhsStatement)):
+            return lhsStatement.rawValue < rhsStatement.rawValue
         }
-        let newIncludesSet = Set(
-            includes + [
-                .library(value: .ieee),
-                .include(statement: .stdLogic1164),
-                .include(statement: .primitiveTypes)
-            ]
-        )
-        self.init(architectures: [architecture], entities: [entity], includes: newIncludesSet.sorted())
     }
 
 }
