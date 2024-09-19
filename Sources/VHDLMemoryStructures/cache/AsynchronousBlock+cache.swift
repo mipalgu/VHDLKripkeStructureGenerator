@@ -422,43 +422,7 @@ extension AsynchronousBlock {
                 )
             ])
         )
-        let bram = ComponentInstantiation(
-            label: VariableName(rawValue: name.rawValue + "BRAM_inst")!,
-            name: VariableName(rawValue: name.rawValue + "BRAM")!,
-            port: PortMap(variables: [
-                VariableMap(
-                    lhs: .variable(reference: .variable(name: .clk)),
-                    rhs: .expression(
-                        value: .reference(variable: .variable(reference: .variable(name: .clk)))
-                    )
-                ),
-                VariableMap(
-                    lhs: .variable(reference: .variable(name: .we)),
-                    rhs: .expression(
-                        value: .reference(variable: .variable(reference: .variable(name: .weBRAM)))
-                    )
-                ),
-                VariableMap(
-                    lhs: .variable(reference: .variable(name: .addr)),
-                    rhs: .expression(
-                        value: .reference(variable: .variable(reference: .variable(name: .addressBRAM)))
-                    )
-                ),
-                VariableMap(
-                    lhs: .variable(reference: .variable(name: .di)),
-                    rhs: .expression(
-                        value: .reference(variable: .variable(reference: .variable(name: .di)))
-                    )
-                ),
-                VariableMap(
-                    lhs: .variable(reference: .variable(name: .do)),
-                    rhs: .expression(
-                        value: .reference(variable: .variable(reference: .variable(name: .valueBRAM)))
-                    )
-                )
-            ])
-        )
-        let components = [encoder, decoder, bram].map {
+        let components = [encoder, decoder].map {
             AsynchronousBlock.component(block: $0)
         }
         let elementAddressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1

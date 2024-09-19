@@ -216,10 +216,6 @@ extension ArchitectureHead {
             ),
             let decoder = Entity(
                 decoderName: VariableName(rawValue: "\(name)Decoder")!, numberOfElements: 1, elementSize: size
-            ),
-            let bram = Entity(
-                bramName: VariableName(rawValue: "\(name)BRAM")!,
-                numberOfAddresses: numberOfElements * addressesPerElement
             )
         else {
             return nil
@@ -250,11 +246,7 @@ extension ArchitectureHead {
             )),
             .definition(value: .signal(value: LocalSignal(type: memoryType, name: .memoryIndex))),
             .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .currentAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .addressBRAM))),
-            .definition(value: .signal(value: LocalSignal(type: .stdLogic, name: .weBRAM))),
             .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .unsignedAddress))),
-            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .di))),
-            .definition(value: .signal(value: LocalSignal(type: .logicVector32, name: .valueBRAM))),
             .definition(value: .type(value: .enumeration(value: EnumerationDefinition(
                 name: internalStateType,
                 nonEmptyValues: [
@@ -267,7 +259,7 @@ extension ArchitectureHead {
             )),
             .definition(value: .signal(value: LocalSignal(type: .unsigned32bit, name: .maxAddress)))
         ]
-        let components = [encoder, decoder, bram].map {
+        let components = [encoder, decoder].map {
             HeadStatement.definition(value: .component(value: ComponentDefinition(entity: $0)))
         }
         self.init(statements: statements + components)

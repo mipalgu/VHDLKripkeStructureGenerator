@@ -306,7 +306,11 @@ final class CacheTests: XCTestCase {
                 busy: out std_logic;
                 value: out std_logic_vector(57 downto 0);
                 value_en: out std_logic;
-                lastAddress: out std_logic_vector(2 downto 0)
+                lastAddress: out std_logic_vector(2 downto 0);
+                addressBRAM: out std_logic_vector(31 downto 0);
+                weBRAM: out std_logic;
+                di: out std_logic_vector(31 downto 0);
+                valueBRAM: in std_logic_vector(31 downto 0)
             );
         end TargetStatesCache;
 
@@ -320,11 +324,7 @@ final class CacheTests: XCTestCase {
             signal currentValues: Values_t;
             signal memoryIndex: integer range 0 to 1;
             signal currentAddress: std_logic_vector(31 downto 0);
-            signal addressBRAM: std_logic_vector(31 downto 0);
-            signal weBRAM: std_logic;
             signal unsignedAddress: unsigned(31 downto 0);
-            signal di: std_logic_vector(31 downto 0);
-            signal valueBRAM: std_logic_vector(31 downto 0);
             type TargetStatesCacheInternalState_t is (Initial, WaitForNewData, WriteElement, WaitOneCycle, SetReadAddress, ReadElement, Error);
             signal internalState: TargetStatesCacheInternalState_t;
             signal maxAddress: unsigned(31 downto 0);
@@ -344,15 +344,6 @@ final class CacheTests: XCTestCase {
                     out0en: out std_logic
                 );
             end component;
-            component TargetStatesCacheBRAM is
-                port(
-                    clk: in std_logic;
-                    we: in std_logic;
-                    addr: in std_logic_vector(31 downto 0);
-                    di: in std_logic_vector(31 downto 0);
-                    do: out std_logic_vector(31 downto 0)
-                );
-            end component;
         begin
             TargetStatesCacheEncoder_inst: component TargetStatesCacheEncoder port map (
                 in0 => writeValue,
@@ -365,13 +356,6 @@ final class CacheTests: XCTestCase {
                 data1 => currentValues(1),
                 out0 => readValue,
                 out0en => readEnable
-            );
-            TargetStatesCacheBRAM_inst: component TargetStatesCacheBRAM port map (
-                clk => clk,
-                we => weBRAM,
-                addr => addressBRAM,
-                di => di,
-                do => valueBRAM
             );
             addressBRAM <= std_logic_vector(unsigned(currentAddress) + to_unsigned(memoryIndex, 32));
             unsignedAddress <= unsigned("00000000000000000000000000000" & address);

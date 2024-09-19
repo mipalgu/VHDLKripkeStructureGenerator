@@ -65,6 +65,10 @@ extension Entity {
         guard size > 0, numberOfElements > 0 else {
             return nil
         }
+        guard size <= 30 else {
+            self.init(largeCacheName: name, elementSize: size, numberOfElements: numberOfElements)
+            return
+        }
         let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
         guard addressBits <= 32 else {
             return nil
@@ -87,6 +91,45 @@ extension Entity {
             PortSignal(type: elementType, name: .value, mode: .output),
             PortSignal(type: .stdLogic, name: .valueEn, mode: .output),
             PortSignal(type: addressType, name: .lastAddress, mode: .output)
+        ]
+        guard let block = PortBlock(signals: signals) else {
+            return nil
+        }
+        self.init(name: name, port: block)
+    }
+
+    /// Create a cache.
+    @inlinable
+    init?(largeCacheName name: VariableName, elementSize size: Int, numberOfElements: Int) {
+        guard size > 0, numberOfElements > 0 else {
+            return nil
+        }
+        let addressBits = BitLiteral.bitsRequired(for: numberOfElements - 1) ?? 1
+        guard addressBits <= 32 else {
+            return nil
+        }
+        let addressType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: addressBits - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let elementType = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: size - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+        let signals = [
+            PortSignal(type: .stdLogic, name: .clk, mode: .input),
+            PortSignal(type: addressType, name: .address, mode: .input),
+            PortSignal(type: elementType, name: .data, mode: .input),
+            PortSignal(type: .stdLogic, name: .we, mode: .input),
+            PortSignal(type: .stdLogic, name: .ready, mode: .input),
+            PortSignal(type: .stdLogic, name: .busy, mode: .output),
+            PortSignal(type: elementType, name: .value, mode: .output),
+            PortSignal(type: .stdLogic, name: .valueEn, mode: .output),
+            PortSignal(type: addressType, name: .lastAddress, mode: .output),
+            PortSignal(type: .logicVector32, name: .addressBRAM, mode: .output),
+            PortSignal(type: .stdLogic, name: .weBRAM, mode: .output),
+            PortSignal(type: .logicVector32, name: .di, mode: .output),
+            PortSignal(type: .logicVector32, name: .valueBRAM, mode: .input)
         ]
         guard let block = PortBlock(signals: signals) else {
             return nil
