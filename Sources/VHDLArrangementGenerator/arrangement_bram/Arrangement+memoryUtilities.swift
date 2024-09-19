@@ -123,4 +123,22 @@ extension Arrangement {
         return externalValues * globalValues * machineValues
     }
 
+    func targetStateSize(machines: [VariableName: any MachineVHDLRepresentable]) -> Int {
+        let readExternalSize = self.externalSignals.reduce(0) {
+            guard $1.mode == .input else {
+                return $0
+            }
+            return $0 + $1.type.signalType.encodedBits
+        }
+        let encodedSize = self.encodedSize(machines: machines)
+        return encodedSize - readExternalSize
+    }
+
+    func targetStateType(machines: [VariableName: any MachineVHDLRepresentable]) -> SignalType {
+        .ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: self.targetStateSize(machines: machines) - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
+    }
+
 }
