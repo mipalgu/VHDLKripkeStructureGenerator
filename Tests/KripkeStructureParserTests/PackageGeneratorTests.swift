@@ -148,4 +148,18 @@ final class PackageGeneratorTests: XCTestCase {
         XCTAssertEqual(hraw1, hraw2)
     }
 
+    func testCTypes() {
+        let result = String(cTypesFor: representation)
+        let expected = """
+        typedef struct M_STATE_Initial_Raw {
+            uint32_t data0;
+        } M_STATE_Initial_Raw_t;
+
+        typedef struct M_STATE_Suspended_Raw {
+            uint32_t data0;
+        } M_STATE_Suspended_Raw_t;
+        """
+        XCTAssertEqual(result, expected)
+    }
+
 }

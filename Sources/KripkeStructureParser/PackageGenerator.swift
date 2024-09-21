@@ -77,20 +77,7 @@ public struct PackageGenerator {
             }
         )
         .joined(separator: "\n\n")
-        let cHeaderRawData = (
-            [
-                "#include <stdint.h>\n#include <stdbool.h>\n#ifndef \(name)_H\n#define \(name)_H\n" +
-                "#ifdef __cplusplus\nextern \"C\" {\n#endif"
-            ] + [String(isValidDefinitionFor: representation)] +
-            machine.states.sorted { $0.name < $1.name }.flatMap {
-                [
-                    VariableParser(state: $0, in: representation)
-                        .definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n\n"),
-                    String(isValidStateDefinitionFor: $0, in: representation)
-                ]
-            } + ["#ifdef __cplusplus\n}\n#endif\n#endif // \(name)_H"]
-        )
-        .joined(separator: "\n\n")
+        let cHeaderRawData = String(cTypesFor: representation)
         let stateFilesRaw = machine.states.flatMap {
             [
                 ("\($0.name.rawValue)Read.swift", String(readStateFor: $0, in: representation)),
