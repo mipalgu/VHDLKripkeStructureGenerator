@@ -85,12 +85,12 @@ final class VariableParserLargeTests: XCTestCase {
     func testDefinitionsAreCorrect() {
         let definitions = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
         let expected = """
-        void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count);
-        bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2]);
-        uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(uint32_t data[2]);
-        bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(uint32_t data[2]);
-        uint8_t IsEvenMachine_CalculateIsEven_WRITE_isEven(uint32_t data[2]);
-        uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(uint32_t data[2]);
+        void IsEvenMachine_CalculateIsEven_READ_count(IsEvenMachine_STATE_CalculateIsEven_Raw_t data, uint32_t *count);
+        bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(IsEvenMachine_STATE_CalculateIsEven_Raw_t data);
+        uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(IsEvenMachine_STATE_CalculateIsEven_Raw_t data);
+        bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(IsEvenMachine_STATE_CalculateIsEven_Raw_t data);
+        uint8_t IsEvenMachine_CalculateIsEven_WRITE_isEven(IsEvenMachine_STATE_CalculateIsEven_Raw_t data);
+        uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(IsEvenMachine_STATE_CalculateIsEven_Raw_t data);
         """
         XCTAssertEqual(definitions, expected)
     }
@@ -99,30 +99,30 @@ final class VariableParserLargeTests: XCTestCase {
     func testImplementations() {
         let implementations = parser.functions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(separator: "\n")
         let expected = """
-        void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count)
+        void IsEvenMachine_CalculateIsEven_READ_count(IsEvenMachine_STATE_CalculateIsEven_Raw_t data, uint32_t *count)
         {
-            count[0] = (data[0] & 0b11111111111111111111111111111100) >> 2;
-            count[1] = (data[1] & 0b11000000000000000000000000000000) >> 30;
+            count[0] = (data.data0 & 0b11111111111111111111111111111100) >> 2;
+            count[1] = (data.data1 & 0b11000000000000000000000000000000) >> 30;
         }
-        bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2])
+        bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(IsEvenMachine_STATE_CalculateIsEven_Raw_t data)
         {
-            return ((bool) ((data[1] & 0b00001000000000000000000000000000) >> 27));
+            return ((bool) ((data.data1 & 0b00001000000000000000000000000000) >> 27));
         }
-        uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(uint32_t data[2])
+        uint8_t IsEvenMachine_CalculateIsEven_READ_IsEvenMachine_isEven(IsEvenMachine_STATE_CalculateIsEven_Raw_t data)
         {
-            return ((uint8_t) ((data[1] & 0b00110000000000000000000000000000) >> 28));
+            return ((uint8_t) ((data.data1 & 0b00110000000000000000000000000000) >> 28));
         }
-        bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(uint32_t data[2])
+        bool IsEvenMachine_CalculateIsEven_WRITE_executeOnEntry(IsEvenMachine_STATE_CalculateIsEven_Raw_t data)
         {
-            return ((bool) ((data[1] & 0b00000000100000000000000000000000) >> 23));
+            return ((bool) ((data.data1 & 0b00000000100000000000000000000000) >> 23));
         }
-        uint8_t IsEvenMachine_CalculateIsEven_WRITE_isEven(uint32_t data[2])
+        uint8_t IsEvenMachine_CalculateIsEven_WRITE_isEven(IsEvenMachine_STATE_CalculateIsEven_Raw_t data)
         {
-            return ((uint8_t) ((data[1] & 0b00000110000000000000000000000000) >> 25));
+            return ((uint8_t) ((data.data1 & 0b00000110000000000000000000000000) >> 25));
         }
-        uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(uint32_t data[2])
+        uint32_t IsEvenMachine_CalculateIsEven_WRITE_nextState(IsEvenMachine_STATE_CalculateIsEven_Raw_t data)
         {
-            return ((uint32_t) ((data[1] & 0b00000001000000000000000000000000) >> 24));
+            return ((uint32_t) ((data.data1 & 0b00000001000000000000000000000000) >> 24));
         }
         """
         XCTAssertEqual(implementations, expected, "\(implementations.difference(from: expected))")

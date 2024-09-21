@@ -71,9 +71,10 @@ extension VariableParser {
 extension Dictionary where Key == NodeVariable, Value == String {
 
     init<T>(largeDefinitionsFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
-        let addressType = "uint32_t data[\(numberOfAddresses)]"
+        let rawType = "\(representation.entity.name)_STATE_\(state.name)_Raw_t"
+        let addressType = "\(rawType) data"
         let readSnapshot = Record(readSnapshotFor: state, in: representation)
+        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         let machineName = representation.entity.name.rawValue
         let stateName = state.name.rawValue
         let readSnapshotDefinitions = readSnapshot.types.map {
@@ -91,7 +92,6 @@ extension Dictionary where Key == NodeVariable, Value == String {
                     "\($0.name.rawValue)(\(addressType));"
             )
         }
-        let writeSnapshot = Record(writeSnapshotFor: state, in: representation)!
         let writeSnapshotDefinitions = writeSnapshot.types.filter { $0.name != .nextState }.map {
             let variable = NodeVariable(data: $0, type: .write)
             guard $0.type.signalType.encodedBits <= representation.numberOfDataBitsPerAddress else {

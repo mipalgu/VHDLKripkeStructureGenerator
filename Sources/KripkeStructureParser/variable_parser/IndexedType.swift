@@ -65,10 +65,9 @@ struct IndexedType {
     func implementation<T>(
         state: State, representation: T, type: NodeType
     ) -> (NodeVariable, String) where T: MachineVHDLRepresentable {
-        let numberOfAddresses = state.numberOfAddressesForRinglet(in: representation)
-        let addressType = "uint32_t data[\(numberOfAddresses)]"
         let machineName = representation.entity.name.rawValue
         let stateName = state.name.rawValue
+        let addressType = "\(machineName)_STATE_\(stateName)_Raw_t data"
         let variable = NodeVariable(data: self.record, type: type)
         let functionName = "\(machineName)_\(stateName)_\(type.rawValue)_\(self.record.name.rawValue)"
         guard self.index.isAccrossBoundary(state: state, in: representation) else {
@@ -92,7 +91,7 @@ struct IndexedType {
                 """
                 \(returnType) \(functionName)(\(addressType))
                 {
-                    return ((\(returnType)) ((data[\(memoryIndex)] & \(mask)) >> \(shiftAmount)));
+                    return ((\(returnType)) ((data.data\(memoryIndex) & \(mask)) >> \(shiftAmount)));
                 }
                 """
             )
@@ -121,7 +120,7 @@ struct IndexedType {
                 trailingZeros
             let shiftAmount = 32 - $0.indexes.count - leadingZeros.count
             return "\(variableName)[\($0.address)] = " +
-                "(data[\($0.address)] & \(mask)) >> \(shiftAmount);"
+                "(data.data\($0.address) & \(mask)) >> \(shiftAmount);"
         }
         let functionBody = body.joined(separator: "\n")
         return (
