@@ -183,6 +183,11 @@ extension String {
                     return allValues
                 }
                 indexes[mutatingIndex] += 1
+                guard mutatingIndex > 0 else {
+                    continue
+                }
+                let resetIndexes = (0..<mutatingIndex)
+                resetIndexes.forEach { indexes[$0] = 0 }
             }
         }
 
@@ -380,21 +385,26 @@ extension String {
                     ($0.key, $0.value.allValues)
                 })
                 var allConfigurations: [[VariableName: SignalLiteral]] = []
-                var indexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, 0) })
+                var indexes = validValues.map { ($0.key, 0) }
                 let maxIndexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, $0.value.count - 1) })
                 while true {
                     let configuration = [VariableName: SignalLiteral](uniqueKeysWithValues: indexes.flatMap {
                         [
-                            ($0.key, validValues[$0.key]![$0.value]),
-                            (VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!, validValues[$0.key]![$0.value])
+                            ($0.0, validValues[$0.0]![$0.1]),
+                            (VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.0.rawValue)")!, validValues[$0.0]![$0.1])
                         ]
                     })
                     allConfigurations.append(configuration)
-                    guard let mutatingIndex = indexes.first(where: { $0.value < maxIndexes[$0.key]! })?.key else {
+                    guard let mutatingIndex = indexes.firstIndex(where: { $0.1 < maxIndexes[$0.0]! }) else {
                         cache[excluding] = allConfigurations
                         return allConfigurations
                     }
-                    indexes[mutatingIndex]! += 1
+                    indexes[mutatingIndex] = (indexes[mutatingIndex].0, indexes[mutatingIndex].1 + 1)
+                    guard mutatingIndex > 0 else {
+                        continue
+                    }
+                    let resetIndexes = (0..<mutatingIndex)
+                    resetIndexes.forEach { indexes[$0] = (indexes[$0].0, 0) }
                 }
             }
 
