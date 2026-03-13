@@ -88,8 +88,15 @@ extension String {
         }
         .joined(separator: "\n")
         let initCall = stateVariableNames.map { "\($0): \($0)" }.joined(separator: ", ")
+        let readStatesCreation = representation.machine.states.map {
+            let name = $0.name.rawValue.lowercased()
+            return "let \(name): [any ReadState] = \(name)Ringlets.map(\\.read)"
+        }
+        .joined(separator: "\n")
+        let readStatesFinal = "return " + representation.machine.states.map { $0.name.rawValue.lowercased() }.joined(separator: " + ")
         self = """
         import C\(name)
+        import VHDLParsing
 
         public struct \(name)KripkeStructure: Codable {
 
@@ -97,6 +104,21 @@ extension String {
 
             public var totalCount: Int {
         \(stateVariableCounts.indent(amount: 2))
+            }
+
+            var readStates: [any ReadState] {
+        \(readStatesCreation.indent(amount: 2))
+        \(readStatesFinal.indent(amount: 2))
+            }
+
+            public var readDomains: [VariableName: [SignalLiteral]] {
+                var domains: [VariableName: Set<SignalLiteral>] = [:]
+                readStates.forEach {
+                    $0.properties.forEach { key, val in
+                        domains[key, default: []].insert(val)
+                    }
+                }
+                return domains.mapValues { $0.sorted { $0.rawValue < $1.rawValue } }
             }
 
             public init(

@@ -376,13 +376,13 @@ extension String {
 
             static var cache: [Set<VariableName>: [[VariableName: SignalLiteral]]] = [:]
 
-            static func allReadExternalValues(excluding: Set<VariableName>) -> [[VariableName: SignalLiteral]] {
+            static func allReadExternalValues(excluding: Set<VariableName>, domains: [VariableName: [SignalLiteral]]) -> [[VariableName: SignalLiteral]] {
                 if let cached = cache[excluding] {
                     return cached
                 }
                 let validExternals = VariableName.readExternals.filter { !excluding.contains($0.key) }
                 let validValues: [VariableName: [SignalLiteral]] = Dictionary<VariableName, [SignalLiteral]>(uniqueKeysWithValues: validExternals.map {
-                    ($0.key, $0.value.allValues)
+                    ($0.key, domains[$0.key] ?? $0.value.allValues)
                 })
                 var allConfigurations: [[VariableName: SignalLiteral]] = []
                 var indexes = validValues.map { ($0.key, 0) }
@@ -531,8 +531,9 @@ extension String {
                     ringlet.read.currentState == .\(initialState.name.rawValue) && ringlet.read.executeOnEntry
         \(initialExternals.isEmpty ? "" : "&& \(externalPropertiesGuard.indent(amount: 4))")
                 }
+                let domains = structure.readDomains
                 let initialNodes: Set<Node> = Set(initialRinglets.flatMap { ringlet in
-                    [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial)).map {
+                    [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial), domains: domains).map {
                         Node(
                             type: .read,
                             currentState: ringlet.read.currentState,
@@ -582,7 +583,7 @@ extension String {
                             && ringlet.readNode.properties.allSatisfy { node.properties[$0] == $1 }
                     }
                     .flatMap { node in
-                        [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState)).map { value in
+                        [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState), domains: domains).map { value in
                             Node(
                                 properties: value,
                                 previousProperties: node.properties,
@@ -645,7 +646,7 @@ extension String {
                                 }
                         }
                         let nextNodes = newNodes.flatMap { ringlet in
-                            [VariableName: SignalLiteral].allReadExternalValues(excluding:VariableName.readExternals(state: ringlet.readNode.currentState)).map {
+                            [VariableName: SignalLiteral].allReadExternalValues(excluding:VariableName.readExternals(state: ringlet.readNode.currentState), domains: domains).map {
                                 Node(
                                     properties: $0.merging(ringlet.readNode.properties) { $1 },
                                     previousProperties: writeNode.properties,

@@ -147,7 +147,8 @@ public struct PackageGenerator {
                     (
                         "KripkeStructure+init.swift",
                         FileWrapper(regularFileWithContents: vhdlKripkeStructureData)
-                    )
+                    ),
+                    ("ReadState.swift", FileWrapper(regularFileWithContents: Data(String.readStateProtocol.utf8)))
                 ] + stateFiles
             )
         )

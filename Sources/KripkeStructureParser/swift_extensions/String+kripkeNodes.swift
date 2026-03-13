@@ -86,7 +86,7 @@ extension String {
         import C\(machineName)
         import VHDLParsing
 
-        public struct \(name): Equatable, Hashable, Codable, Sendable {
+        public struct \(name): Equatable, Hashable, Codable, Sendable, ReadState {
 
         \(definitions)
 

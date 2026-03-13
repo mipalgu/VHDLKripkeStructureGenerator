@@ -59,6 +59,16 @@ import VHDLParsing
 
 extension String {
 
+    static let readStateProtocol: String = """
+        import VHDLParsing
+
+        protocol ReadState {
+
+            var properties: [VariableName: SignalLiteral] { get }
+
+        }
+        """
+
     init<T>(isValidDefinitionFor representation: T) where T: MachineVHDLRepresentable {
         let name = representation.entity.name.rawValue
         self = "bool \(name)_isValid(uint32_t data);"
