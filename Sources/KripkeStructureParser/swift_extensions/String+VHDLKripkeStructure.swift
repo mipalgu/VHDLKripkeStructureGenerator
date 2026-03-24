@@ -673,9 +673,15 @@ extension String {
                     }
                 } while !pendingRinglets.isEmpty
                 print("Original Ringlets: \\(allRinglets.count)")
-                print("\\(nodes.count) nodes!")
-                print("\\(edges.reduce(0) { $0 + $1.value.count }) edges!")
+                let numberOfNodes = nodes.count
+                print("\\(numberOfNodes) nodes!")
+                let numberOfEdges = edges.reduce(0) { $0 + $1.value.count }
+                print("\\(numberOfEdges) edges!")
                 print("\\(initialNodes.count) initial nodes!")
+                var targets: Set<Node> = []
+                edges.values.forEach { targets.formUnion($0.map { $0.target }) }
+                let cyclomaticComplexity = numberOfEdges - numberOfNodes + 2 * targets.count
+                print("Cyclomatic complexity: \\(cyclomaticComplexity)")
                 self.init(
                     nodes: Array(nodes),
                     edges: edges,
