@@ -678,9 +678,7 @@ extension String {
                 let numberOfEdges = edges.reduce(0) { $0 + $1.value.count }
                 print("\\(numberOfEdges) edges!")
                 print("\\(initialNodes.count) initial nodes!")
-                var targets: Set<Node> = []
-                edges.values.forEach { targets.formUnion($0.map { $0.target }) }
-                let cyclomaticComplexity = numberOfEdges - numberOfNodes + 2 * targets.count
+                let cyclomaticComplexity = numberOfEdges - numberOfNodes + 2
                 print("Cyclomatic complexity: \\(cyclomaticComplexity)")
                 self.init(
                     nodes: Array(nodes),
