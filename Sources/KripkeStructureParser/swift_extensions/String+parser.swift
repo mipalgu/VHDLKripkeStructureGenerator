@@ -80,7 +80,21 @@ extension String {
                 let encoder = JSONEncoder()
                 encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
                 let data = try encoder.encode(generalStructure)
+                try removeOldFileIfExists(url: outputFile)
                 try data.write(to: outputFile)
+                let graphURL = URL(fileURLWithPath: "graph.dot", isDirectory: false)
+                try removeOldFileIfExists(url: graphURL)
+                try generalStructure.graphviz.write(to: graphURL, atomically: true, encoding: .utf8)
+            }
+
+            func removeOldFileIfExists(url: URL) throws {
+                var isDirectory: Bool = false
+                if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) {
+                    if isDirectory {
+                        fatalError("Output file path is a directory!")
+                    }
+                    try FileManager.default.removeItem(at: url)
+                }
             }
 
         }
