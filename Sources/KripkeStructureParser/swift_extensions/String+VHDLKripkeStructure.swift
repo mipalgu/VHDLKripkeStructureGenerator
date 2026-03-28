@@ -241,6 +241,8 @@ extension String {
 
         \(String.ringlet)
 
+        \(String(ringletExtension: representation))
+
         \(readExtensions)
 
         \(writeExtensions)
@@ -257,6 +259,43 @@ extension String {
 
         \(String.typeExtensions)
 
+        """
+    }
+
+    init<T>(ringletExtension representation: T) where T: MachineVHDLRepresentable {
+        let machinePrefix = representation.entity.name.rawValue + "_"
+        self = """
+        extension Ringlet {
+
+            func isCompatible(writeNode: Node) -> Bool {
+                writeNode.executeOnEntry == self.readNode.executeOnEntry
+                    && writeNode.nextState == self.readNode.currentState
+                    && [VariableName: SignalLiteral].internalVariables.allSatisfy {
+                        guard !$0.rawValue.hasPrefix("\(machinePrefix)") else {
+                            let externalName = VariableName(
+                                rawValue: String($0.rawValue.dropFirst("\(machinePrefix)".count))
+                            )!
+                            guard
+                                !self.readNode.externals.contains(externalName),
+                                let value1 = self.readNode.properties[$0],
+                                let value2 = writeNode.properties[$0]
+                            else {
+                                return true
+                            }
+                            return value1 == value2
+                        }
+                        guard
+                            !self.readNode.externals.contains($0),
+                            let value1 = self.readNode.properties[$0],
+                            let value2 = writeNode.properties[$0]
+                        else {
+                            return true
+                        }
+                        return value1 == value2
+                    }
+            }
+
+        }
         """
     }
 
@@ -388,11 +427,8 @@ extension String {
                 var indexes = validValues.map { ($0.key, 0) }
                 let maxIndexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, $0.value.count - 1) })
                 while true {
-                    let configuration = [VariableName: SignalLiteral](uniqueKeysWithValues: indexes.flatMap {
-                        [
-                            ($0.0, validValues[$0.0]![$0.1]),
-                            (VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.0.rawValue)")!, validValues[$0.0]![$0.1])
-                        ]
+                    let configuration = [VariableName: SignalLiteral](uniqueKeysWithValues: indexes.map {
+                        ($0.0, validValues[$0.0]![$0.1])
                     })
                     allConfigurations.append(configuration)
                     guard let mutatingIndex = indexes.firstIndex(where: { $0.1 < maxIndexes[$0.0]! }) else {
@@ -533,18 +569,24 @@ extension String {
                 }
                 let domains = structure.readDomains
                 let initialNodes: Set<Node> = Set(initialRinglets.flatMap { ringlet in
-                    [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial), domains: domains).map {
+                    let readExternals = VariableName.readExternals(state: ringlet.read.currentState)
+                    let readExternalValues = ringlet.read.properties.filter { readExternals.contains($0.key) }
+                    let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
+                        let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
+                        return (snapshot, $0.value)
+                    })
+                    return [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial), domains: domains).map {
                         Node(
                             type: .read,
                             currentState: ringlet.read.currentState,
                             executeOnEntry: ringlet.read.executeOnEntry,
                             nextState: ringlet.read.currentState,
-                            properties: [VariableName: SignalLiteral].defaultProperties.merging($0) { $1 }.merging(ringlet.read.properties) { $1 }
+                            properties: [VariableName: SignalLiteral].defaultProperties.merging($0) { $1 }.merging(snapshotProperties) { $1 }.merging(ringlet.read.properties) { $1 }
                         )
                     }
                 })
                 var nodes: Set<Node> = initialNodes
-                var edges: [Node: [Edge]] = [:]
+                var edges: [Node: Set<Edge>] = [:]
                 var pendingRinglets: [any Ringlet] = initialRinglets
                 let allRinglets: [any Ringlet] = \(stateRinglets)
                 var seenRinglets: [any Ringlet] = []
@@ -583,9 +625,15 @@ extension String {
                             && ringlet.readNode.properties.allSatisfy { node.properties[$0] == $1 }
                     }
                     .flatMap { node in
-                        [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState), domains: domains).map { value in
+                        let readExternals = VariableName.readExternals(state: node.currentState)
+                        let readExternalValues = node.properties.filter { readExternals.contains($0.key) }
+                        let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
+                            let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
+                            return (snapshot, $0.value)
+                        })
+                        return [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState), domains: domains).map { value in
                             Node(
-                                properties: value,
+                                properties: value.merging(snapshotProperties) { $1 },
                                 previousProperties: node.properties,
                                 type: node.type,
                                 currentState: node.currentState,
@@ -607,9 +655,9 @@ extension String {
                     writeNodes.enumerated().forEach {
                         let readNode = readNodes[$0]
                         let writeNode = $1
-                        let edge: [Edge]
+                        let edge: Set<Edge>
                         if let currentReadEdges = edges[readNode] {
-                            edge = Array(Set(currentReadEdges).union(Set([Edge(target: writeNode, \(costRW))])))
+                            edge = currentReadEdges.union([Edge(target: writeNode, \(costRW))])
                         } else {
                             edge = [Edge(target: writeNode, \(costRW))]
                         }
@@ -619,56 +667,50 @@ extension String {
                         }
                         nodes.insert(writeNode)
                         let newNodes = allRinglets.filter { ringlet in
-                            writeNode.executeOnEntry == ringlet.readNode.executeOnEntry
-                                && writeNode.nextState == ringlet.readNode.currentState
-                                && [VariableName: SignalLiteral].internalVariables.allSatisfy {
-                                    guard !$0.rawValue.hasPrefix("\(representation.entity.name.rawValue)_") else {
-                                        let externalName = VariableName(
-                                            rawValue: String($0.rawValue.dropFirst("\(representation.entity.name.rawValue)_".count))
-                                        )!
-                                        guard
-                                            !ringlet.readNode.externals.contains(externalName),
-                                            let value1 = ringlet.readNode.properties[$0],
-                                            let value2 = writeNode.properties[$0]
-                                        else {
-                                            return true
-                                        }
-                                        return value1 == value2
-                                    }
-                                    guard
-                                        !ringlet.readNode.externals.contains($0),
-                                        let value1 = ringlet.readNode.properties[$0],
-                                        let value2 = writeNode.properties[$0]
-                                    else {
-                                        return true
-                                    }
-                                    return value1 == value2
-                                }
+                            ringlet.isCompatible(writeNode: writeNode)
                         }
                         let nextNodes = newNodes.flatMap { ringlet in
-                            [VariableName: SignalLiteral].allReadExternalValues(excluding:VariableName.readExternals(state: ringlet.readNode.currentState), domains: domains).map {
-                                Node(
-                                    properties: $0.merging(ringlet.readNode.properties) { $1 },
+                            [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: ringlet.readNode.currentState), domains: domains).map {
+                                let node = ringlet.readNode
+                                let readExternals = VariableName.readExternals(state: node.currentState)
+                                let readExternalValues = node.properties.filter { readExternals.contains($0.key) }
+                                let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
+                                    let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
+                                    return (snapshot, $0.value)
+                                })
+                                return Node(
+                                    properties: $0.merging(snapshotProperties) { $1 }.merging(node.properties) { $1 },
                                     previousProperties: writeNode.properties,
                                     type: .read,
-                                    currentState: ringlet.readNode.currentState,
-                                    executeOnEntry: ringlet.readNode.executeOnEntry,
-                                    nextState: ringlet.readNode.currentState
+                                    currentState: node.currentState,
+                                    executeOnEntry: node.executeOnEntry,
+                                    nextState: node.currentState
                                 )
                             }
                         }
                         nextNodes.forEach { nodes.insert($0) }
-                        let unseenRinglets = newNodes.filter { ringlet in
-                            !seenRinglets.contains(where: { isSame($0, ringlet) })
+                        let unseenNodes = nextNodes.filter {
+                            edges[$0] == nil
+                        }
+                        let unseenRinglets = allRinglets.filter { ringlet in
+                            unseenNodes.contains {
+                                ringlet.isCompatible(writeNode: $0)
+                            }
+                        }
+                        unseenRinglets.forEach { ringlet in
+                            guard let index = seenRinglets.firstIndex(where: { isSame($0, ringlet) }) else {
+                                return
+                            }
+                            seenRinglets.remove(at: index)
                         }
                         pendingRinglets += unseenRinglets
                         let newEdges = nextNodes.map {
                             Edge(target: $0, \(costWR))
                         }
                         if let currentEdges = edges[writeNode] {
-                            edges[writeNode] = Array(Set(currentEdges).union(Set(newEdges)))
+                            edges[writeNode] = currentEdges.union(newEdges)
                         } else {
-                            edges[writeNode] = newEdges
+                            edges[writeNode] = Set(newEdges)
                         }
                     }
                 } while !pendingRinglets.isEmpty
@@ -682,7 +724,7 @@ extension String {
                 print("Cyclomatic complexity: \\(cyclomaticComplexity)")
                 self.init(
                     nodes: Array(nodes),
-                    edges: edges,
+                    edges: edges.mapValues { Array($0) },
                     initialStates: initialNodes
                 )
             }
