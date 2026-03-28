@@ -71,6 +71,9 @@ extension String {
             @Argument(help: "The path to the binary file to parse.")
             var path: String
 
+            @Flag(name: .shortAndLong, help: "Whether to generate the graphviz file.")
+            var includeGraph: Bool = false
+
             func run() throws {
                 let parser = \(name)KripkeParser()
                 let url = URL(fileURLWithPath: path, isDirectory: false)
@@ -82,6 +85,7 @@ extension String {
                 let data = try encoder.encode(generalStructure)
                 try removeOldFileIfExists(url: outputFile)
                 try data.write(to: outputFile)
+                guard includeGraph else { return }
                 let graphURL = URL(fileURLWithPath: "graph.dot", isDirectory: false)
                 try removeOldFileIfExists(url: graphURL)
                 try generalStructure.graphviz.write(to: graphURL, atomically: true, encoding: .utf8)
@@ -91,7 +95,7 @@ extension String {
                 var isDirectory: Bool = false
                 if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) {
                     if isDirectory {
-                        fatalError("Output file path is a directory!")
+                        fatalError("Located directory resource at \\(url.path)")
                     }
                     try FileManager.default.removeItem(at: url)
                 }
