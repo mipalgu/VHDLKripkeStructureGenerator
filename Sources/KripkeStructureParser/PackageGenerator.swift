@@ -104,9 +104,6 @@ public struct PackageGenerator {
             fileWrapper.preferredFilename = $0.0
             return ($0.0, fileWrapper)
         }
-        guard stateFiles.count == stateFilesRaw.count else {
-            return nil
-        }
         let cFileData = Data(cFileRawData.utf8)
         let cHeaderData = Data(cHeaderRawData.utf8)
         let packageData = Data(String(machinePackage: representation).utf8)
