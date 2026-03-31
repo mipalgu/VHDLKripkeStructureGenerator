@@ -75,7 +75,7 @@ final class StringTests: XCTestCase {
         import CPingMachine
         import VHDLParsing
 
-        public struct WaitForPongRead: Equatable, Hashable, Codable, Sendable {
+        public struct WaitForPongRead: Equatable, Hashable, Codable, Sendable, ReadState {
 
             public var PingMachine_ping: LogicLiteral
 

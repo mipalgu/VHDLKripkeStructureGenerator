@@ -77,11 +77,11 @@ public struct PackageGenerator {
             }
         )
         .joined(separator: "\n\n")
+        let cHeaderInclude = "#include <stdint.h>\n#include <stdbool.h>\n#ifndef \(name)_H\n#define \(name)_H\n"
+        let cHeaderCppCheck = "#ifdef __cplusplus\nextern \"C\" {\n#endif"
         let cHeaderRawData = (
-            [
-                "#include <stdint.h>\n#include <stdbool.h>\n#ifndef \(name)_H\n#define \(name)_H\n" +
-                "#ifdef __cplusplus\nextern \"C\" {\n#endif"
-            ] + [String(isValidDefinitionFor: representation)] +
+            [cHeaderInclude + cHeaderCppCheck] +
+            [String(isValidDefinitionFor: representation)] +
             machine.states.sorted { $0.name < $1.name }.flatMap {
                 [
                     VariableParser(state: $0, in: representation)
@@ -98,27 +98,23 @@ public struct PackageGenerator {
                 ("\($0.name.rawValue)Ringlet.swift", String(kripkeNodeFor: $0, in: representation))
             ]
         }
-        let stateFiles: [(String, FileWrapper)] = stateFilesRaw.compactMap {
-            guard let fileData = $0.1.data(using: .utf8) else {
-                return nil
-            }
+        let stateFiles: [(String, FileWrapper)] = stateFilesRaw.map {
+            let fileData = Data($0.1.utf8)
             let fileWrapper = FileWrapper(regularFileWithContents: fileData)
             fileWrapper.preferredFilename = $0.0
             return ($0.0, fileWrapper)
         }
-        guard
-            stateFiles.count == stateFilesRaw.count,
-            let cFileData = cFileRawData.data(using: .utf8),
-            let cHeaderData = cHeaderRawData.data(using: .utf8),
-            let packageData = String(machinePackage: representation).data(using: .utf8),
-            let swiftExtensionsData = String.swiftExtensions.data(using: .utf8),
-            let kripkeParserData = String(kripkeParserFor: representation).data(using: .utf8),
-            let kripkeStructureData = String(kripkeStructureFor: representation).data(using: .utf8),
-            let parserData = String(parserFor: representation).data(using: .utf8),
-            let vhdlKripkeStructureData = String(vhdlKripkeStructureFor: representation).data(using: .utf8)
-        else {
+        guard stateFiles.count == stateFilesRaw.count else {
             return nil
         }
+        let cFileData = Data(cFileRawData.utf8)
+        let cHeaderData = Data(cHeaderRawData.utf8)
+        let packageData = Data(String(machinePackage: representation).utf8)
+        let swiftExtensionsData = Data(String.swiftExtensions.utf8)
+        let kripkeParserData = Data(String(kripkeParserFor: representation).utf8)
+        let kripkeStructureData = Data(String(kripkeStructureFor: representation).utf8)
+        let parserData = Data(String(parserFor: representation).utf8)
+        let vhdlKripkeStructureData = Data(String(vhdlKripkeStructureFor: representation).utf8)
         let cFile = FileWrapper(regularFileWithContents: cFileData)
         cFile.preferredFilename = "\(name).c"
         let cHeader = FileWrapper(regularFileWithContents: cHeaderData)
