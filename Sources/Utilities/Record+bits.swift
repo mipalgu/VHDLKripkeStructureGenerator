@@ -81,8 +81,8 @@ extension Record {
     ) -> VectorIndex? {
         var startIndex = (isDownto ? max(0, self.bits - 1) : 0) + value
         return self.types
-            .compactMap {
-                let numberOfBits = $0.type.bits
+            .compactMap { (type: RecordTypeDeclaration) -> VectorIndex? in
+                let numberOfBits = type.type.bits
                 defer {
                     if isDownto {
                         startIndex -= numberOfBits
@@ -90,7 +90,7 @@ extension Record {
                         startIndex += numberOfBits
                     }
                 }
-                guard $0.name == name else {
+                guard type.name == name else {
                     return nil
                 }
                 guard numberOfBits <= 1 else {
@@ -109,7 +109,7 @@ extension Record {
                         )
                     )
                 }
-                return .index(value: .literal(value: .integer(value: startIndex)))
+                return VectorIndex.index(value: .literal(value: .integer(value: startIndex)))
             }
             .first
     }
