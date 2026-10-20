@@ -232,17 +232,21 @@ extension MachineVHDLRepresentable {
 
     /// Get the type of the `internalState` variable.
     @inlinable public var internalStateType: Type? {
-        self.architectureHead.statements
-            .compactMap {
-                guard
-                    case .definition(let def) = $0, case .signal(let signal) = def,
-                    signal.name == .internalState
-                else {
-                    return nil
-                }
-                return signal.type
+        let fn: (HeadStatement) -> Type? = {
+            guard
+                case .definition(let def) = $0, case .signal(let signal) = def,
+                signal.name == .internalState
+            else {
+                return nil
             }
-            .first
+            return signal.type
+        }
+        for statement in self.architectureHead.statements {
+            if let type = fn(statement) {
+                return type
+            }
+        }
+        return nil
     }
 
 }
