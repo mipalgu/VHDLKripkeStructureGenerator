@@ -59,10 +59,15 @@ import SwiftUtils
 import VHDLMachines
 import VHDLParsing
 
+/// Handles the generation of the swift package for generating the VHDL Kripke Structure.
 public struct PackageGenerator {
 
+    /// Default init.
     public init() {}
 
+    /// Create the files for the swift package.
+    /// - Parameter representation: The representation to generate the Kripke structure from.
+    /// - Returns: The swift package.
     public func swiftPackage<T>(representation: T) -> FileWrapper? where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let name = representation.entity.name.rawValue
@@ -168,8 +173,10 @@ public struct PackageGenerator {
 
 }
 
+/// Add Package manifest creation.
 extension String {
 
+    /// Generate the package manifest from the given machine representation.
     init<T>(machinePackage representation: T) where T: MachineVHDLRepresentable {
         let name = representation.entity.name.rawValue
         self = """
