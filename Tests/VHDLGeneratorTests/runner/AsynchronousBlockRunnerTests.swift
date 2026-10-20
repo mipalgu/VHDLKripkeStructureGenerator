@@ -101,7 +101,10 @@ struct AsynchronousBlockRunnerTests {
         let expected = AsynchronousBlock.blocks(blocks: [
             .component(
                 block: ComponentInstantiation(
-                    label: label, name: representation.entity.name, port: map)
+                    label: label,
+                    name: representation.entity.name,
+                    port: map
+                )
             ),
             .statement(
                 statement: .assignment(
@@ -109,8 +112,10 @@ struct AsynchronousBlockRunnerTests {
                     value: .expression(
                         value: .reference(
                             variable: .variable(reference: .variable(name: .internalState))
-                        ))
-                )),
+                        )
+                    )
+                )
+            ),
             .process(block: .runnerLogic),
         ])
         #expect(result == expected)

@@ -68,7 +68,8 @@ struct TargetStatesCacheTests {
 
     /// A test machine.
     let representation: MachineRepresentation = MachineRepresentation(
-        machine: .pingMachine, name: .pingMachine
+        machine: .pingMachine,
+        name: .pingMachine
     )!
 
     // swiftlint:enable implicitly_unwrapped_optional

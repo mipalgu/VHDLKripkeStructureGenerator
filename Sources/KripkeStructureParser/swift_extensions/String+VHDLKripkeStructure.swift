@@ -1,30 +1,30 @@
 // String+VHDLKripkeStructure.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2024 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,18 +36,18 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
@@ -60,223 +60,235 @@ import Utilities
 extension String {
 
     static let readNode = """
-    protocol ReadNode {
+        protocol ReadNode {
 
-        var executeOnEntry: Bool { get }
+            var executeOnEntry: Bool { get }
 
-        var currentState: VariableName { get }
+            var currentState: VariableName { get }
 
-        var properties: [VariableName: SignalLiteral] { get }
+            var properties: [VariableName: SignalLiteral] { get }
 
-        var externals: Set<VariableName> { get }
+            var externals: Set<VariableName> { get }
 
-    }
-    """
+        }
+        """
 
     static let writeNode = """
-    protocol WriteNode {
+        protocol WriteNode {
 
-        var executeOnEntry: Bool { get }
+            var executeOnEntry: Bool { get }
 
-        var currentState: VariableName { get }
+            var currentState: VariableName { get }
 
-        var properties: [VariableName: SignalLiteral] { get }
+            var properties: [VariableName: SignalLiteral] { get }
 
-        var externals: Set<VariableName> { get }
+            var externals: Set<VariableName> { get }
 
-        var nextStateName: VariableName { get }
+            var nextStateName: VariableName { get }
 
-    }
-    """
+        }
+        """
 
     static let ringlet = """
-    protocol Ringlet {
+        protocol Ringlet {
 
-        var readNode: any ReadNode { get }
+            var readNode: any ReadNode { get }
 
-        var writeNode: any WriteNode { get }
+            var writeNode: any WriteNode { get }
 
-    }
-    """
+        }
+        """
 
     static let nodePropertyInit = """
-    extension Node {
+        extension Node {
 
-        convenience init(
-            properties: [VariableName: SignalLiteral],
-            previousProperties: [VariableName: SignalLiteral],
-            type: NodeType,
-            currentState: VariableName,
-            executeOnEntry: Bool,
-            nextState: VariableName
-        ) {
-            var newProperties = previousProperties
-            properties.forEach { newProperties[$0] = $1 }
-            self.init(
-                type: type,
-                currentState: currentState,
-                executeOnEntry: executeOnEntry,
-                nextState: nextState,
-                properties: newProperties
-            )
+            convenience init(
+                properties: [VariableName: SignalLiteral],
+                previousProperties: [VariableName: SignalLiteral],
+                type: NodeType,
+                currentState: VariableName,
+                executeOnEntry: Bool,
+                nextState: VariableName
+            ) {
+                var newProperties = previousProperties
+                properties.forEach { newProperties[$0] = $1 }
+                self.init(
+                    type: type,
+                    currentState: currentState,
+                    executeOnEntry: executeOnEntry,
+                    nextState: nextState,
+                    properties: newProperties
+                )
+            }
+
         }
-
-    }
-    """
+        """
 
     static let typeExtensions = """
-    extension SignalType {
+        extension SignalType {
 
-        var allValues: [SignalLiteral] {
-            switch self {
-            case .bit:
-                return [.bit(value: .low), .bit(value: .high)]
-            case .boolean:
-                return [.boolean(value: false), .boolean(value: true)]
-            case .stdLogic, .stdULogic:
-                return [.logic(value: .low), .logic(value: .high), .logic(value: .highImpedance)]
-            case .integer:
-                return (Int32.min...Int32.max).map { .integer(value: Int($0)) }
-            case .natural:
-                return (0...Int32.max).map { .integer(value: Int($0)) }
-            case .positive:
-                return (1...Int32.max).map { .integer(value: Int($0)) }
-            case .real:
-                fatalError("Not supported!")
-            case .ranged(let type):
-                return type.allValues
+            var allValues: [SignalLiteral] {
+                switch self {
+                case .bit:
+                    return [.bit(value: .low), .bit(value: .high)]
+                case .boolean:
+                    return [.boolean(value: false), .boolean(value: true)]
+                case .stdLogic, .stdULogic:
+                    return [.logic(value: .low), .logic(value: .high), .logic(value: .highImpedance)]
+                case .integer:
+                    return (Int32.min...Int32.max).map { .integer(value: Int($0)) }
+                case .natural:
+                    return (0...Int32.max).map { .integer(value: Int($0)) }
+                case .positive:
+                    return (1...Int32.max).map { .integer(value: Int($0)) }
+                case .real:
+                    fatalError("Not supported!")
+                case .ranged(let type):
+                    return type.allValues
+                }
             }
+
         }
 
-    }
+        extension RangedType {
 
-    extension RangedType {
-
-        var allValues: [SignalLiteral] {
-            let values: [[SignalLiteral]]
-            switch self {
-            case .bitVector(let size), .signed(let size), .unsigned(let size):
-                values = (0..<size.size!).map { _ in SignalType.bit.allValues}
-            case .integer:
-                fatalError("Not supported")
-            case .stdLogicVector(let size), .stdULogicVector(let size):
-                values = (0..<size.size!).map { _ in SignalType.stdLogic.allValues}
-            }
-            var indexes = Array(repeating: 0, count: values.count)
-            var allValues: [SignalLiteral] = []
-            let maxIndex = values[0].count - 1
-            while true {
-                let combination = indexes.enumerated().map { values[$0][$1] }
+            var allValues: [SignalLiteral] {
+                let values: [[SignalLiteral]]
                 switch self {
-                case .bitVector, .signed, .unsigned:
-                    allValues.append(SignalLiteral.vector(value: .bits(
-                        value: BitVector(values: combination.map { $0.asBit })
-                    )))
-                case .stdLogicVector, .stdULogicVector:
-                    allValues.append(SignalLiteral.vector(value: .logics(
-                        value: LogicVector(values: combination.map { $0.asLogic })
-                    )))
-                default:
+                case .bitVector(let size), .signed(let size), .unsigned(let size):
+                    values = (0..<size.size!).map { _ in SignalType.bit.allValues}
+                case .integer:
+                    fatalError("Not supported")
+                case .stdLogicVector(let size), .stdULogicVector(let size):
+                    values = (0..<size.size!).map { _ in SignalType.stdLogic.allValues}
+                }
+                var indexes = Array(repeating: 0, count: values.count)
+                var allValues: [SignalLiteral] = []
+                let maxIndex = values[0].count - 1
+                while true {
+                    let combination = indexes.enumerated().map { values[$0][$1] }
+                    switch self {
+                    case .bitVector, .signed, .unsigned:
+                        allValues.append(SignalLiteral.vector(value: .bits(
+                            value: BitVector(values: combination.map { $0.asBit })
+                        )))
+                    case .stdLogicVector, .stdULogicVector:
+                        allValues.append(SignalLiteral.vector(value: .logics(
+                            value: LogicVector(values: combination.map { $0.asLogic })
+                        )))
+                    default:
+                        fatalError()
+                    }
+                    guard let mutatingIndex = indexes.firstIndex(where: { $0 < maxIndex }) else {
+                        return allValues
+                    }
+                    indexes[mutatingIndex] += 1
+                    guard mutatingIndex > 0 else {
+                        continue
+                    }
+                    let resetIndexes = (0..<mutatingIndex)
+                    resetIndexes.forEach { indexes[$0] = 0 }
+                }
+            }
+
+        }
+
+        extension SignalLiteral {
+
+            var asBit: BitLiteral {
+                guard case .bit(let value) = self else {
                     fatalError()
                 }
-                guard let mutatingIndex = indexes.firstIndex(where: { $0 < maxIndex }) else {
-                    return allValues
+                return value
+            }
+
+            var asLogic: LogicLiteral {
+                guard case .logic(let value) = self else {
+                    fatalError()
                 }
-                indexes[mutatingIndex] += 1
-                guard mutatingIndex > 0 else {
-                    continue
-                }
-                let resetIndexes = (0..<mutatingIndex)
-                resetIndexes.forEach { indexes[$0] = 0 }
+                return value
             }
+
         }
-
-    }
-
-    extension SignalLiteral {
-
-        var asBit: BitLiteral {
-            guard case .bit(let value) = self else {
-                fatalError()
-            }
-            return value
-        }
-
-        var asLogic: LogicLiteral {
-            guard case .logic(let value) = self else {
-                fatalError()
-            }
-            return value
-        }
-
-    }
-    """
+        """
 
     init<T>(vhdlKripkeStructureFor representation: T) where T: MachineVHDLRepresentable {
         let includes = """
-        import VHDLKripkeStructures
-        import VHDLParsing
-        """
-        let readExtensions = representation.machine.states.map {
-            String(readNodeConformanceFor: $0, in: representation)
-        }
-        .joined(separator: "\n\n")
-        let writeExtensions = representation.machine.states.map {
-            String(writeNodeConformanceFor: $0, in: representation)
-        }
-        .joined(separator: "\n\n")
-        let ringletExtensions = representation.machine.states.map {
-            String(ringletConformanceFor: $0)
-        }
-        .joined(separator: "\n\n")
+            import VHDLKripkeStructures
+            import VHDLParsing
+            """
+        let readExtensions = representation.machine.states
+            .map {
+                String(readNodeConformanceFor: $0, in: representation)
+            }
+            .joined(separator: "\n\n")
+        let writeExtensions = representation.machine.states
+            .map {
+                String(writeNodeConformanceFor: $0, in: representation)
+            }
+            .joined(separator: "\n\n")
+        let ringletExtensions = representation.machine.states
+            .map {
+                String(ringletConformanceFor: $0)
+            }
+            .joined(separator: "\n\n")
         let kripkeExtensions = String(kripkeStructureExtensionFor: representation)
         let dictionaryExtensions = String(dictionaryPropertiesFor: representation)
         let nameExtension = String(nameExtensionFor: representation)
         self = """
-        \(includes)
+            \(includes)
 
-        \(String.readNode)
+            \(String.readNode)
 
-        \(String.writeNode)
+            \(String.writeNode)
 
-        \(String.ringlet)
+            \(String.ringlet)
 
-        \(String(ringletExtension: representation))
+            \(String(ringletExtension: representation))
 
-        \(readExtensions)
+            \(readExtensions)
 
-        \(writeExtensions)
+            \(writeExtensions)
 
-        \(ringletExtensions)
+            \(ringletExtensions)
 
-        \(kripkeExtensions)
+            \(kripkeExtensions)
 
-        \(String.nodePropertyInit)
+            \(String.nodePropertyInit)
 
-        \(dictionaryExtensions)
+            \(dictionaryExtensions)
 
-        \(nameExtension)
+            \(nameExtension)
 
-        \(String.typeExtensions)
+            \(String.typeExtensions)
 
-        """
+            """
     }
 
     init<T>(ringletExtension representation: T) where T: MachineVHDLRepresentable {
         let machinePrefix = representation.entity.name.rawValue + "_"
         self = """
-        extension Ringlet {
+            extension Ringlet {
 
-            func isCompatible(writeNode: Node) -> Bool {
-                writeNode.executeOnEntry == self.readNode.executeOnEntry
-                    && writeNode.nextState == self.readNode.currentState
-                    && [VariableName: SignalLiteral].internalVariables.allSatisfy {
-                        guard !$0.rawValue.hasPrefix("\(machinePrefix)") else {
-                            let externalName = VariableName(
-                                rawValue: String($0.rawValue.dropFirst("\(machinePrefix)".count))
-                            )!
+                func isCompatible(writeNode: Node) -> Bool {
+                    writeNode.executeOnEntry == self.readNode.executeOnEntry
+                        && writeNode.nextState == self.readNode.currentState
+                        && [VariableName: SignalLiteral].internalVariables.allSatisfy {
+                            guard !$0.rawValue.hasPrefix("\(machinePrefix)") else {
+                                let externalName = VariableName(
+                                    rawValue: String($0.rawValue.dropFirst("\(machinePrefix)".count))
+                                )!
+                                guard
+                                    !self.readNode.externals.contains(externalName),
+                                    let value1 = self.readNode.properties[$0],
+                                    let value2 = writeNode.properties[$0]
+                                else {
+                                    return true
+                                }
+                                return value1 == value2
+                            }
                             guard
-                                !self.readNode.externals.contains(externalName),
+                                !self.readNode.externals.contains($0),
                                 let value1 = self.readNode.properties[$0],
                                 let value2 = writeNode.properties[$0]
                             else {
@@ -284,73 +296,68 @@ extension String {
                             }
                             return value1 == value2
                         }
-                        guard
-                            !self.readNode.externals.contains($0),
-                            let value1 = self.readNode.properties[$0],
-                            let value2 = writeNode.properties[$0]
-                        else {
-                            return true
-                        }
-                        return value1 == value2
-                    }
-            }
+                }
 
-        }
-        """
+            }
+            """
     }
 
     init<T>(readNodeConformanceFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let externals = state.externalVariables.filter { name in
-            guard let signal = representation.machine.externalSignals.first(where: { $0.name == name }) else {
-                return false
+        let externals = state.externalVariables
+            .filter { name in
+                guard let signal = representation.machine.externalSignals.first(where: { $0.name == name })
+                else {
+                    return false
+                }
+                return signal.mode != .output
             }
-            return signal.mode != .output
-        }
-        .map { ".\($0.rawValue)" }
-        .joined(separator: ", ")
+            .map { ".\($0.rawValue)" }
+            .joined(separator: ", ")
         self = """
-        extension \(state.name.rawValue)Read: ReadNode {
+            extension \(state.name.rawValue)Read: ReadNode {
 
-            var currentState: VariableName { .\(state.name.rawValue) }
+                var currentState: VariableName { .\(state.name.rawValue) }
 
-            var externals: Set<VariableName> { [\(externals)] }
+                var externals: Set<VariableName> { [\(externals)] }
 
-        }
-        """
+            }
+            """
     }
 
     init<T>(writeNodeConformanceFor state: State, in representation: T) where T: MachineVHDLRepresentable {
-        let externals = state.externalVariables.filter { name in
-            guard let signal = representation.machine.externalSignals.first(where: { $0.name == name }) else {
-                return false
+        let externals = state.externalVariables
+            .filter { name in
+                guard let signal = representation.machine.externalSignals.first(where: { $0.name == name })
+                else {
+                    return false
+                }
+                return signal.mode != .input
             }
-            return signal.mode != .input
-        }
-        .map { ".\($0.rawValue)" }
-        .joined(separator: ", ")
+            .map { ".\($0.rawValue)" }
+            .joined(separator: ", ")
         self = """
-        extension \(state.name.rawValue)Write: WriteNode {
+            extension \(state.name.rawValue)Write: WriteNode {
 
-            var currentState: VariableName { .\(state.name.rawValue) }
+                var currentState: VariableName { .\(state.name.rawValue) }
 
-            var nextStateName: VariableName { VariableName(state: self.nextState)! }
+                var nextStateName: VariableName { VariableName(state: self.nextState)! }
 
-            var externals: Set<VariableName> { [\(externals)] }
+                var externals: Set<VariableName> { [\(externals)] }
 
-        }
-        """
+            }
+            """
     }
 
     init(ringletConformanceFor state: State) {
         self = """
-        extension \(state.name.rawValue)Ringlet: Ringlet {
+            extension \(state.name.rawValue)Ringlet: Ringlet {
 
-            var readNode: any ReadNode { self.read }
+                var readNode: any ReadNode { self.read }
 
-            var writeNode: any WriteNode { self.write }
+                var writeNode: any WriteNode { self.write }
 
-        }
-        """
+            }
+            """
     }
 
     init<T>(dictionaryPropertiesFor representation: T) where T: MachineVHDLRepresentable {
@@ -384,18 +391,19 @@ extension String {
         }
         let stateSignals = machine.states.flatMap { state in
             state.signals.map {
-                let name = "\(representation.entity.name.rawValue)_STATE_\(state.name.rawValue)_" +
-                    "\($0.name.rawValue)"
+                let name =
+                    "\(representation.entity.name.rawValue)_STATE_\(state.name.rawValue)_"
+                    + "\($0.name.rawValue)"
                 guard let defaultValue = $0.defaultValue, case .literal(let literal) = defaultValue else {
+                    return (
+                        name,
+                        $0.type.signalType.defaultValueCreation
+                    )
+                }
                 return (
                     name,
-                    $0.type.signalType.defaultValueCreation
+                    literal.defaultValueCreation
                 )
-            }
-            return (
-                name,
-                literal.defaultValueCreation
-            )
             }
         }
         let allSignals = externals + snapshots + machineSignals + stateSignals
@@ -403,49 +411,49 @@ extension String {
         let internalSignals = snapshots + machineSignals + stateSignals
         let internalDefinitions = internalSignals.map { "VariableName(rawValue: \"\($0.0)\")!" }
         self = """
-        extension Dictionary where Key == VariableName, Value == SignalLiteral {
+            extension Dictionary where Key == VariableName, Value == SignalLiteral {
 
-            static let defaultProperties: [VariableName: SignalLiteral] = [
-        \(assignments.joined(separator: ",\n").indent(amount: 2))
-            ]
+                static let defaultProperties: [VariableName: SignalLiteral] = [
+            \(assignments.joined(separator: ",\n").indent(amount: 2))
+                ]
 
-            static let internalVariables: [VariableName] = [
-        \(internalDefinitions.joined(separator: ",\n").indent(amount: 2))
-            ]
+                static let internalVariables: [VariableName] = [
+            \(internalDefinitions.joined(separator: ",\n").indent(amount: 2))
+                ]
 
-            static var cache: [Set<VariableName>: [[VariableName: SignalLiteral]]] = [:]
+                static var cache: [Set<VariableName>: [[VariableName: SignalLiteral]]] = [:]
 
-            static func allReadExternalValues(excluding: Set<VariableName>, domains: [VariableName: [SignalLiteral]]) -> [[VariableName: SignalLiteral]] {
-                if let cached = cache[excluding] {
-                    return cached
-                }
-                let validExternals = VariableName.readExternals.filter { !excluding.contains($0.key) }
-                let validValues: [VariableName: [SignalLiteral]] = Dictionary<VariableName, [SignalLiteral]>(uniqueKeysWithValues: validExternals.map {
-                    ($0.key, domains[$0.key] ?? $0.value.allValues)
-                })
-                var allConfigurations: [[VariableName: SignalLiteral]] = []
-                var indexes = validValues.map { ($0.key, 0) }
-                let maxIndexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, $0.value.count - 1) })
-                while true {
-                    let configuration = [VariableName: SignalLiteral](uniqueKeysWithValues: indexes.map {
-                        ($0.0, validValues[$0.0]![$0.1])
+                static func allReadExternalValues(excluding: Set<VariableName>, domains: [VariableName: [SignalLiteral]]) -> [[VariableName: SignalLiteral]] {
+                    if let cached = cache[excluding] {
+                        return cached
+                    }
+                    let validExternals = VariableName.readExternals.filter { !excluding.contains($0.key) }
+                    let validValues: [VariableName: [SignalLiteral]] = Dictionary<VariableName, [SignalLiteral]>(uniqueKeysWithValues: validExternals.map {
+                        ($0.key, domains[$0.key] ?? $0.value.allValues)
                     })
-                    allConfigurations.append(configuration)
-                    guard let mutatingIndex = indexes.firstIndex(where: { $0.1 < maxIndexes[$0.0]! }) else {
-                        cache[excluding] = allConfigurations
-                        return allConfigurations
+                    var allConfigurations: [[VariableName: SignalLiteral]] = []
+                    var indexes = validValues.map { ($0.key, 0) }
+                    let maxIndexes = [VariableName: Int](uniqueKeysWithValues: validValues.map { ($0.key, $0.value.count - 1) })
+                    while true {
+                        let configuration = [VariableName: SignalLiteral](uniqueKeysWithValues: indexes.map {
+                            ($0.0, validValues[$0.0]![$0.1])
+                        })
+                        allConfigurations.append(configuration)
+                        guard let mutatingIndex = indexes.firstIndex(where: { $0.1 < maxIndexes[$0.0]! }) else {
+                            cache[excluding] = allConfigurations
+                            return allConfigurations
+                        }
+                        indexes[mutatingIndex] = (indexes[mutatingIndex].0, indexes[mutatingIndex].1 + 1)
+                        guard mutatingIndex > 0 else {
+                            continue
+                        }
+                        let resetIndexes = (0..<mutatingIndex)
+                        resetIndexes.forEach { indexes[$0] = (indexes[$0].0, 0) }
                     }
-                    indexes[mutatingIndex] = (indexes[mutatingIndex].0, indexes[mutatingIndex].1 + 1)
-                    guard mutatingIndex > 0 else {
-                        continue
-                    }
-                    let resetIndexes = (0..<mutatingIndex)
-                    resetIndexes.forEach { indexes[$0] = (indexes[$0].0, 0) }
                 }
-            }
 
-        }
-        """
+            }
+            """
     }
 
     init<T>(nameExtensionFor representation: T) where T: MachineVHDLRepresentable {
@@ -456,77 +464,79 @@ extension String {
         let externalDefinitions = machine.externalSignals.flatMap {
             [
                 "static let \($0.name.rawValue) = VariableName(rawValue: \"\($0.name.rawValue)\")!",
-                "static let \(representation.entity.name)_\($0.name.rawValue) = " +
-                    "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!"
+                "static let \(representation.entity.name)_\($0.name.rawValue) = "
+                    + "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!",
             ]
         }
         let machineDefinitions = machine.machineSignals.map {
-            "static let \(representation.entity.name)_\($0.name.rawValue) = " +
-                    "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!"
+            "static let \(representation.entity.name)_\($0.name.rawValue) = "
+                + "VariableName(rawValue: \"\(representation.entity.name)_\($0.name.rawValue)\")!"
         }
         let stateSignalDefinitions = machine.states.flatMap { state in
             state.signals.map {
-                "static let \(representation.entity.name)_STATE_\(state.name.rawValue)_\($0.name.rawValue)" +
-                    " = VariableName(rawValue: \"\(representation.entity.name)_STATE_\(state.name.rawValue)" +
-                    "_\($0.name.rawValue)\")!"
+                "static let \(representation.entity.name)_STATE_\(state.name.rawValue)_\($0.name.rawValue)"
+                    + " = VariableName(rawValue: \"\(representation.entity.name)_STATE_\(state.name.rawValue)"
+                    + "_\($0.name.rawValue)\")!"
             }
         }
         let vectorCases = machine.states.map {
             let instantiation = $0.representation(in: representation)
             return """
-            case LogicVector(rawValue: \"\"\"
-            \(instantiation.rawValue)
-            \"\"\")!.values:
-                self = .\($0.name.rawValue)
-            """
+                case LogicVector(rawValue: \"\"\"
+                \(instantiation.rawValue)
+                \"\"\")!.values:
+                    self = .\($0.name.rawValue)
+                """
         }
         let allReadExternals = machine.externalSignals.filter { $0.mode != .output }
-        let readExternals = allReadExternals.map {
-            "\($0.name.rawValue): SignalType(rawValue: \"\($0.type.rawValue)\")!"
-        }
-        .joined(separator: ", ")
-        let stateReadExternals = machine.states.map {
-            let externals = $0.externalVariables.filter { allReadExternals.map(\.name).contains($0) }
-                .map(\.rawValue)
-                .joined(separator: ", ")
-            return """
-            case .\($0.name.rawValue):
-                return [\(externals)]
-            """
-        }
-        .joined(separator: "\n")
-        .indent(amount: 2)
+        let readExternals =
+            allReadExternals.map {
+                "\($0.name.rawValue): SignalType(rawValue: \"\($0.type.rawValue)\")!"
+            }
+            .joined(separator: ", ")
+        let stateReadExternals = machine.states
+            .map {
+                let externals = $0.externalVariables.filter { allReadExternals.map(\.name).contains($0) }
+                    .map(\.rawValue)
+                    .joined(separator: ", ")
+                return """
+                    case .\($0.name.rawValue):
+                        return [\(externals)]
+                    """
+            }
+            .joined(separator: "\n")
+            .indent(amount: 2)
         self = """
-        extension VariableName {
+            extension VariableName {
 
-        \(stateDefinitions.joined(separator: "\n").indent(amount: 1))
+            \(stateDefinitions.joined(separator: "\n").indent(amount: 1))
 
-        \(externalDefinitions.joined(separator: "\n").indent(amount: 1))
+            \(externalDefinitions.joined(separator: "\n").indent(amount: 1))
 
-        \(machineDefinitions.joined(separator: "\n").indent(amount: 1))
+            \(machineDefinitions.joined(separator: "\n").indent(amount: 1))
 
-        \(stateSignalDefinitions.joined(separator: "\n").indent(amount: 1))
+            \(stateSignalDefinitions.joined(separator: "\n").indent(amount: 1))
 
-            static let readExternals: [VariableName: SignalType] = [\(readExternals)]
+                static let readExternals: [VariableName: SignalType] = [\(readExternals)]
 
-            init?(state: LogicVector) {
-                switch state.values {
-        \(vectorCases.joined(separator: "\n").indent(amount: 2))
-                default:
-                    return nil
+                init?(state: LogicVector) {
+                    switch state.values {
+            \(vectorCases.joined(separator: "\n").indent(amount: 2))
+                    default:
+                        return nil
+                    }
                 }
-            }
 
-            static func readExternals(state: VariableName) -> Set<VariableName> {
-                switch state {
-        \(stateReadExternals)
-                default:
-                    fatalError()
+                static func readExternals(state: VariableName) -> Set<VariableName> {
+                    switch state {
+            \(stateReadExternals)
+                    default:
+                        fatalError()
+                    }
                 }
-            }
 
-        }
-        """
+            }
+            """
     }
 
     init<T>(kripkeStructureExtensionFor representation: T) where T: MachineVHDLRepresentable {
@@ -537,200 +547,204 @@ extension String {
             }
             return signal.mode != .output
         }
-        let externalProperties = initialExternals.map {
-            "$0 != .\($0.rawValue), $0 != VariableName(rawValue: \"\(representation.entity.name)_\($0.rawValue)\")!"
-        }
-        .joined(separator: ", ")
-        let externalPropertiesGuard = """
-        ringlet.read.properties.allSatisfy {
-            guard \(externalProperties) else {
-                return true
+        let externalProperties =
+            initialExternals.map {
+                "$0 != .\($0.rawValue), $0 != VariableName(rawValue: \"\(representation.entity.name)_\($0.rawValue)\")!"
             }
-            return [VariableName: SignalLiteral].defaultProperties[$0] == $1
-        }
-        """
-        let stateRinglets = representation.machine.states.map {
-            "structure.\($0.name.rawValue.lowercased())Ringlets"
-        }
-        .joined(separator: " + ")
+            .joined(separator: ", ")
+        let externalPropertiesGuard = """
+            ringlet.read.properties.allSatisfy {
+                guard \(externalProperties) else {
+                    return true
+                }
+                return [VariableName: SignalLiteral].defaultProperties[$0] == $1
+            }
+            """
+        let stateRinglets = representation.machine.states
+            .map {
+                "structure.\($0.name.rawValue.lowercased())Ringlets"
+            }
+            .joined(separator: " + ")
         let clock = representation.machine.clocks[representation.machine.drivingClock]
         let (amount, exponent) = clock.periodTime!
-        let costRW = "cost: Cost(time: ScientificQuantity(coefficient: \(amount * 4), " +
-            "exponent: \(exponent)), energy: ScientificQuantity(coefficient: 0, exponent: 0))"
-        let costWR = "cost: Cost(time: ScientificQuantity(coefficient: \(amount), " +
-            "exponent: \(exponent)), energy: ScientificQuantity(coefficient: 0, exponent: 0))"
+        let costRW =
+            "cost: Cost(time: ScientificQuantity(coefficient: \(amount * 4), "
+            + "exponent: \(exponent)), energy: ScientificQuantity(coefficient: 0, exponent: 0))"
+        let costWR =
+            "cost: Cost(time: ScientificQuantity(coefficient: \(amount), "
+            + "exponent: \(exponent)), energy: ScientificQuantity(coefficient: 0, exponent: 0))"
         self = """
-        extension KripkeStructure {
+            extension KripkeStructure {
 
-            public convenience init(structure: \(representation.entity.name.rawValue)KripkeStructure) {
-                let initialRinglets = structure.\(initialState.name.rawValue.lowercased())Ringlets.filter { ringlet in
-                    ringlet.read.currentState == .\(initialState.name.rawValue) && ringlet.read.executeOnEntry
-        \(initialExternals.isEmpty ? "" : "&& \(externalPropertiesGuard.indent(amount: 4))")
-                }
-                let domains = structure.readDomains
-                let initialNodes: Set<Node> = Set(initialRinglets.flatMap { ringlet in
-                    let readExternals = VariableName.readExternals(state: ringlet.read.currentState)
-                    let readExternalValues = ringlet.read.properties.filter { readExternals.contains($0.key) }
-                    let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
-                        let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
-                        return (snapshot, $0.value)
-                    })
-                    return [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial), domains: domains).map {
-                        Node(
-                            type: .read,
-                            currentState: ringlet.read.currentState,
-                            executeOnEntry: ringlet.read.executeOnEntry,
-                            nextState: ringlet.read.currentState,
-                            properties: [VariableName: SignalLiteral].defaultProperties.merging($0) { $1 }.merging(snapshotProperties) { $1 }.merging(ringlet.read.properties) { $1 }
-                        )
+                public convenience init(structure: \(representation.entity.name.rawValue)KripkeStructure) {
+                    let initialRinglets = structure.\(initialState.name.rawValue.lowercased())Ringlets.filter { ringlet in
+                        ringlet.read.currentState == .\(initialState.name.rawValue) && ringlet.read.executeOnEntry
+            \(initialExternals.isEmpty ? "" : "&& \(externalPropertiesGuard.indent(amount: 4))")
                     }
-                })
-                var nodes: Set<Node> = initialNodes
-                var edges: [Node: Set<Edge>] = [:]
-                var pendingRinglets: [any Ringlet] = initialRinglets
-                let allRinglets: [any Ringlet] = \(stateRinglets)
-                var seenRinglets: [any Ringlet] = []
-                seenRinglets.reserveCapacity(allRinglets.count)
-                let isSame: (any Ringlet, any Ringlet) -> Bool = {
-                    let lhsRead = $0.readNode
-                    let rhsRead = $1.readNode
-                    let isSame = lhsRead.currentState == rhsRead.currentState
-                        && lhsRead.executeOnEntry == rhsRead.executeOnEntry
-                        && lhsRead.externals == rhsRead.externals
-                        && lhsRead.properties.count == rhsRead.properties.count
-                        && lhsRead.properties.allSatisfy { rhsRead.properties[$0.key] == $0.value }
-                    guard isSame else {
-                        return false
-                    }
-                    let lhsWrite = $0.writeNode
-                    let rhsWrite = $1.writeNode
-                    return lhsWrite.currentState == rhsWrite.currentState
-                        && lhsWrite.executeOnEntry == rhsWrite.executeOnEntry
-                        && lhsWrite.externals == rhsWrite.externals
-                        && lhsWrite.nextStateName == rhsWrite.nextStateName
-                        && lhsWrite.properties.count == rhsWrite.properties.count
-                        && lhsWrite.properties.allSatisfy { rhsWrite.properties[$0.key] == $0.value }
-
-                }
-                repeat {
-                    let ringlet = pendingRinglets.removeLast()
-                    guard !seenRinglets.contains(where: { isSame($0, ringlet) }) else {
-                        continue
-                    }
-                    seenRinglets.append(ringlet)
-                    let readNodes: [Node] = nodes.filter { (node: Node) -> Bool in
-                        node.executeOnEntry == ringlet.readNode.executeOnEntry
-                            && node.currentState == ringlet.readNode.currentState
-                            && node.type == .read
-                            && ringlet.readNode.properties.allSatisfy { node.properties[$0] == $1 }
-                    }
-                    .flatMap { node in
-                        let readExternals = VariableName.readExternals(state: node.currentState)
-                        let readExternalValues = node.properties.filter { readExternals.contains($0.key) }
+                    let domains = structure.readDomains
+                    let initialNodes: Set<Node> = Set(initialRinglets.flatMap { ringlet in
+                        let readExternals = VariableName.readExternals(state: ringlet.read.currentState)
+                        let readExternalValues = ringlet.read.properties.filter { readExternals.contains($0.key) }
                         let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
                             let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
                             return (snapshot, $0.value)
                         })
-                        return [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState), domains: domains).map { value in
+                        return [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: .Initial), domains: domains).map {
                             Node(
-                                properties: value.merging(snapshotProperties) { $1 },
-                                previousProperties: node.properties,
-                                type: node.type,
-                                currentState: node.currentState,
-                                executeOnEntry: node.executeOnEntry,
-                                nextState: node.nextState
+                                type: .read,
+                                currentState: ringlet.read.currentState,
+                                executeOnEntry: ringlet.read.executeOnEntry,
+                                nextState: ringlet.read.currentState,
+                                properties: [VariableName: SignalLiteral].defaultProperties.merging($0) { $1 }.merging(snapshotProperties) { $1 }.merging(ringlet.read.properties) { $1 }
                             )
                         }
+                    })
+                    var nodes: Set<Node> = initialNodes
+                    var edges: [Node: Set<Edge>] = [:]
+                    var pendingRinglets: [any Ringlet] = initialRinglets
+                    let allRinglets: [any Ringlet] = \(stateRinglets)
+                    var seenRinglets: [any Ringlet] = []
+                    seenRinglets.reserveCapacity(allRinglets.count)
+                    let isSame: (any Ringlet, any Ringlet) -> Bool = {
+                        let lhsRead = $0.readNode
+                        let rhsRead = $1.readNode
+                        let isSame = lhsRead.currentState == rhsRead.currentState
+                            && lhsRead.executeOnEntry == rhsRead.executeOnEntry
+                            && lhsRead.externals == rhsRead.externals
+                            && lhsRead.properties.count == rhsRead.properties.count
+                            && lhsRead.properties.allSatisfy { rhsRead.properties[$0.key] == $0.value }
+                        guard isSame else {
+                            return false
+                        }
+                        let lhsWrite = $0.writeNode
+                        let rhsWrite = $1.writeNode
+                        return lhsWrite.currentState == rhsWrite.currentState
+                            && lhsWrite.executeOnEntry == rhsWrite.executeOnEntry
+                            && lhsWrite.externals == rhsWrite.externals
+                            && lhsWrite.nextStateName == rhsWrite.nextStateName
+                            && lhsWrite.properties.count == rhsWrite.properties.count
+                            && lhsWrite.properties.allSatisfy { rhsWrite.properties[$0.key] == $0.value }
+
                     }
-                    let writeNodes = readNodes.map {
-                        Node(
-                            properties: ringlet.writeNode.properties,
-                            previousProperties: $0.properties,
-                            type: .write,
-                            currentState: $0.currentState,
-                            executeOnEntry: ringlet.writeNode.executeOnEntry,
-                            nextState: ringlet.writeNode.nextStateName
-                        )
-                    }
-                    writeNodes.enumerated().forEach {
-                        let readNode = readNodes[$0]
-                        let writeNode = $1
-                        let edge: Set<Edge>
-                        if let currentReadEdges = edges[readNode] {
-                            edge = currentReadEdges.union([Edge(target: writeNode, \(costRW))])
-                        } else {
-                            edge = [Edge(target: writeNode, \(costRW))]
+                    repeat {
+                        let ringlet = pendingRinglets.removeLast()
+                        guard !seenRinglets.contains(where: { isSame($0, ringlet) }) else {
+                            continue
                         }
-                        edges[readNode] = edge
-                        guard !nodes.contains(writeNode) else {
-                            return
+                        seenRinglets.append(ringlet)
+                        let readNodes: [Node] = nodes.filter { (node: Node) -> Bool in
+                            node.executeOnEntry == ringlet.readNode.executeOnEntry
+                                && node.currentState == ringlet.readNode.currentState
+                                && node.type == .read
+                                && ringlet.readNode.properties.allSatisfy { node.properties[$0] == $1 }
                         }
-                        nodes.insert(writeNode)
-                        let newNodes = allRinglets.filter { ringlet in
-                            ringlet.isCompatible(writeNode: writeNode)
-                        }
-                        let nextNodes = newNodes.flatMap { ringlet in
-                            [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: ringlet.readNode.currentState), domains: domains).map {
-                                let node = ringlet.readNode
-                                let readExternals = VariableName.readExternals(state: node.currentState)
-                                let readExternalValues = node.properties.filter { readExternals.contains($0.key) }
-                                let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
-                                    let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
-                                    return (snapshot, $0.value)
-                                })
-                                return Node(
-                                    properties: $0.merging(snapshotProperties) { $1 }.merging(node.properties) { $1 },
-                                    previousProperties: writeNode.properties,
-                                    type: .read,
+                        .flatMap { node in
+                            let readExternals = VariableName.readExternals(state: node.currentState)
+                            let readExternalValues = node.properties.filter { readExternals.contains($0.key) }
+                            let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
+                                let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
+                                return (snapshot, $0.value)
+                            })
+                            return [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: node.currentState), domains: domains).map { value in
+                                Node(
+                                    properties: value.merging(snapshotProperties) { $1 },
+                                    previousProperties: node.properties,
+                                    type: node.type,
                                     currentState: node.currentState,
                                     executeOnEntry: node.executeOnEntry,
-                                    nextState: node.currentState
+                                    nextState: node.nextState
                                 )
                             }
                         }
-                        nextNodes.forEach { nodes.insert($0) }
-                        let unseenNodes = nextNodes.filter {
-                            edges[$0] == nil
+                        let writeNodes = readNodes.map {
+                            Node(
+                                properties: ringlet.writeNode.properties,
+                                previousProperties: $0.properties,
+                                type: .write,
+                                currentState: $0.currentState,
+                                executeOnEntry: ringlet.writeNode.executeOnEntry,
+                                nextState: ringlet.writeNode.nextStateName
+                            )
                         }
-                        let unseenRinglets = allRinglets.filter { ringlet in
-                            unseenNodes.contains {
-                                ringlet.isCompatible(writeNode: $0)
+                        writeNodes.enumerated().forEach {
+                            let readNode = readNodes[$0]
+                            let writeNode = $1
+                            let edge: Set<Edge>
+                            if let currentReadEdges = edges[readNode] {
+                                edge = currentReadEdges.union([Edge(target: writeNode, \(costRW))])
+                            } else {
+                                edge = [Edge(target: writeNode, \(costRW))]
                             }
-                        }
-                        unseenRinglets.forEach { ringlet in
-                            guard let index = seenRinglets.firstIndex(where: { isSame($0, ringlet) }) else {
+                            edges[readNode] = edge
+                            guard !nodes.contains(writeNode) else {
                                 return
                             }
-                            seenRinglets.remove(at: index)
+                            nodes.insert(writeNode)
+                            let newNodes = allRinglets.filter { ringlet in
+                                ringlet.isCompatible(writeNode: writeNode)
+                            }
+                            let nextNodes = newNodes.flatMap { ringlet in
+                                [VariableName: SignalLiteral].allReadExternalValues(excluding: VariableName.readExternals(state: ringlet.readNode.currentState), domains: domains).map {
+                                    let node = ringlet.readNode
+                                    let readExternals = VariableName.readExternals(state: node.currentState)
+                                    let readExternalValues = node.properties.filter { readExternals.contains($0.key) }
+                                    let snapshotProperties = Dictionary(uniqueKeysWithValues: readExternalValues.map {
+                                        let snapshot = VariableName(rawValue: "\(representation.entity.name.rawValue)_\\($0.key.rawValue)")!
+                                        return (snapshot, $0.value)
+                                    })
+                                    return Node(
+                                        properties: $0.merging(snapshotProperties) { $1 }.merging(node.properties) { $1 },
+                                        previousProperties: writeNode.properties,
+                                        type: .read,
+                                        currentState: node.currentState,
+                                        executeOnEntry: node.executeOnEntry,
+                                        nextState: node.currentState
+                                    )
+                                }
+                            }
+                            nextNodes.forEach { nodes.insert($0) }
+                            let unseenNodes = nextNodes.filter {
+                                edges[$0] == nil
+                            }
+                            let unseenRinglets = allRinglets.filter { ringlet in
+                                unseenNodes.contains {
+                                    ringlet.isCompatible(writeNode: $0)
+                                }
+                            }
+                            unseenRinglets.forEach { ringlet in
+                                guard let index = seenRinglets.firstIndex(where: { isSame($0, ringlet) }) else {
+                                    return
+                                }
+                                seenRinglets.remove(at: index)
+                            }
+                            pendingRinglets += unseenRinglets
+                            let newEdges = nextNodes.map {
+                                Edge(target: $0, \(costWR))
+                            }
+                            if let currentEdges = edges[writeNode] {
+                                edges[writeNode] = currentEdges.union(newEdges)
+                            } else {
+                                edges[writeNode] = Set(newEdges)
+                            }
                         }
-                        pendingRinglets += unseenRinglets
-                        let newEdges = nextNodes.map {
-                            Edge(target: $0, \(costWR))
-                        }
-                        if let currentEdges = edges[writeNode] {
-                            edges[writeNode] = currentEdges.union(newEdges)
-                        } else {
-                            edges[writeNode] = Set(newEdges)
-                        }
-                    }
-                } while !pendingRinglets.isEmpty
-                print("Original Ringlets: \\(allRinglets.count)")
-                let numberOfNodes = nodes.count
-                print("\\(numberOfNodes) nodes!")
-                let numberOfEdges = edges.reduce(0) { $0 + $1.value.count }
-                print("\\(numberOfEdges) edges!")
-                print("\\(initialNodes.count) initial nodes!")
-                let cyclomaticComplexity = numberOfEdges - numberOfNodes + 2
-                print("Cyclomatic complexity: \\(cyclomaticComplexity)")
-                self.init(
-                    nodes: Array(nodes),
-                    edges: edges.mapValues { Array($0) },
-                    initialStates: initialNodes
-                )
-            }
+                    } while !pendingRinglets.isEmpty
+                    print("Original Ringlets: \\(allRinglets.count)")
+                    let numberOfNodes = nodes.count
+                    print("\\(numberOfNodes) nodes!")
+                    let numberOfEdges = edges.reduce(0) { $0 + $1.value.count }
+                    print("\\(numberOfEdges) edges!")
+                    print("\\(initialNodes.count) initial nodes!")
+                    let cyclomaticComplexity = numberOfEdges - numberOfNodes + 2
+                    print("Cyclomatic complexity: \\(cyclomaticComplexity)")
+                    self.init(
+                        nodes: Array(nodes),
+                        edges: edges.mapValues { Array($0) },
+                        initialStates: initialNodes
+                    )
+                }
 
-        }
-        """
+            }
+            """
     }
 
 }

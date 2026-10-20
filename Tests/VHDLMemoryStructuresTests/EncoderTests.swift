@@ -66,19 +66,25 @@ struct EncoderTests {
     @Test
     func testEncoderDetectsInvalidParameters() {
         #expect(
-            VHDLFile(encoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil)
+            VHDLFile(encoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil
+        )
         #expect(
-            VHDLFile(encoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil)
+            VHDLFile(encoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil
+        )
         #expect(
-            Entity(encoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil)
+            Entity(encoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil
+        )
         #expect(
-            Entity(encoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil)
+            Entity(encoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil
+        )
         #expect(
             Architecture(encoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3)
-                == nil)
+                == nil
+        )
         #expect(
             Architecture(encoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0)
-                == nil)
+                == nil
+        )
     }
 
     // swiftlint:disable line_length
@@ -88,7 +94,9 @@ struct EncoderTests {
     func testEncoderCreation() {
         guard
             let result = VHDLFile(
-                encoderName: .targetStatesEncoder, numberOfElements: 7, elementSize: 3
+                encoderName: .targetStatesEncoder,
+                numberOfElements: 7,
+                elementSize: 3
             )
         else {
             Issue.record("Failed to create encoder!")
@@ -133,7 +141,9 @@ struct EncoderTests {
     func testEncoderCreationWithNoPadding() {
         guard
             let result = VHDLFile(
-                encoderName: .targetStatesEncoder, numberOfElements: 8, elementSize: 3
+                encoderName: .targetStatesEncoder,
+                numberOfElements: 8,
+                elementSize: 3
             )
         else {
             Issue.record("Failed to create encoder!")

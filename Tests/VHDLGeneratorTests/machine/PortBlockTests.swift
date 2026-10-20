@@ -124,7 +124,9 @@ struct PortBlockTests {
                             size: .downto(
                                 upper: .literal(value: .integer(value: 1)),
                                 lower: .literal(value: .integer(value: 0))
-                            ))),
+                            )
+                        )
+                    ),
                     name: commandName,
                     mode: .input
                 ),

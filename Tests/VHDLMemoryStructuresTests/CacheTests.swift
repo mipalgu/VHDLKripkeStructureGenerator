@@ -72,7 +72,9 @@ struct CacheTests {
     func testCacheGeneration() {
         guard
             let result = VHDLFile(
-                cacheName: .targetStatesCache, elementSize: 3, numberOfElements: 12
+                cacheName: .targetStatesCache,
+                elementSize: 3,
+                numberOfElements: 12
             )
         else {
             Issue.record("Failed to create cache!")

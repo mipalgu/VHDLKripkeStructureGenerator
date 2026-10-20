@@ -1,30 +1,30 @@
 // ArchitectureHead+ringletRunner.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2023 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,23 +36,23 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
 import Utilities
 import VHDLMachines
@@ -69,7 +69,8 @@ extension ArchitectureHead {
     init?<T>(ringletRunnerFor representation: T) where T: MachineVHDLRepresentable {
         let machine = representation.machine
         let constantSize = VectorSize.downto(
-            upper: .literal(value: .integer(value: 2)), lower: .literal(value: .integer(value: 0))
+            upper: .literal(value: .integer(value: 2)),
+            lower: .literal(value: .integer(value: 0))
         )
         guard
             let readSnapshot = ConstantSignal(
@@ -90,9 +91,13 @@ extension ArchitectureHead {
         let machineSignal = LocalSignal(
             type: .alias(name: .totalSnapshot),
             name: .machine,
-            defaultValue: .literal(value: .vector(value: .indexed(
-                values: IndexedVector(snapshotDefaultsFor: representation)
-            )))
+            defaultValue: .literal(
+                value: .vector(
+                    value: .indexed(
+                        values: IndexedVector(snapshotDefaultsFor: representation)
+                    )
+                )
+            )
         )
         let tracker = LocalSignal(
             type: .ringletRunnerTracker,
@@ -106,9 +111,13 @@ extension ArchitectureHead {
         let currentState = LocalSignal(
             type: .ranged(type: .stdLogicVector(size: size)),
             name: .currentState,
-            defaultValue: .literal(value: .vector(value: .bits(
-                value: BitVector(values: [BitLiteral](repeating: .low, count: bits))
-            )))
+            defaultValue: .literal(
+                value: .vector(
+                    value: .bits(
+                        value: BitVector(values: [BitLiteral](repeating: .low, count: bits))
+                    )
+                )
+            )
         )
         let machineRunner = ComponentDefinition(name: runnerName, port: machineRunnerPort)
         self.init(statements: [
@@ -121,7 +130,7 @@ extension ArchitectureHead {
             .definition(value: .constant(value: .waitForMachineStart)),
             .definition(value: .constant(value: .runnerWaitForFinish)),
             .definition(value: .signal(value: currentState)),
-            .definition(value: .component(value: machineRunner))
+            .definition(value: .component(value: machineRunner)),
         ])
     }
 
@@ -131,9 +140,14 @@ extension ArchitectureHead {
 extension SignalType {
 
     /// The type of the tracker signal in the ringlet runner.
-    @usableFromInline static let ringletRunnerTracker = SignalType.ranged(type: .stdLogicVector(size: .downto(
-        upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
-    )))
+    @usableFromInline static let ringletRunnerTracker = SignalType.ranged(
+        type: .stdLogicVector(
+            size: .downto(
+                upper: .literal(value: .integer(value: 1)),
+                lower: .literal(value: .integer(value: 0))
+            )
+        )
+    )
 
 }
 
@@ -186,36 +200,58 @@ extension IndexedVector {
         let externals = machine.externalSignals.flatMap { (signal: PortSignal) -> [IndexedValue] in
             guard case .signal(let type) = signal.type else {
                 fatalError(
-                    "Cannot create a verifiable entity from a machine with custom types. Failed " +
-                    "to create default values for \(signal.type) in external signal \(signal.name)"
+                    "Cannot create a verifiable entity from a machine with custom types. Failed "
+                        + "to create default values for \(signal.type) in external signal \(signal.name)"
                 )
             }
             var declarations: [IndexedValue] = []
-            declarations.append(IndexedValue(
-                index: .index(value: .reference(
-                    variable: .variable(reference: .variable(name: signal.name))
-                )),
-                value: type.defaultValue
-            ))
-            declarations.append(IndexedValue(
-                index: .index(value: .reference(variable: .variable(reference: .variable(name: VariableName(
-                    rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)"
-                // swiftlint:disable:next force_unwrapping
-                )!)))),
-                value: type.defaultValue
-            ))
-            if signal.mode == .output {
-                declarations.append(IndexedValue(
-                    index: .index(value: .reference(variable: .variable(
-                        reference: .variable(
-                            name: VariableName(
-                                rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
-                            // swiftlint:disable:next force_unwrapping
-                            )!
+            declarations.append(
+                IndexedValue(
+                    index: .index(
+                        value: .reference(
+                            variable: .variable(reference: .variable(name: signal.name))
                         )
-                    ))),
+                    ),
                     value: type.defaultValue
-                ))
+                )
+            )
+            declarations.append(
+                IndexedValue(
+                    index: .index(
+                        value: .reference(
+                            variable: .variable(
+                                reference: .variable(
+                                    name: VariableName(
+                                        rawValue:
+                                            "\(representation.entity.name.rawValue)_\(signal.name.rawValue)"
+                                            // swiftlint:disable:next force_unwrapping
+                                    )!
+                                )
+                            )
+                        )
+                    ),
+                    value: type.defaultValue
+                )
+            )
+            if signal.mode == .output {
+                declarations.append(
+                    IndexedValue(
+                        index: .index(
+                            value: .reference(
+                                variable: .variable(
+                                    reference: .variable(
+                                        name: VariableName(
+                                            rawValue:
+                                                "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
+                                                // swiftlint:disable:next force_unwrapping
+                                        )!
+                                    )
+                                )
+                            )
+                        ),
+                        value: type.defaultValue
+                    )
+                )
             }
             return declarations
         }
@@ -227,8 +263,8 @@ extension IndexedVector {
         let machineVariables = machineSignals.flatMap { (signal: LocalSignal) -> [IndexedValue] in
             guard case .signal(let type) = signal.type else {
                 fatalError(
-                    "Cannot create a verifiable entity from a machine with custom types. Failed " +
-                    "to create default values for \(signal.type) in external signal \(signal.name)"
+                    "Cannot create a verifiable entity from a machine with custom types. Failed "
+                        + "to create default values for \(signal.type) in external signal \(signal.name)"
                 )
             }
             return [
@@ -238,9 +274,9 @@ extension IndexedVector {
                             variable: .variable(
                                 reference: .variable(
                                     name: VariableName(
-                                        rawValue: "\(representation.entity.name.rawValue)_" +
-                                            "\(signal.name.rawValue)"
-                                    // swiftlint:disable:next force_unwrapping
+                                        rawValue: "\(representation.entity.name.rawValue)_"
+                                            + "\(signal.name.rawValue)"
+                                            // swiftlint:disable:next force_unwrapping
                                     )!
                                 )
                             )
@@ -249,47 +285,64 @@ extension IndexedVector {
                     value: type.defaultValue
                 ),
                 IndexedValue(
-                    index: .index(value: .reference(variable: .variable(
-                        reference: .variable(
-                            name: VariableName(
-                                rawValue: "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
-                            // swiftlint:disable:next force_unwrapping
-                            )!
+                    index: .index(
+                        value: .reference(
+                            variable: .variable(
+                                reference: .variable(
+                                    name: VariableName(
+                                        rawValue:
+                                            "\(representation.entity.name.rawValue)_\(signal.name.rawValue)In"
+                                            // swiftlint:disable:next force_unwrapping
+                                    )!
+                                )
+                            )
                         )
-                    ))),
+                    ),
                     value: type.defaultValue
-                )
+                ),
             ]
         }
         let stateVariables = machine.states.flatMap { (state: State) -> [IndexedValue] in
             state.signals.flatMap { (signal: LocalSignal) -> [IndexedValue] in
                 guard case .signal(let type) = signal.type else {
                     fatalError(
-                        "Cannot create a verifiable entity from a machine with custom types. Failed " +
-                        "to create default values for \(signal.type) in external signal \(signal.name)"
+                        "Cannot create a verifiable entity from a machine with custom types. Failed "
+                            + "to create default values for \(signal.type) in external signal \(signal.name)"
                     )
                 }
                 return [
                     IndexedValue(
-                        index: .index(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(
-                                rawValue: "\(representation.entity.name.rawValue)_STATE_" +
-                                    "\(state.name.rawValue)_\(signal.name.rawValue)"
-                            // swiftlint:disable:next force_unwrapping
-                            )!
-                        )))),
+                        index: .index(
+                            value: .reference(
+                                variable: .variable(
+                                    reference: .variable(
+                                        name: VariableName(
+                                            rawValue: "\(representation.entity.name.rawValue)_STATE_"
+                                                + "\(state.name.rawValue)_\(signal.name.rawValue)"
+                                                // swiftlint:disable:next force_unwrapping
+                                        )!
+                                    )
+                                )
+                            )
+                        ),
                         value: type.defaultValue
                     ),
                     IndexedValue(
-                        index: .index(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(
-                                rawValue: "\(representation.entity.name.rawValue)_STATE_" +
-                                    "\(state.name.rawValue)_\(signal.name.rawValue)In"
-                            // swiftlint:disable:next force_unwrapping
-                            )!
-                        )))),
+                        index: .index(
+                            value: .reference(
+                                variable: .variable(
+                                    reference: .variable(
+                                        name: VariableName(
+                                            rawValue: "\(representation.entity.name.rawValue)_STATE_"
+                                                + "\(state.name.rawValue)_\(signal.name.rawValue)In"
+                                                // swiftlint:disable:next force_unwrapping
+                                        )!
+                                    )
+                                )
+                            )
+                        ),
                         value: type.defaultValue
-                    )
+                    ),
                 ]
             }
         }
@@ -387,21 +440,23 @@ extension IndexedVector {
             index: .index(value: .reference(variable: .variable(reference: .variable(name: .observed)))),
             value: .boolean(value: false)
         )
-        self.init(values: externals + machineSignals + stateSignals + [
-            currentStateIn,
-            currentStateOut,
-            previousRingletIn,
-            previousRingletOut,
-            internalStateIn,
-            internalStateOut,
-            targetStateIn,
-            targetStateOut,
-            reset,
-            goalInternalState,
-            finished,
-            executeOnEntry,
-            observed
-        ])
+        self.init(
+            values: externals + machineSignals + stateSignals + [
+                currentStateIn,
+                currentStateOut,
+                previousRingletIn,
+                previousRingletOut,
+                internalStateIn,
+                internalStateOut,
+                targetStateIn,
+                targetStateOut,
+                reset,
+                goalInternalState,
+                finished,
+                executeOnEntry,
+                observed,
+            ]
+        )
     }
 
 }

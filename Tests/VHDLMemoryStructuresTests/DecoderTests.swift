@@ -67,19 +67,25 @@ struct DecoderTests {
     @Test
     func testDecoderDetectsInvalidParameters() {
         #expect(
-            VHDLFile(decoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil)
+            VHDLFile(decoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil
+        )
         #expect(
-            VHDLFile(decoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil)
+            VHDLFile(decoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil
+        )
         #expect(
-            Entity(decoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil)
+            Entity(decoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3) == nil
+        )
         #expect(
-            Entity(decoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil)
+            Entity(decoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0) == nil
+        )
         #expect(
             Architecture(decoderName: .targetStatesDecoder, numberOfElements: 0, elementSize: 3)
-                == nil)
+                == nil
+        )
         #expect(
             Architecture(decoderName: .targetStatesDecoder, numberOfElements: 3, elementSize: 0)
-                == nil)
+                == nil
+        )
     }
 
     // swiftlint:disable function_body_length
@@ -89,7 +95,9 @@ struct DecoderTests {
     func testDecoder() {
         guard
             let result = VHDLFile(
-                decoderName: .targetStatesDecoder, numberOfElements: 7, elementSize: 3
+                decoderName: .targetStatesDecoder,
+                numberOfElements: 7,
+                elementSize: 3
             )
         else {
             Issue.record("Failed to create decoder!")

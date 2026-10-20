@@ -104,33 +104,41 @@ struct SynchronousBlockTests {
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .forLoop(
                                 loop: ForLoop(
                                     iterator: .x,
                                     range: .downto(
                                         upper: .reference(
-                                            variable: .variable(reference: .variable(name: .x))),
+                                            variable: .variable(reference: .variable(name: .x))
+                                        ),
                                         lower: .reference(
-                                            variable: .variable(reference: .variable(name: .x)))
+                                            variable: .variable(reference: .variable(name: .x))
+                                        )
                                     ),
                                     body: .statement(
                                         statement: .assignment(
                                             name: .variable(reference: .variable(name: .x)),
                                             value: .reference(
-                                                variable: .variable(reference: .variable(name: .x)))
-                                        ))
-                                ))
+                                                variable: .variable(reference: .variable(name: .x))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
                         ),
                         WhenCase(
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .ifStatement(
                                 block: .ifElse(
                                     condition: .reference(
-                                        variable: .variable(reference: .variable(name: .x))),
+                                        variable: .variable(reference: .variable(name: .x))
+                                    ),
                                     ifBlock: .statement(
                                         statement: .assignment(
                                             name: .indexed(
@@ -138,12 +146,16 @@ struct SynchronousBlockTests {
                                                 index: .index(
                                                     value: .reference(
                                                         variable: .variable(
-                                                            reference: .variable(name: .x))
-                                                    ))
+                                                            reference: .variable(name: .x)
+                                                        )
+                                                    )
+                                                )
                                             ),
                                             value: .reference(
-                                                variable: .variable(reference: .variable(name: .x)))
-                                        )),
+                                                variable: .variable(reference: .variable(name: .x))
+                                            )
+                                        )
+                                    ),
                                     elseBlock: .statement(
                                         statement: .assignment(
                                             name: .indexed(
@@ -152,48 +164,66 @@ struct SynchronousBlockTests {
                                                     value: .to(
                                                         lower: .reference(
                                                             variable: .variable(
-                                                                reference: .variable(name: .x))),
+                                                                reference: .variable(name: .x)
+                                                            )
+                                                        ),
                                                         upper: .reference(
                                                             variable: .variable(
-                                                                reference: .variable(name: .x)))
-                                                    ))),
+                                                                reference: .variable(name: .x)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            ),
                                             value: .reference(
-                                                variable: .variable(reference: .variable(name: .x)))
-                                        ))
-                                ))
+                                                variable: .variable(reference: .variable(name: .x))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
                         ),
                         WhenCase(
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .ifStatement(
                                 block: .ifStatement(
                                     condition: .reference(
-                                        variable: .variable(reference: .variable(name: .x))),
+                                        variable: .variable(reference: .variable(name: .x))
+                                    ),
                                     ifBlock: .statement(
                                         statement: .assignment(
                                             name: .variable(reference: .variable(name: .x)),
                                             value: .reference(
-                                                variable: .variable(reference: .variable(name: .x)))
-                                        ))
-                                ))
+                                                variable: .variable(reference: .variable(name: .x))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
                         ),
                         WhenCase(
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .statement(
                                 statement: .assignment(
                                     name: .variable(reference: .variable(name: .x)),
                                     value: .reference(
-                                        variable: .variable(reference: .variable(name: .x)))
-                                ))
+                                        variable: .variable(reference: .variable(name: .x))
+                                    )
+                                )
+                            )
                         ),
                         WhenCase(condition: .others, code: .statement(statement: .null)),
                     ]
-                ))
+                )
+            )
         ])
         let expected = SynchronousBlock.blocks(blocks: [
             .caseStatement(
@@ -204,15 +234,18 @@ struct SynchronousBlockTests {
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .forLoop(
                                 loop: ForLoop(
                                     iterator: .x,
                                     range: .downto(
                                         upper: .reference(
-                                            variable: .variable(reference: .variable(name: .x))),
+                                            variable: .variable(reference: .variable(name: .x))
+                                        ),
                                         lower: .reference(
-                                            variable: .variable(reference: .variable(name: .x)))
+                                            variable: .variable(reference: .variable(name: .x))
+                                        )
                                     ),
                                     body: .blocks(blocks: [
                                         .statement(
@@ -220,27 +253,36 @@ struct SynchronousBlockTests {
                                                 name: .variable(reference: .variable(name: .x)),
                                                 value: .reference(
                                                     variable: .variable(
-                                                        reference: .variable(name: .x)))
-                                            )),
+                                                        reference: .variable(name: .x)
+                                                    )
+                                                )
+                                            )
+                                        ),
                                         .statement(
                                             statement: .assignment(
                                                 name: .variable(reference: .variable(name: .y)),
                                                 value: .reference(
                                                     variable: .variable(
-                                                        reference: .variable(name: .x)))
-                                            )),
+                                                        reference: .variable(name: .x)
+                                                    )
+                                                )
+                                            )
+                                        ),
                                     ])
-                                ))
+                                )
+                            )
                         ),
                         WhenCase(
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .ifStatement(
                                 block: .ifElse(
                                     condition: .reference(
-                                        variable: .variable(reference: .variable(name: .x))),
+                                        variable: .variable(reference: .variable(name: .x))
+                                    ),
                                     ifBlock: .statement(
                                         statement: .assignment(
                                             name: .indexed(
@@ -248,12 +290,16 @@ struct SynchronousBlockTests {
                                                 index: .index(
                                                     value: .reference(
                                                         variable: .variable(
-                                                            reference: .variable(name: .x))
-                                                    ))
+                                                            reference: .variable(name: .x)
+                                                        )
+                                                    )
+                                                )
                                             ),
                                             value: .reference(
-                                                variable: .variable(reference: .variable(name: .x)))
-                                        )),
+                                                variable: .variable(reference: .variable(name: .x))
+                                            )
+                                        )
+                                    ),
                                     elseBlock: .statement(
                                         statement: .assignment(
                                             name: .indexed(
@@ -262,66 +308,90 @@ struct SynchronousBlockTests {
                                                     value: .to(
                                                         lower: .reference(
                                                             variable: .variable(
-                                                                reference: .variable(name: .x))),
+                                                                reference: .variable(name: .x)
+                                                            )
+                                                        ),
                                                         upper: .reference(
                                                             variable: .variable(
-                                                                reference: .variable(name: .x)))
-                                                    ))),
+                                                                reference: .variable(name: .x)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            ),
                                             value: .reference(
-                                                variable: .variable(reference: .variable(name: .x)))
-                                        ))
-                                ))
+                                                variable: .variable(reference: .variable(name: .x))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
                         ),
                         WhenCase(
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .ifStatement(
                                 block: .ifStatement(
                                     condition: .reference(
-                                        variable: .variable(reference: .variable(name: .x))),
+                                        variable: .variable(reference: .variable(name: .x))
+                                    ),
                                     ifBlock: .blocks(blocks: [
                                         .statement(
                                             statement: .assignment(
                                                 name: .variable(reference: .variable(name: .x)),
                                                 value: .reference(
                                                     variable: .variable(
-                                                        reference: .variable(name: .x)))
-                                            )),
+                                                        reference: .variable(name: .x)
+                                                    )
+                                                )
+                                            )
+                                        ),
                                         .statement(
                                             statement: .assignment(
                                                 name: .variable(reference: .variable(name: .y)),
                                                 value: .reference(
                                                     variable: .variable(
-                                                        reference: .variable(name: .x)))
-                                            )),
+                                                        reference: .variable(name: .x)
+                                                    )
+                                                )
+                                            )
+                                        ),
                                     ])
-                                ))
+                                )
+                            )
                         ),
                         WhenCase(
                             condition: .expression(
                                 expression: .reference(
                                     variable: .variable(reference: .variable(name: .x))
-                                )),
+                                )
+                            ),
                             code: .blocks(blocks: [
                                 .statement(
                                     statement: .assignment(
                                         name: .variable(reference: .variable(name: .x)),
                                         value: .reference(
-                                            variable: .variable(reference: .variable(name: .x)))
-                                    )),
+                                            variable: .variable(reference: .variable(name: .x))
+                                        )
+                                    )
+                                ),
                                 .statement(
                                     statement: .assignment(
                                         name: .variable(reference: .variable(name: .y)),
                                         value: .reference(
-                                            variable: .variable(reference: .variable(name: .x)))
-                                    )),
+                                            variable: .variable(reference: .variable(name: .x))
+                                        )
+                                    )
+                                ),
                             ])
                         ),
                         WhenCase(condition: .others, code: .statement(statement: .null)),
                     ]
-                ))
+                )
+            )
         ])
         let result = SynchronousBlock(internalSignal: block, signal: .x, newSignal: .y)
         #expect(result == expected)

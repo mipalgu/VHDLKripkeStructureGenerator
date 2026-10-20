@@ -209,7 +209,8 @@ struct VHDLFileTypesTests {
     @Test
     func testPingMachine() {
         let result = VHDLFile(
-            typesFor: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!)!
+            typesFor: MachineRepresentation(machine: .pingMachine, name: .pingMachine)!
+        )!
         let expected = """
             library IEEE;
             use IEEE.std_logic_1164.all;

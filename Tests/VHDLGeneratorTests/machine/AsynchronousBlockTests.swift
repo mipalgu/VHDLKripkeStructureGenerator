@@ -99,7 +99,8 @@ struct AsynchronousBlockTests {
         #expect(
             AsynchronousBlock.process(
                 block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
-            ).hasProcess
+            )
+            .hasProcess
         )
         #expect(!comment.hasProcess)
         #expect(
@@ -110,7 +111,8 @@ struct AsynchronousBlockTests {
                         block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
                     ),
                 ]
-            ).hasProcess
+            )
+            .hasProcess
         )
         #expect(
             AsynchronousBlock.blocks(blocks: [
@@ -121,7 +123,8 @@ struct AsynchronousBlockTests {
                     ),
                 ]),
                 comment,
-            ]).hasProcess
+            ])
+            .hasProcess
         )
     }
 
@@ -196,7 +199,9 @@ struct AsynchronousBlockTests {
                         block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
                     ),
                     machine: machine
-                )) == nil)
+                )
+            ) == nil
+        )
     }
 
     /// Test init returns nil for components and statements.
@@ -207,15 +212,20 @@ struct AsynchronousBlockTests {
                 verifiable: NullRepresentation(
                     body: .component(
                         block: ComponentInstantiation(
-                            label: .y, name: .y2, port: PortMap(variables: [])
-                        )),
+                            label: .y,
+                            name: .y2,
+                            port: PortMap(variables: [])
+                        )
+                    ),
                     machine: machine
                 )
-            ) == nil)
+            ) == nil
+        )
         #expect(
             AsynchronousBlock(
                 verifiable: NullRepresentation(body: comment, machine: machine)
-            ) == nil)
+            ) == nil
+        )
     }
 
     /// Test init returns nil for invalid process in blocks.
@@ -228,11 +238,15 @@ struct AsynchronousBlockTests {
                         comment,
                         .process(
                             block: ProcessBlock(
-                                sensitivityList: [], code: .statement(statement: .null))),
+                                sensitivityList: [],
+                                code: .statement(statement: .null)
+                            )
+                        ),
                     ]),
                     machine: machine
                 )
-            ) == nil)
+            ) == nil
+        )
     }
 
     /// Test init correctly creates a process from a valid machine blocks format.
@@ -256,8 +270,10 @@ struct AsynchronousBlockTests {
                     statement: .assignment(
                         name: .variable(reference: .variable(name: xName)),
                         value: .expression(
-                            value: .reference(variable: .variable(reference: .variable(name: .x))))
-                    )),
+                            value: .reference(variable: .variable(reference: .variable(name: .x)))
+                        )
+                    )
+                ),
                 blocks[0],
                 comment,
                 .process(block: verifiableProcess),

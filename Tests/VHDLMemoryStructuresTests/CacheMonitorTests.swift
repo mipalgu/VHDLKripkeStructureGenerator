@@ -67,7 +67,10 @@ struct CacheMonitorTests {
 
     /// The cache to monitor.
     let cache = Entity(
-        cacheName: VariableName(rawValue: "Cache")!, elementSize: 3, numberOfElements: 10)!
+        cacheName: VariableName(rawValue: "Cache")!,
+        elementSize: 3,
+        numberOfElements: 10
+    )!
 
     // swiftlint:disable function_body_length
     // swiftlint:disable line_length
@@ -77,7 +80,8 @@ struct CacheMonitorTests {
     func testMonitor() {
         guard
             let result = VHDLFile(
-                cacheMonitorName: VariableName(rawValue: "CacheMonitor")!, numberOfMembers: 2,
+                cacheMonitorName: VariableName(rawValue: "CacheMonitor")!,
+                numberOfMembers: 2,
                 cache: cache
             )
         else {
@@ -185,7 +189,8 @@ struct CacheMonitorTests {
     func testSingleMonitor() {
         guard
             let result = VHDLFile(
-                cacheMonitorName: VariableName(rawValue: "CacheMonitor")!, numberOfMembers: 1,
+                cacheMonitorName: VariableName(rawValue: "CacheMonitor")!,
+                numberOfMembers: 1,
                 cache: cache
             )
         else {

@@ -77,15 +77,18 @@ struct VariableParserLargeTests {
     /// Setup the parser before every test.
     init() {
         parser = VariableParser(
-            largeState: representation.machine.states[1], in: representation
+            largeState: representation.machine.states[1],
+            in: representation
         )
     }
 
     /// Test that the function definitions are correct.
     @Test
     func testDefinitionsAreCorrect() {
-        let definitions = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(
-            separator: "\n")
+        let definitions = parser.definitions.sorted { $0.0 < $1.0 }.map { $0.1 }
+            .joined(
+                separator: "\n"
+            )
         let expected = """
             void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count);
             bool IsEvenMachine_CalculateIsEven_READ_executeOnEntry(uint32_t data[2]);
@@ -100,8 +103,10 @@ struct VariableParserLargeTests {
     /// Test that the function implementations are correct.
     @Test
     func testImplementations() {
-        let implementations = parser.functions.sorted { $0.0 < $1.0 }.map { $0.1 }.joined(
-            separator: "\n")
+        let implementations = parser.functions.sorted { $0.0 < $1.0 }.map { $0.1 }
+            .joined(
+                separator: "\n"
+            )
         let expected = """
             void IsEvenMachine_CalculateIsEven_READ_count(uint32_t data[2], uint32_t *count)
             {

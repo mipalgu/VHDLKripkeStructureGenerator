@@ -1,30 +1,30 @@
 // AsynchronousBlock+generator.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2023 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,23 +36,23 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
 import VHDLMachines
 import VHDLParsing
@@ -73,129 +73,265 @@ extension AsynchronousBlock {
             let variableMapping = types.map {
                 VariableMap(
                     lhs: .variable(reference: .variable(name: $0.name)),
-                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(
-                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
-                    ))))
+                    rhs: .expression(
+                        value: .reference(
+                            variable: .variable(
+                                reference: .variable(
+                                    name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                                )
+                            )
+                        )
+                    )
                 )
             }
-            return AsynchronousBlock.component(block: ComponentInstantiation(
-                label: VariableName(rawValue: "\(name)_generator_inst")!,
-                name: entity,
-                port: PortMap(variables: [
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: clk.name)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: clk.name)
-                        )))
+            return AsynchronousBlock.component(
+                block: ComponentInstantiation(
+                    label: VariableName(rawValue: "\(name)_generator_inst")!,
+                    name: entity,
+                    port: PortMap(
+                        variables: [
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: clk.name)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(name: clk.name)
+                                        )
+                                    )
+                                )
+                            )
+                        ] + variableMapping + [
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .address)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)Address")!
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .ready)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "gen\(name)Ready")!
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .read)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(name: VariableName(rawValue: "\(name)Read")!)
+                                        )
+                                    )
+                                )
+                            ),
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .busy)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(name: VariableName(rawValue: "\(name)Busy")!)
+                                        )
+                                    )
+                                )
+                            ),
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .targetStates)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)TargetStates")!
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .value)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)Value")!
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            VariableMap(
+                                lhs: .variable(reference: .variable(name: .lastAddress)),
+                                rhs: .expression(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)LastAddress")!
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                        ]
                     )
-                ] + variableMapping + [
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .address)),
-                        rhs: .expression(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)Address")!
-                        ))))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .ready)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "gen\(name)Ready")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .read)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)Read")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .busy)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)Busy")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStates)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)TargetStates")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .value)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)Value")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .lastAddress)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)LastAddress")!)
-                        )))
-                    )
-                ])
-            ))
+                )
+            )
         }
         let targetAssignments: [AsynchronousBlock] = [
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentObservedState)),
-                value: .expression(value: .reference(variable: .indexed(
-                    name: .reference(variable: .variable(reference: .variable(name: .observedStates))),
-                    index: .index(value: .reference(variable: .variable(
-                        reference: .variable(name: .observedSearchIndex)
-                    )))
-                )))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentPendingState)),
-                value: .expression(value: .reference(variable: .indexed(
-                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
-                    index: .index(value: .reference(variable: .variable(
-                        reference: .variable(name: .pendingSearchIndex)
-                    )))
-                )))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentWorkingPendingState)),
-                value: .expression(value: .reference(variable: .indexed(
-                    name: .reference(variable: .variable(reference: .variable(name: .pendingStates))),
-                    index: .index(value: .reference(variable: .variable(
-                        reference: .variable(name: .pendingStateIndex)
-                    )))
-                )))
-            ))
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentObservedState)),
+                    value: .expression(
+                        value: .reference(
+                            variable: .indexed(
+                                name: .reference(
+                                    variable: .variable(reference: .variable(name: .observedStates))
+                                ),
+                                index: .index(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(name: .observedSearchIndex)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentPendingState)),
+                    value: .expression(
+                        value: .reference(
+                            variable: .indexed(
+                                name: .reference(
+                                    variable: .variable(reference: .variable(name: .pendingStates))
+                                ),
+                                index: .index(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(name: .pendingSearchIndex)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentWorkingPendingState)),
+                    value: .expression(
+                        value: .reference(
+                            variable: .indexed(
+                                name: .reference(
+                                    variable: .variable(reference: .variable(name: .pendingStates))
+                                ),
+                                index: .index(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(name: .pendingStateIndex)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
         ]
         let stateAssignments = machine.states.flatMap {
             let name = $0.name.rawValue
             return [
-                AsynchronousBlock.statement(statement: .assignment(
-                    name: .variable(reference: .variable(
-                        name: VariableName(rawValue: "gen\(name)Ready")!
-                    )),
-                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
-                        value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)ReadReady")!
-                        ))),
-                        condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                            rhs: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
-                        ))),
-                        elseBlock: .expression(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)Ready")!
-                        ))))
-                    )))
-                )),
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(
-                        name: VariableName(rawValue: "current\(name)TargetState")!
-                    )),
-                    value: .expression(value: .reference(variable: .indexed(
-                        name: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)TargetStates")!
-                        ))),
-                        index: .index(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)Index")!
-                        ))))
-                    )))
-                ))
+                AsynchronousBlock.statement(
+                    statement: .assignment(
+                        name: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "gen\(name)Ready")!
+                            )
+                        ),
+                        value: .whenBlock(
+                            value: .whenElse(
+                                statement: WhenElseStatement(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)ReadReady")!
+                                            )
+                                        )
+                                    ),
+                                    condition: .conditional(
+                                        condition: .comparison(
+                                            value: .equality(
+                                                lhs: .reference(
+                                                    variable: .variable(
+                                                        reference: .variable(name: .currentState)
+                                                    )
+                                                ),
+                                                rhs: .reference(
+                                                    variable: .variable(
+                                                        reference: .variable(name: .hasFinished)
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    elseBlock: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Ready")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                .statement(
+                    statement: .assignment(
+                        name: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "current\(name)TargetState")!
+                            )
+                        ),
+                        value: .expression(
+                            value: .reference(
+                                variable: .indexed(
+                                    name: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)TargetStates")!
+                                            )
+                                        )
+                                    ),
+                                    index: .index(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Index")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
             ]
         }
         self = .blocks(
@@ -209,132 +345,242 @@ extension AsynchronousBlock {
         }
         let machine = representation.machine
         let clk = machine.clocks[machine.drivingClock]
-        let generatorInvocations = machine.states.enumerated().map {
-            let name = $1.name.rawValue
-            let entity = Entity(stateGeneratorFor: $1, in: representation)!.name
-            let writeSnapshot = Record(writeSnapshotFor: $1, in: representation)!
-            let types = writeSnapshot.types.filter { $0.name != .nextState }
-            let variableMapping = types.map {
-                VariableMap(
-                    lhs: .variable(reference: .variable(name: $0.name)),
-                    rhs: .expression(value: .reference(variable: .variable(reference: .variable(
-                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
-                    ))))
+        let generatorInvocations = machine.states.enumerated()
+            .map {
+                let name = $1.name.rawValue
+                let entity = Entity(stateGeneratorFor: $1, in: representation)!.name
+                let writeSnapshot = Record(writeSnapshotFor: $1, in: representation)!
+                let types = writeSnapshot.types.filter { $0.name != .nextState }
+                let variableMapping = types.map {
+                    VariableMap(
+                        lhs: .variable(reference: .variable(name: $0.name)),
+                        rhs: .expression(
+                            value: .reference(
+                                variable: .variable(
+                                    reference: .variable(
+                                        name: VariableName(rawValue: "\(name)\($0.name.rawValue)")!
+                                    )
+                                )
+                            )
+                        )
+                    )
+                }
+                let index = $0 + 1
+                return AsynchronousBlock.component(
+                    block: ComponentInstantiation(
+                        label: VariableName(rawValue: "\(name)_generator_inst")!,
+                        name: entity,
+                        port: PortMap(
+                            variables: [
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: clk.name)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(name: clk.name)
+                                            )
+                                        )
+                                    )
+                                )
+                            ] + variableMapping + [
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .address)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Address")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .ready)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "gen\(name)Ready")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .read)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Read")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .busy)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Busy")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesAddress)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(
+                                                        rawValue: "targetStatesaddress\(index)"
+                                                    )!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesData)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStatesdata\(index)")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesWe)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStateswe\(index)")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesReady)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStatesready\(index)")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesBusy)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStatesbusy")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesValue)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStatesvalue")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesValueEn)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStatesvalue_en")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesLastAddress)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStateslastAddress")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .targetStatesEn)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "targetStatesen\(index)")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .value)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Value")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                VariableMap(
+                                    lhs: .variable(reference: .variable(name: .lastAddress)),
+                                    rhs: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)LastAddress")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                            ]
+                        )
+                    )
                 )
             }
-            let index = $0 + 1
-            return AsynchronousBlock.component(block: ComponentInstantiation(
-                label: VariableName(rawValue: "\(name)_generator_inst")!,
-                name: entity,
-                port: PortMap(variables: [
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: clk.name)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: clk.name)
-                        )))
-                    )
-                ] + variableMapping + [
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .address)),
-                        rhs: .expression(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)Address")!
-                        ))))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .ready)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "gen\(name)Ready")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .read)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)Read")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .busy)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)Busy")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesAddress)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesaddress\(index)")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesData)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesdata\(index)")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesWe)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStateswe\(index)")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesReady)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesready\(index)")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesBusy)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesbusy")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesValue)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesvalue")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesValueEn)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesvalue_en")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesLastAddress)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStateslastAddress")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .targetStatesEn)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "targetStatesen\(index)")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .value)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)Value")!)
-                        )))
-                    ),
-                    VariableMap(
-                        lhs: .variable(reference: .variable(name: .lastAddress)),
-                        rhs: .expression(value: .reference(variable: .variable(
-                            reference: .variable(name: VariableName(rawValue: "\(name)LastAddress")!)
-                        )))
-                    )
-                ])
-            ))
-        }
         guard
             let cache = VHDLFile(targetStatesCacheFor: representation)?.entities.first,
             let monitorName = VariableName(
                 rawValue: representation.entity.name.rawValue + "TargetStatesCacheMonitor"
             ),
             let monitor = VHDLFile(
-                cacheMonitorName: monitorName, numberOfMembers: machine.states.count + 1, cache: cache
-            )?.entities.first
+                cacheMonitorName: monitorName,
+                numberOfMembers: machine.states.count + 1,
+                cache: cache
+            )?
+            .entities.first
         else {
             return nil
         }
@@ -347,42 +593,92 @@ extension AsynchronousBlock {
             }
             return VariableMap(
                 lhs: .variable(reference: .variable(name: $0.name)),
-                rhs: .expression(value: .reference(variable: .variable(reference: .variable(
-                    name: VariableName(rawValue: "targetStates\($0.name.rawValue)")!
-                ))))
+                rhs: .expression(
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "targetStates\($0.name.rawValue)")!
+                            )
+                        )
+                    )
+                )
             )
         }
-        let monitorInstance = AsynchronousBlock.component(block: ComponentInstantiation(
-            label: .cacheInst, name: monitorName, port: PortMap(variables: monitorMappings)
-        ))
+        let monitorInstance = AsynchronousBlock.component(
+            block: ComponentInstantiation(
+                label: .cacheInst,
+                name: monitorName,
+                port: PortMap(variables: monitorMappings)
+            )
+        )
         let targetStateAssignment = [
-            AsynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: VariableName(rawValue: "targetStatesaddress0")!)),
-                value: .expression(value: .cast(operation: .stdLogicVector(expression: .reference(
-                    variable: .variable(reference: .variable(name: .pendingStateIndex))
-                ))))
-            ))
+            AsynchronousBlock.statement(
+                statement: .assignment(
+                    name: .variable(
+                        reference: .variable(name: VariableName(rawValue: "targetStatesaddress0")!)
+                    ),
+                    value: .expression(
+                        value: .cast(
+                            operation: .stdLogicVector(
+                                expression: .reference(
+                                    variable: .variable(reference: .variable(name: .pendingStateIndex))
+                                )
+                            )
+                        )
+                    )
+                )
+            )
         ]
         let stateAssignments = machine.states.flatMap {
             let name = $0.name.rawValue
             return [
-                AsynchronousBlock.statement(statement: .assignment(
-                    name: .variable(reference: .variable(
-                        name: VariableName(rawValue: "gen\(name)Ready")!
-                    )),
-                    value: .whenBlock(value: .whenElse(statement: WhenElseStatement(
-                        value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)ReadReady")!
-                        ))),
-                        condition: .conditional(condition: .comparison(value: .equality(
-                            lhs: .reference(variable: .variable(reference: .variable(name: .currentState))),
-                            rhs: .reference(variable: .variable(reference: .variable(name: .hasFinished)))
-                        ))),
-                        elseBlock: .expression(value: .reference(variable: .variable(reference: .variable(
-                            name: VariableName(rawValue: "\(name)Ready")!
-                        ))))
-                    )))
-                ))
+                AsynchronousBlock.statement(
+                    statement: .assignment(
+                        name: .variable(
+                            reference: .variable(
+                                name: VariableName(rawValue: "gen\(name)Ready")!
+                            )
+                        ),
+                        value: .whenBlock(
+                            value: .whenElse(
+                                statement: WhenElseStatement(
+                                    value: .reference(
+                                        variable: .variable(
+                                            reference: .variable(
+                                                name: VariableName(rawValue: "\(name)ReadReady")!
+                                            )
+                                        )
+                                    ),
+                                    condition: .conditional(
+                                        condition: .comparison(
+                                            value: .equality(
+                                                lhs: .reference(
+                                                    variable: .variable(
+                                                        reference: .variable(name: .currentState)
+                                                    )
+                                                ),
+                                                rhs: .reference(
+                                                    variable: .variable(
+                                                        reference: .variable(name: .hasFinished)
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    elseBlock: .expression(
+                                        value: .reference(
+                                            variable: .variable(
+                                                reference: .variable(
+                                                    name: VariableName(rawValue: "\(name)Ready")!
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
             ]
         }
         self = .blocks(

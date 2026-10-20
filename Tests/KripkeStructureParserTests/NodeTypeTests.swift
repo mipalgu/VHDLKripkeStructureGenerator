@@ -61,18 +61,18 @@ import Testing
 @Suite
 struct NodeTypeTests {
 
-   /// Test that raw value is correct.
-   @Test
-   func testRawValue() {
-      #expect(NodeType.read.rawValue == "READ")
-      #expect(NodeType.write.rawValue == "WRITE")
-   }
+    /// Test that raw value is correct.
+    @Test
+    func testRawValue() {
+        #expect(NodeType.read.rawValue == "READ")
+        #expect(NodeType.write.rawValue == "WRITE")
+    }
 
-   /// Test that type is created from the raw value correctly.
-   @Test
-   func testRawValueInit() {
-      #expect(NodeType(rawValue: "READ") == .read)
-      #expect(NodeType(rawValue: "WRITE") == .write)
-   }
+    /// Test that type is created from the raw value correctly.
+    @Test
+    func testRawValueInit() {
+        #expect(NodeType(rawValue: "READ") == .read)
+        #expect(NodeType(rawValue: "WRITE") == .write)
+    }
 
 }

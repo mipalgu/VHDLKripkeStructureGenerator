@@ -70,25 +70,29 @@ struct VectorSizeTests {
             VectorSize(numberOfBits: 1)
                 == .downto(
                     upper: .literal(value: .integer(value: 0)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(numberOfBits: 0)
                 == .downto(
                     upper: .literal(value: .integer(value: 0)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(numberOfBits: -1)
                 == .downto(
                     upper: .literal(value: .integer(value: 0)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(numberOfBits: 2)
                 == .downto(
                     upper: .literal(value: .integer(value: 1)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
     }
 
@@ -99,31 +103,36 @@ struct VectorSizeTests {
             VectorSize(supporting: [1, 2, 3])
                 == .downto(
                     upper: .literal(value: .integer(value: 1)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(supporting: [])
                 == .downto(
                     upper: .literal(value: .integer(value: 0)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(supporting: [1, 2])
                 == .downto(
                     upper: .literal(value: .integer(value: 0)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(supporting: [1, 2, 3, 4])
                 == .downto(
                     upper: .literal(value: .integer(value: 1)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
         #expect(
             VectorSize(supporting: [1, 2, 3, 4, 5])
                 == .downto(
                     upper: .literal(value: .integer(value: 2)),
-                    lower: .literal(value: .integer(value: 0)))
+                    lower: .literal(value: .integer(value: 0))
+                )
         )
     }
 

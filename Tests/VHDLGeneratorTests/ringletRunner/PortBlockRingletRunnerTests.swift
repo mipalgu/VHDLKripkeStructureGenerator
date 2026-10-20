@@ -122,7 +122,8 @@ struct PortBlockRingletRunnerTests {
                     lower: .literal(value: .boolean(value: false)),
                     upper: .literal(value: .boolean(value: true))
                 )
-            ) == nil)
+            ) == nil
+        )
     }
 
 }

@@ -123,9 +123,13 @@ struct PortBlockRunnerTests {
     func testPropertyInitReturnsNil() {
         #expect(
             PortBlock(
-                numberOfStates: -1, externals: [], snapshots: [], machineVariables: [],
+                numberOfStates: -1,
+                externals: [],
+                snapshots: [],
+                machineVariables: [],
                 stateSignals: []
-            ) == nil)
+            ) == nil
+        )
     }
 
     /// Test the init works correctly.

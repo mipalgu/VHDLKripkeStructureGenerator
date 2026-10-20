@@ -125,7 +125,9 @@ struct ComponentInstantiationRingletRunnerTests {
             return
         }
         let result = ComponentInstantiation(
-            machineRunnerInvocationFor: representation, record: .machine, label: label
+            machineRunnerInvocationFor: representation,
+            record: .machine,
+            label: label
         )
         #expect(result?.rawValue == expected.rawValue)
     }

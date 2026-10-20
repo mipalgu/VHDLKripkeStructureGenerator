@@ -1,30 +1,30 @@
 // SynchronousBlock+verifiableMachine.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2023 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,23 +36,23 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
 import Utilities
 import VHDLMachines
@@ -101,7 +101,7 @@ extension SynchronousBlock {
     ///         end if;
     /// end case;
     /// ```
-    /// 
+    ///
     /// - Parameters:
     ///   - block: The ``SynchronousBlock`` containing the code to transform.
     ///   - signal: The signal to check for assignments.
@@ -110,40 +110,64 @@ extension SynchronousBlock {
     init(internalSignal block: SynchronousBlock, signal: VariableName, newSignal: VariableName) {
         switch block {
         case .blocks(let blocks):
-            self = .blocks(blocks: blocks.map {
-                SynchronousBlock(internalSignal: $0, signal: signal, newSignal: newSignal)
-            })
-        case .caseStatement(let caseStatement):
-            self = .caseStatement(block: CaseStatement(
-                condition: caseStatement.condition,
-                cases: caseStatement.cases.map {
-                    WhenCase(
-                        condition: $0.condition,
-                        code: SynchronousBlock(internalSignal: $0.code, signal: signal, newSignal: newSignal)
-                    )
+            self = .blocks(
+                blocks: blocks.map {
+                    SynchronousBlock(internalSignal: $0, signal: signal, newSignal: newSignal)
                 }
-            ))
+            )
+        case .caseStatement(let caseStatement):
+            self = .caseStatement(
+                block: CaseStatement(
+                    condition: caseStatement.condition,
+                    cases: caseStatement.cases.map {
+                        WhenCase(
+                            condition: $0.condition,
+                            code: SynchronousBlock(
+                                internalSignal: $0.code,
+                                signal: signal,
+                                newSignal: newSignal
+                            )
+                        )
+                    }
+                )
+            )
         case .forLoop(let loop):
-            self = .forLoop(loop: ForLoop(
-                iterator: loop.iterator,
-                range: loop.range,
-                body: SynchronousBlock(internalSignal: loop.body, signal: signal, newSignal: newSignal)
-            ))
+            self = .forLoop(
+                loop: ForLoop(
+                    iterator: loop.iterator,
+                    range: loop.range,
+                    body: SynchronousBlock(internalSignal: loop.body, signal: signal, newSignal: newSignal)
+                )
+            )
         case .ifStatement(let ifBlock):
             switch ifBlock {
             case .ifElse(let condition, let ifBlock, let elseBlock):
-                self = .ifStatement(block: .ifElse(
-                    condition: condition,
-                    ifBlock: SynchronousBlock(internalSignal: ifBlock, signal: signal, newSignal: newSignal),
-                    elseBlock: SynchronousBlock(
-                        internalSignal: elseBlock, signal: signal, newSignal: newSignal
+                self = .ifStatement(
+                    block: .ifElse(
+                        condition: condition,
+                        ifBlock: SynchronousBlock(
+                            internalSignal: ifBlock,
+                            signal: signal,
+                            newSignal: newSignal
+                        ),
+                        elseBlock: SynchronousBlock(
+                            internalSignal: elseBlock,
+                            signal: signal,
+                            newSignal: newSignal
+                        )
                     )
-                ))
+                )
             case .ifStatement(let condition, let ifBlock):
-                self = .ifStatement(block: .ifStatement(
-                    condition: condition,
-                    ifBlock: SynchronousBlock(internalSignal: ifBlock, signal: signal, newSignal: newSignal)
-                ))
+                self = .ifStatement(
+                    block: .ifStatement(
+                        condition: condition,
+                        ifBlock: SynchronousBlock(
+                            internalSignal: ifBlock,
+                            signal: signal,
+                            newSignal: newSignal
+                        )
+                    )
+                )
             }
         case .statement(let statement):
             switch statement {
@@ -158,9 +182,12 @@ extension SynchronousBlock {
                 }
                 self = .blocks(blocks: [
                     .statement(statement: statement),
-                    .statement(statement: .assignment(
-                        name: .variable(reference: .variable(name: newSignal)), value: value
-                    ))
+                    .statement(
+                        statement: .assignment(
+                            name: .variable(reference: .variable(name: newSignal)),
+                            value: value
+                        )
+                    ),
                 ])
             default:
                 self = .statement(statement: statement)
@@ -185,10 +212,12 @@ extension SynchronousBlock {
             else {
                 return nil
             }
-            return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: $0.name)),
-                value: .reference(variable: .variable(reference: .variable(name: newName)))
-            ))
+            return SynchronousBlock.statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: $0.name)),
+                    value: .reference(variable: .variable(reference: .variable(name: newName)))
+                )
+            )
         }
         let snapshotReads: [SynchronousBlock] = writeSnapshots.compactMap {
             guard
@@ -198,10 +227,12 @@ extension SynchronousBlock {
             else {
                 return nil
             }
-            return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: newName)),
-                value: .reference(variable: .variable(reference: .variable(name: $0.name)))
-            ))
+            return SynchronousBlock.statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: newName)),
+                    value: .reference(variable: .variable(reference: .variable(name: $0.name)))
+                )
+            )
         }
         var machineWrites: [SynchronousBlock] = machine.machineSignals.compactMap {
             guard
@@ -211,10 +242,12 @@ extension SynchronousBlock {
             else {
                 return nil
             }
-            return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: $0.name)),
-                value: .reference(variable: .variable(reference: .variable(name: newName)))
-            ))
+            return SynchronousBlock.statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: $0.name)),
+                    value: .reference(variable: .variable(reference: .variable(name: newName)))
+                )
+            )
         }
         var machineReads: [SynchronousBlock] = machine.machineSignals.compactMap {
             guard
@@ -224,49 +257,57 @@ extension SynchronousBlock {
             else {
                 return nil
             }
-            return SynchronousBlock.statement(statement: .assignment(
-                name: .variable(reference: .variable(name: newName)),
-                value: .reference(variable: .variable(reference: .variable(name: $0.name)))
-            ))
+            return SynchronousBlock.statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: newName)),
+                    value: .reference(variable: .variable(reference: .variable(name: $0.name)))
+                )
+            )
         }
         let stateSignals = machine.states.map { ($0.name, $0.signals) }
-        let stateWrites: [SynchronousBlock] = stateSignals
-        .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
-            signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
-                guard
-                    let newName = VariableName(
-                        pre: "\(representation.entity.name.rawValue)_STATE_\(name.rawValue)_",
-                        name: signal.name,
-                        post: "In"
-                    ),
-                    let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
-                else {
-                    return nil
+        let stateWrites: [SynchronousBlock] =
+            stateSignals
+            .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
+                signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
+                    guard
+                        let newName = VariableName(
+                            pre: "\(representation.entity.name.rawValue)_STATE_\(name.rawValue)_",
+                            name: signal.name,
+                            post: "In"
+                        ),
+                        let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
+                    else {
+                        return nil
+                    }
+                    return SynchronousBlock.statement(
+                        statement: .assignment(
+                            name: .variable(reference: .variable(name: stateName)),
+                            value: .reference(variable: .variable(reference: .variable(name: newName)))
+                        )
+                    )
                 }
-                return SynchronousBlock.statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: stateName)),
-                    value: .reference(variable: .variable(reference: .variable(name: newName)))
-                ))
             }
-        }
-        let stateReads: [SynchronousBlock] = stateSignals
-        .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
-            signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
-                guard
-                    let newName = VariableName(
-                        pre: "\(representation.entity.name.rawValue)_STATE_\(name.rawValue)_",
-                        name: signal.name
-                    ),
-                    let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
-                else {
-                    return nil
+        let stateReads: [SynchronousBlock] =
+            stateSignals
+            .flatMap { (name: VariableName, signals: [LocalSignal]) -> [SynchronousBlock] in
+                signals.compactMap { (signal: LocalSignal) -> SynchronousBlock? in
+                    guard
+                        let newName = VariableName(
+                            pre: "\(representation.entity.name.rawValue)_STATE_\(name.rawValue)_",
+                            name: signal.name
+                        ),
+                        let stateName = VariableName(pre: "STATE_\(name.rawValue)_", name: signal.name)
+                    else {
+                        return nil
+                    }
+                    return SynchronousBlock.statement(
+                        statement: .assignment(
+                            name: .variable(reference: .variable(name: newName)),
+                            value: .reference(variable: .variable(reference: .variable(name: stateName)))
+                        )
+                    )
                 }
-                return SynchronousBlock.statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: newName)),
-                    value: .reference(variable: .variable(reference: .variable(name: stateName)))
-                ))
             }
-        }
         guard
             snapshotWrites.count == writeSnapshots.count,
             snapshotReads.count == writeSnapshots.count,
@@ -279,55 +320,86 @@ extension SynchronousBlock {
         }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
             machineWrites += [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: .ringletCounter)),
-                    value: .reference(variable: .variable(reference: .variable(
-                        name: VariableName(
-                            rawValue: "\(representation.entity.name.rawValue)_" +
-                                "\(VariableName.ringletCounter.rawValue)In"
-                        )!
-                    )))
-                ))
+                .statement(
+                    statement: .assignment(
+                        name: .variable(reference: .variable(name: .ringletCounter)),
+                        value: .reference(
+                            variable: .variable(
+                                reference: .variable(
+                                    name: VariableName(
+                                        rawValue: "\(representation.entity.name.rawValue)_"
+                                            + "\(VariableName.ringletCounter.rawValue)In"
+                                    )!
+                                )
+                            )
+                        )
+                    )
+                )
             ]
             machineReads += [
-                .statement(statement: .assignment(
-                    name: .variable(reference: .variable(name: VariableName(
-                        rawValue: "\(representation.entity.name.rawValue)_" +
-                            "\(VariableName.ringletCounter.rawValue)"
-                    )!)),
-                    value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))
-                ))
+                .statement(
+                    statement: .assignment(
+                        name: .variable(
+                            reference: .variable(
+                                name: VariableName(
+                                    rawValue: "\(representation.entity.name.rawValue)_"
+                                        + "\(VariableName.ringletCounter.rawValue)"
+                                )!
+                            )
+                        ),
+                        value: .reference(variable: .variable(reference: .variable(name: .ringletCounter)))
+                    )
+                )
             ]
         }
-        let ifBody: [SynchronousBlock] = [SynchronousBlock].verifiableMachineInternalMutation(
-            for: representation
-        ) + snapshotWrites + machineWrites + stateWrites
-        let elseBody: [SynchronousBlock] = [
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentStateOut(for: representation))),
-                value: .reference(variable: .variable(reference: .variable(name: .currentState)))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .previousRingletOut(for: representation))),
-                value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .internalStateOut(for: representation))),
-                value: .reference(variable: .variable(reference: .variable(name: .internalState)))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .targetStateOut(for: representation))),
-                value: .reference(variable: .variable(reference: .variable(name: .targetState)))
-            ))
-        ] + snapshotReads + machineReads + stateReads
-        return .ifStatement(block: .ifElse(
-            condition: .conditional(condition: .comparison(value: .equality(
-                lhs: .reference(variable: .variable(reference: .variable(name: .setInternalSignals))),
-                rhs: .literal(value: .logic(value: .high))
-            ))),
-            ifBlock: .blocks(blocks: ifBody),
-            elseBlock: .blocks(blocks: elseBody)
-        ))
+        let ifBody: [SynchronousBlock] =
+            [SynchronousBlock]
+            .verifiableMachineInternalMutation(
+                for: representation
+            ) + snapshotWrites + machineWrites + stateWrites
+        let elseBody: [SynchronousBlock] =
+            [
+                .statement(
+                    statement: .assignment(
+                        name: .variable(reference: .variable(name: .currentStateOut(for: representation))),
+                        value: .reference(variable: .variable(reference: .variable(name: .currentState)))
+                    )
+                ),
+                .statement(
+                    statement: .assignment(
+                        name: .variable(reference: .variable(name: .previousRingletOut(for: representation))),
+                        value: .reference(variable: .variable(reference: .variable(name: .previousRinglet)))
+                    )
+                ),
+                .statement(
+                    statement: .assignment(
+                        name: .variable(reference: .variable(name: .internalStateOut(for: representation))),
+                        value: .reference(variable: .variable(reference: .variable(name: .internalState)))
+                    )
+                ),
+                .statement(
+                    statement: .assignment(
+                        name: .variable(reference: .variable(name: .targetStateOut(for: representation))),
+                        value: .reference(variable: .variable(reference: .variable(name: .targetState)))
+                    )
+                ),
+            ] + snapshotReads + machineReads + stateReads
+        return .ifStatement(
+            block: .ifElse(
+                condition: .conditional(
+                    condition: .comparison(
+                        value: .equality(
+                            lhs: .reference(
+                                variable: .variable(reference: .variable(name: .setInternalSignals))
+                            ),
+                            rhs: .literal(value: .logic(value: .high))
+                        )
+                    )
+                ),
+                ifBlock: .blocks(blocks: ifBody),
+                elseBlock: .blocks(blocks: elseBody)
+            )
+        )
     }
 
     // swiftlint:enable function_body_length
@@ -341,54 +413,86 @@ extension Array where Element == SynchronousBlock {
         for representation: T
     ) -> [SynchronousBlock] where T: MachineVHDLRepresentable {
         [
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentState)),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .currentStateIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .previousRinglet)),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .previousRingletIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .internalState)),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .internalStateIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .targetState)),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .targetStateIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .currentStateOut(for: representation))),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .currentStateIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .previousRingletOut(for: representation))),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .previousRingletIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .internalStateOut(for: representation))),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .internalStateIn(for: representation))
-                ))
-            )),
-            .statement(statement: .assignment(
-                name: .variable(reference: .variable(name: .targetStateOut(for: representation))),
-                value: .reference(variable: .variable(
-                    reference: .variable(name: .targetStateIn(for: representation))
-                ))
-            ))
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentState)),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .currentStateIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .previousRinglet)),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .previousRingletIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalState)),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .internalStateIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetState)),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .targetStateIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .currentStateOut(for: representation))),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .currentStateIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .previousRingletOut(for: representation))),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .previousRingletIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .internalStateOut(for: representation))),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .internalStateIn(for: representation))
+                        )
+                    )
+                )
+            ),
+            .statement(
+                statement: .assignment(
+                    name: .variable(reference: .variable(name: .targetStateOut(for: representation))),
+                    value: .reference(
+                        variable: .variable(
+                            reference: .variable(name: .targetStateIn(for: representation))
+                        )
+                    )
+                )
+            ),
         ]
     }
 

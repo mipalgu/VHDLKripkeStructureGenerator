@@ -99,7 +99,9 @@ struct VariableParserTests {
                         size: .downto(
                             upper: .literal(value: .integer(value: 1)),
                             lower: .literal(value: .integer(value: 0))
-                        ))),
+                        )
+                    )
+                ),
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
             ),

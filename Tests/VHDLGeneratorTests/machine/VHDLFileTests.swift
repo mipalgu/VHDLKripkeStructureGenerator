@@ -174,7 +174,9 @@ struct VHDLFileTests {
             name: representation.architectureName
         )
         let expected = VHDLFile(
-            architectures: [architecture], entities: [entity], includes: machine.includes,
+            architectures: [architecture],
+            entities: [entity],
+            includes: machine.includes,
             packages: []
         )
         let result = VHDLFile(verifiable: representation)

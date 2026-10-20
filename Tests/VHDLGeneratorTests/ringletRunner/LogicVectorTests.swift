@@ -68,7 +68,8 @@ struct LogicVectorTests {
     func testUnsignedEncoding() {
         #expect(LogicVector(unsigned: 0, bits: 4) == LogicVector(values: [.low, .low, .low, .low]))
         #expect(
-            LogicVector(unsigned: 3, bits: 4) == LogicVector(values: [.low, .low, .high, .high]))
+            LogicVector(unsigned: 3, bits: 4) == LogicVector(values: [.low, .low, .high, .high])
+        )
         #expect(LogicVector(unsigned: 1, bits: 0) == nil)
         #expect(LogicVector(unsigned: 5, bits: 2) == nil)
         #expect(LogicVector(unsigned: -1, bits: 4) == nil)

@@ -136,7 +136,9 @@ struct ProcessBlockTests {
                         value: .rising(
                             expression: .reference(
                                 variable: .variable(reference: .variable(name: clk))
-                            )))
+                            )
+                        )
+                    )
                 ),
                 ifBlock: .ifStatement(
                     block: .ifElse(
@@ -144,9 +146,12 @@ struct ProcessBlockTests {
                             condition: .comparison(
                                 value: .equality(
                                     lhs: .reference(
-                                        variable: .variable(reference: .variable(name: .reset))),
+                                        variable: .variable(reference: .variable(name: .reset))
+                                    ),
                                     rhs: .literal(value: .logic(value: .high))
-                                ))),
+                                )
+                            )
+                        ),
                         ifBlock: .blocks(
                             blocks: [
                                 SynchronousBlock.statement(
@@ -155,41 +160,60 @@ struct ProcessBlockTests {
                                             reference: .variable(
                                                 name: VariableName(
                                                     portNameFor: LocalSignal(
-                                                        type: .stdLogic, name: .y),
+                                                        type: .stdLogic,
+                                                        name: .y
+                                                    ),
                                                     in: representation
-                                                ))),
+                                                )
+                                            )
+                                        ),
                                         value: .reference(
-                                            variable: .variable(reference: .variable(name: .y)))
-                                    )),
+                                            variable: .variable(reference: .variable(name: .y))
+                                        )
+                                    )
+                                ),
                                 SynchronousBlock.statement(
                                     statement: .assignment(
                                         name: .variable(
                                             reference: .variable(
                                                 name: VariableName(
-                                                    portNameFor: y2, in: representation
-                                                ))),
+                                                    portNameFor: y2,
+                                                    in: representation
+                                                )
+                                            )
+                                        ),
                                         value: .reference(
                                             variable: .variable(reference: .variable(name: y2.name))
                                         )
-                                    )),
+                                    )
+                                ),
                                 SynchronousBlock.statement(
                                     statement: .assignment(
                                         name: .variable(
                                             reference: .variable(
                                                 name: VariableName(
                                                     portNameFor: LocalSignal(
-                                                        type: .stdLogic, name: newInitialX),
+                                                        type: .stdLogic,
+                                                        name: newInitialX
+                                                    ),
                                                     in: representation
-                                                ))),
+                                                )
+                                            )
+                                        ),
                                         value: .reference(
                                             variable: .variable(
-                                                reference: .variable(name: newInitialX)))
-                                    )),
+                                                reference: .variable(name: newInitialX)
+                                            )
+                                        )
+                                    )
+                                ),
                             ] + [newLogic]
                         ),
                         elseBlock: mutationBlock
-                    ))
-            ))
+                    )
+                )
+            )
+        )
         let expected = ProcessBlock(sensitivityList: [clk], code: expectedLogic)
         guard let newProcess = ProcessBlock(verifiable: process, in: representation) else {
             Issue.record("Failed to construct new process.")

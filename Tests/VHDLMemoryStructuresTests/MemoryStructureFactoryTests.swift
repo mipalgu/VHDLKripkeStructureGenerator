@@ -82,7 +82,9 @@ struct MemoryStructureFactoryTests {
     func testCacheGeneration() {
         guard
             let files = factory.createCache(
-                name: VariableName(rawValue: "Cache")!, elementSize: 8, numberOfElements: 200
+                name: VariableName(rawValue: "Cache")!,
+                elementSize: 8,
+                numberOfElements: 200
             )
         else {
             Issue.record("Failed to generate cache")

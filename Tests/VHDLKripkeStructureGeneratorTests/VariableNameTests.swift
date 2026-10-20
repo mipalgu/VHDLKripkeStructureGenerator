@@ -93,9 +93,11 @@ struct VariableNameTests {
         #expect(VariableName.internalStateIn(for: representation).rawValue == "M_internalStateIn")
         #expect(VariableName.internalStateOut(for: representation).rawValue == "M_internalStateOut")
         #expect(
-            VariableName.previousRingletIn(for: representation).rawValue == "M_previousRingletIn")
+            VariableName.previousRingletIn(for: representation).rawValue == "M_previousRingletIn"
+        )
         #expect(
-            VariableName.previousRingletOut(for: representation).rawValue == "M_previousRingletOut")
+            VariableName.previousRingletOut(for: representation).rawValue == "M_previousRingletOut"
+        )
         #expect(VariableName.targetStateIn(for: representation).rawValue == "M_targetStateIn")
         #expect(VariableName.targetStateOut(for: representation).rawValue == "M_targetStateOut")
     }

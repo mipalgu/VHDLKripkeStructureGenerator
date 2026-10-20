@@ -94,24 +94,37 @@ struct PortSignalTests {
                             size: .downto(
                                 upper: .literal(value: .integer(value: 0)),
                                 lower: .literal(value: .integer(value: 0))
-                            )))))
+                            )
+                        )
+                    )
+                )
+        )
         #expect(signal?.mode == .input)
         #expect(
             signal
                 == PortSignal(
-                    name: .currentStateIn(for: representation), bitsRequired: 1, mode: .input)
+                    name: .currentStateIn(for: representation),
+                    bitsRequired: 1,
+                    mode: .input
+                )
         )
         #expect(
             signal
                 == PortSignal(
-                    name: .currentStateIn(for: representation), machine: machine, mode: .input)
+                    name: .currentStateIn(for: representation),
+                    machine: machine,
+                    mode: .input
+                )
         )
         var newState = machine.states[0]
         // swiftlint:disable:next force_unwrapping
         newState.name = VariableName(rawValue: "NewState")!
         machine.states += [newState]
         let signal2 = PortSignal(
-            name: .currentStateIn(for: representation), machine: machine, mode: .input)
+            name: .currentStateIn(for: representation),
+            machine: machine,
+            mode: .input
+        )
         #expect(
             signal2?.type
                 == .signal(
@@ -120,19 +133,29 @@ struct PortSignalTests {
                             size: .downto(
                                 upper: .literal(value: .integer(value: 1)),
                                 lower: .literal(value: .integer(value: 0))
-                            ))))
+                            )
+                        )
+                    )
+                )
         )
         #expect(
             signal2
                 == PortSignal(
-                    name: .currentStateIn(for: representation), bitsRequired: 2, mode: .input)
+                    name: .currentStateIn(for: representation),
+                    bitsRequired: 2,
+                    mode: .input
+                )
         )
         machine.states = []
         // swiftlint:disable:next force_unwrapping
         #expect(
             PortSignal(
-                name: VariableName(rawValue: "M_currentStateIn")!, machine: machine, mode: .input)
-                == nil)
+                name: VariableName(rawValue: "M_currentStateIn")!,
+                machine: machine,
+                mode: .input
+            )
+                == nil
+        )
     }
 
     /// Test remaining machine signals.
@@ -141,7 +164,10 @@ struct PortSignalTests {
         #expect(
             PortSignal(currentStateOutFor: representation)
                 == PortSignal(
-                    name: .currentStateOut(for: representation), bitsRequired: 1, mode: .output)
+                    name: .currentStateOut(for: representation),
+                    bitsRequired: 1,
+                    mode: .output
+                )
         )
         #expect(
             PortSignal.reset == PortSignal(type: .stdLogic, name: .reset, mode: .input)
@@ -153,32 +179,50 @@ struct PortSignalTests {
         #expect(
             PortSignal(internalStateInFor: representation)
                 == PortSignal(
-                    name: .internalStateIn(for: representation), bitsRequired: 3, mode: .input)
+                    name: .internalStateIn(for: representation),
+                    bitsRequired: 3,
+                    mode: .input
+                )
         )
         #expect(
             PortSignal(internalStateOutFor: representation)
                 == PortSignal(
-                    name: .internalStateOut(for: representation), bitsRequired: 3, mode: .output)
+                    name: .internalStateOut(for: representation),
+                    bitsRequired: 3,
+                    mode: .output
+                )
         )
         #expect(
             PortSignal(previousRingletInFor: representation)
                 == PortSignal(
-                    name: .previousRingletIn(for: representation), bitsRequired: 1, mode: .input)
+                    name: .previousRingletIn(for: representation),
+                    bitsRequired: 1,
+                    mode: .input
+                )
         )
         #expect(
             PortSignal(previousRingletOutFor: representation)
                 == PortSignal(
-                    name: .previousRingletOut(for: representation), bitsRequired: 1, mode: .output)
+                    name: .previousRingletOut(for: representation),
+                    bitsRequired: 1,
+                    mode: .output
+                )
         )
         #expect(
             PortSignal(targetStateInFor: representation)
                 == PortSignal(
-                    name: .targetStateIn(for: representation), bitsRequired: 1, mode: .input)
+                    name: .targetStateIn(for: representation),
+                    bitsRequired: 1,
+                    mode: .input
+                )
         )
         #expect(
             PortSignal(targetStateOutFor: representation)
                 == PortSignal(
-                    name: .targetStateOut(for: representation), bitsRequired: 1, mode: .output)
+                    name: .targetStateOut(for: representation),
+                    bitsRequired: 1,
+                    mode: .output
+                )
         )
     }
 
