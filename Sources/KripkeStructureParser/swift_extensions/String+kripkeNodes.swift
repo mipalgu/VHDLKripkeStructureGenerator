@@ -1,30 +1,30 @@
 // String+kripkeNodes.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2023 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,23 +36,23 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
 import StringHelpers
 import Utilities
@@ -74,46 +74,49 @@ extension String {
         let definitions = readSnapshot.definitions.map { $0.indent(amount: 1) }.joined(separator: "\n\n")
         let initParameters = readSnapshot.initParameters.joined(separator: ", ")
         let initAssignments = readSnapshot.initAssignments.joined(separator: "\n")
-        let encodedPreamble = readSnapshot.valueAssignment(
-            state: state, representation: representation, type: .read
-        )
-        .joined(separator: "\n")
+        let encodedPreamble =
+            readSnapshot.valueAssignment(
+                state: state,
+                representation: representation,
+                type: .read
+            )
+            .joined(separator: "\n")
         let encodedAssignments = readSnapshot.encodedAssignments.joined(separator: ",\n")
         let parameters = readSnapshot.literalAssignments.joined(separator: ",\n")
         let machineName = representation.entity.name.rawValue
         let properties = String(readPropertiesFor: representation, state: state)
         self = """
-        import C\(machineName)
-        import VHDLParsing
+            import C\(machineName)
+            import VHDLParsing
 
-        public struct \(name): Equatable, Hashable, Codable, Sendable, ReadState {
+            public struct \(name): Equatable, Hashable, Codable, Sendable, ReadState {
 
-        \(definitions)
+            \(definitions)
 
-        \(properties.indent(amount: 1))
+            \(properties.indent(amount: 1))
 
-            public init(\(initParameters)) {
-        \(initAssignments.indent(amount: 2))
+                public init(\(initParameters)) {
+            \(initAssignments.indent(amount: 2))
+                }
+
+                public init?(value: UInt32) {
+                    guard \(machineName)_isValid(value), \(machineName)_\(state.name.rawValue)_isValid(value) else {
+                        return nil
+                    }
+            \(encodedPreamble.indent(amount: 2))
+                    guard
+            \(encodedAssignments.indent(amount: 3))
+                    else {
+                        return nil
+                    }
+                    self.init(
+            \(parameters.indent(amount: 3))
+                    )
+                }
+
             }
 
-            public init?(value: UInt32) {
-                guard \(machineName)_isValid(value), \(machineName)_\(state.name.rawValue)_isValid(value) else {
-                    return nil
-                }
-        \(encodedPreamble.indent(amount: 2))
-                guard
-        \(encodedAssignments.indent(amount: 3))
-                else {
-                    return nil
-                }
-                self.init(
-        \(parameters.indent(amount: 3))
-                )
-            }
-
-        }
-
-        """
+            """
     }
 
     /// Create the `Swift` code that defines the `Write` Kripke state for the given state in the machine.
@@ -127,56 +130,57 @@ extension String {
         let definitions = writeSnapshot.definitions.map { $0.indent(amount: 1) }.joined(separator: "\n\n")
         let initParameters = writeSnapshot.initParameters.joined(separator: ", ")
         let initAssignments = writeSnapshot.initAssignments.joined(separator: "\n")
-        let encodedPreamble = writeSnapshot.valueAssignment(
-            state: state,
-            representation: representation,
-            type: .write,
-            count: Record(readSnapshotFor: state, in: representation).bits
-        )
-        .joined(separator: "\n")
+        let encodedPreamble =
+            writeSnapshot.valueAssignment(
+                state: state,
+                representation: representation,
+                type: .write,
+                count: Record(readSnapshotFor: state, in: representation).bits
+            )
+            .joined(separator: "\n")
         let encodedAssignments = writeSnapshot.types.map {
             let signalType = $0.type.signalType
             guard $0.name != .nextState else {
-                return "let \(VariableName.nextState.rawValue)BitVector = BitVector(value: " +
-                    "\($0.name.rawValue)Value, numberOfBits: \(signalType.bits))"
+                return "let \(VariableName.nextState.rawValue)BitVector = BitVector(value: "
+                    + "\($0.name.rawValue)Value, numberOfBits: \(signalType.bits))"
             }
-            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: " +
-                    "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
+            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: "
+                + "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
         }
         let machineName = representation.entity.name.rawValue
         let parameters = writeSnapshot.literalAssignments.joined(separator: ",\n")
         let properties = String(writePropertiesFor: representation, state: state)
         self = """
-        import C\(machineName)
-        import VHDLParsing
+            import C\(machineName)
+            import VHDLParsing
 
-        public struct \(name): Equatable, Hashable, Codable, Sendable {
+            public struct \(name): Equatable, Hashable, Codable, Sendable {
 
-        \(definitions)
+            \(definitions)
 
-        \(properties.indent(amount: 1))
+            \(properties.indent(amount: 1))
 
-            public init(\(initParameters)) {
-        \(initAssignments.indent(amount: 2))
-            }
-
-            public init?(value: UInt32) {
-                guard \(machineName)_isValid(value), \(machineName)_\(state.name.rawValue)_isValid(value) else {
-                    return nil
+                public init(\(initParameters)) {
+            \(initAssignments.indent(amount: 2))
                 }
-        \(encodedPreamble.indent(amount: 2))
-        \(String(guardedStatements: encodedAssignments).indent(amount: 2))
-                let nextStateLiteral = LogicVector(
-                    values: nextStateBitVector.values.map { LogicLiteral(bit: $0) }
-                )
-                self.init(
-        \(parameters.indent(amount: 3))
-                )
+
+                public init?(value: UInt32) {
+                    guard \(machineName)_isValid(value), \(machineName)_\(state.name.rawValue)_isValid(value) else {
+                        return nil
+                    }
+            \(encodedPreamble.indent(amount: 2))
+            \(String(guardedStatements: encodedAssignments).indent(amount: 2))
+                    let nextStateLiteral = LogicVector(
+                        values: nextStateBitVector.values.map { LogicLiteral(bit: $0) }
+                    )
+                    self.init(
+            \(parameters.indent(amount: 3))
+                    )
+                }
+
             }
 
-        }
-
-        """
+            """
     }
 
     /// Create a guard around a set of statements.
@@ -184,12 +188,12 @@ extension String {
     @inlinable
     init(guardedStatements statements: [String]) {
         self = """
-        guard
-        \(statements.map { $0.indent(amount: 1) }.joined(separator: ",\n"))
-        else {
-            return nil
-        }
-        """
+            guard
+            \(statements.map { $0.indent(amount: 1) }.joined(separator: ",\n"))
+            else {
+                return nil
+            }
+            """
     }
 
     /// Create the ringlet definition in the Kripke structure.
@@ -200,33 +204,33 @@ extension String {
     init<T>(kripkeNodeFor state: State, in representation: T) where T: MachineVHDLRepresentable {
         let machineName = representation.entity.name.rawValue
         self = """
-        import C\(machineName)
-        import VHDLParsing
+            import C\(machineName)
+            import VHDLParsing
 
-        public struct \(state.name.rawValue)Ringlet: Equatable, Hashable, Codable, Sendable {
+            public struct \(state.name.rawValue)Ringlet: Equatable, Hashable, Codable, Sendable {
 
-            public var read: \(state.name.rawValue)Read
+                public var read: \(state.name.rawValue)Read
 
-            public var write: \(state.name.rawValue)Write
+                public var write: \(state.name.rawValue)Write
 
-            public init(read: \(state.name.rawValue)Read, write: \(state.name.rawValue)Write) {
-                self.read = read
-                self.write = write
-            }
-
-            public init?(value: UInt32) {
-                guard
-                    let read = \(state.name.rawValue)Read(value: value),
-                    let write = \(state.name.rawValue)Write(value: value)
-                else {
-                    return nil
+                public init(read: \(state.name.rawValue)Read, write: \(state.name.rawValue)Write) {
+                    self.read = read
+                    self.write = write
                 }
-                self.init(read: read, write: write)
+
+                public init?(value: UInt32) {
+                    guard
+                        let read = \(state.name.rawValue)Read(value: value),
+                        let write = \(state.name.rawValue)Write(value: value)
+                    else {
+                        return nil
+                    }
+                    self.init(read: read, write: write)
+                }
+
             }
 
-        }
-
-        """
+            """
     }
 
     // swiftlint:enable line_length
@@ -241,13 +245,12 @@ extension String {
             let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
             return [
                 ".\(snapshotName): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))",
-                ".\($0.name.rawValue): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))"
+                ".\($0.name.rawValue): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))",
             ]
         }
         let writeExternals = machine.externalSignals.filter {
-            $0.mode == .output || (
-                !state.externalVariables.contains($0.name) && $0.mode != .output && $0.mode != .input
-            )
+            $0.mode == .output
+                || (!state.externalVariables.contains($0.name) && $0.mode != .output && $0.mode != .input)
         }
         let writeAssignments = writeExternals.map {
             let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
@@ -267,12 +270,12 @@ extension String {
             return
         }
         self = """
-        var properties: [VariableName: SignalLiteral] {
-            [
-        \(assignments.joined(separator: ",\n").indent(amount: 2))
-            ]
-        }
-        """
+            var properties: [VariableName: SignalLiteral] {
+                [
+            \(assignments.joined(separator: ",\n").indent(amount: 2))
+                ]
+            }
+            """
     }
 
     init<T>(writePropertiesFor representation: T, state: State) where T: MachineVHDLRepresentable {
@@ -285,7 +288,7 @@ extension String {
             let snapshotName = "\(name.rawValue)_\($0.name.rawValue)"
             return [
                 ".\(snapshotName): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))",
-                ".\($0.name.rawValue): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))"
+                ".\($0.name.rawValue): \(String(literalType: $0.type.signalType, value: $0.name.rawValue))",
             ]
         }
         let machineAssignments = machine.machineSignals.map {
@@ -302,12 +305,12 @@ extension String {
             return
         }
         self = """
-        var properties: [VariableName: SignalLiteral] {
-            [
-        \(assignments.joined(separator: ",\n").indent(amount: 2))
-            ]
-        }
-        """
+            var properties: [VariableName: SignalLiteral] {
+                [
+            \(assignments.joined(separator: ",\n").indent(amount: 2))
+                ]
+            }
+            """
     }
 
     init(literalType: SignalType, value: String) {
@@ -390,8 +393,8 @@ extension Record {
     @inlinable var encodedAssignments: [String] {
         self.types.map {
             let signalType = $0.type.signalType
-            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: " +
-                "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
+            return "let \($0.name.rawValue)Literal = \(signalType.swiftLiteral)(value: "
+                + "\($0.name.rawValue)Value, numberOfBits: \(signalType.encodedBits))"
         }
     }
 
@@ -417,7 +420,10 @@ extension Record {
     ///   - type: The type of the kripke node to create.
     /// - Returns: The code that creates the values of each record type.
     func valueAssignment<T>(
-        state: State, representation: T, type: NodeType, count: Int = 0
+        state: State,
+        representation: T,
+        type: NodeType,
+        count: Int = 0
     ) -> [String] where T: MachineVHDLRepresentable {
         guard state.numberOfAddressesForRinglet(in: representation) > 1 else {
             return self.types.map {
@@ -445,11 +451,11 @@ extension Record {
                 let tupleTypes = [String](repeating: "UInt32", count: access.count).joined(separator: ", ")
                 let initialValues = [String](repeating: "0", count: access.count).joined(separator: ", ")
                 return """
-                var \(valueName): (\(tupleTypes)) = (\(initialValues))
-                withUnsafeMutablePointer(to: &\(valueName)) {
-                    \(functionName)(value, $0)
-                }
-                """
+                    var \(valueName): (\(tupleTypes)) = (\(initialValues))
+                    withUnsafeMutablePointer(to: &\(valueName)) {
+                        \(functionName)(value, $0)
+                    }
+                    """
             }
     }
 

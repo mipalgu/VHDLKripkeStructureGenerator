@@ -1,30 +1,30 @@
 // String+kripkeStructure.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2024 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,18 +36,18 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
@@ -59,85 +59,92 @@ extension String {
 
     init<T>(kripkeStructureFor representation: T) where T: MachineVHDLRepresentable {
         let name = representation.entity.name.rawValue
-        let stateVariables = representation.machine.states.map {
-            "public let \($0.name.rawValue.lowercased())Ringlets: [\($0.name.rawValue)Ringlet]"
-        }
-        .joined(separator: "\n\n")
+        let stateVariables = representation.machine.states
+            .map {
+                "public let \($0.name.rawValue.lowercased())Ringlets: [\($0.name.rawValue)Ringlet]"
+            }
+            .joined(separator: "\n\n")
         let stateVariableNames = representation.machine.states.map {
             "\($0.name.rawValue.lowercased())Ringlets"
         }
         let stateVariableCounts = stateVariableNames.map { $0 + ".count" }.joined(separator: " + ")
-        let nameTypes = representation.machine.states.map {
-            "\($0.name.rawValue.lowercased())Ringlets: [\($0.name.rawValue)Ringlet]"
-        }
-        .joined(separator: ",\n")
-        let nameAssignments = stateVariableNames.map {
-            "self.\($0) = \($0)"
-        }
-        .joined(separator: "\n")
-        let stateVariableCreation = representation.machine.states.map {
-            let name = representation.entity.name.rawValue
-            let stateName = $0.name.rawValue
-            // swiftlint:disable line_length
-            return """
-            let \(stateName.lowercased())Ringlets = rawValue.filter { \(name)_\(stateName)_isValid($0) }.compactMap {
-                \(stateName)Ringlet(value: $0)
+        let nameTypes = representation.machine.states
+            .map {
+                "\($0.name.rawValue.lowercased())Ringlets: [\($0.name.rawValue)Ringlet]"
+            }
+            .joined(separator: ",\n")
+        let nameAssignments =
+            stateVariableNames.map {
+                "self.\($0) = \($0)"
+            }
+            .joined(separator: "\n")
+        let stateVariableCreation = representation.machine.states
+            .map {
+                let name = representation.entity.name.rawValue
+                let stateName = $0.name.rawValue
+                // swiftlint:disable line_length
+                return """
+                    let \(stateName.lowercased())Ringlets = rawValue.filter { \(name)_\(stateName)_isValid($0) }.compactMap {
+                        \(stateName)Ringlet(value: $0)
+                    }
+                    """
+                // swiftlint:enable line_length
+            }
+            .joined(separator: "\n")
+        let initCall = stateVariableNames.map { "\($0): \($0)" }.joined(separator: ", ")
+        let readStatesCreation = representation.machine.states
+            .map {
+                let name = $0.name.rawValue.lowercased()
+                return "let \(name): [any ReadState] = \(name)Ringlets.map(\\.read)"
+            }
+            .joined(separator: "\n")
+        let readStatesFinal =
+            "return "
+            + representation.machine.states.map { $0.name.rawValue.lowercased() }.joined(separator: " + ")
+        self = """
+            import C\(name)
+            import VHDLParsing
+
+            public struct \(name)KripkeStructure: Codable {
+
+            \(stateVariables.indent(amount: 1))
+
+                public var totalCount: Int {
+            \(stateVariableCounts.indent(amount: 2))
+                }
+
+                var readStates: [any ReadState] {
+            \(readStatesCreation.indent(amount: 2))
+            \(readStatesFinal.indent(amount: 2))
+                }
+
+                public var readDomains: [VariableName: [SignalLiteral]] {
+                    var domains: [VariableName: Set<SignalLiteral>] = [:]
+                    readStates.forEach {
+                        $0.properties.forEach { key, val in
+                            domains[key, default: []].insert(val)
+                        }
+                    }
+                    return domains.mapValues { $0.sorted { $0.rawValue < $1.rawValue } }
+                }
+
+                public init(
+            \(nameTypes.indent(amount: 2))
+                ) {
+            \(nameAssignments.indent(amount: 2))
+                }
+
+                public init?(rawValue: [UInt32]) {
+            \(stateVariableCreation.indent(amount: 2))
+                    let totalCount = \(stateVariableCounts)
+                    guard totalCount == rawValue.count else {
+                        return nil
+                    }
+                    self.init(\(initCall))
+                }
+
             }
             """
-            // swiftlint:enable line_length
-        }
-        .joined(separator: "\n")
-        let initCall = stateVariableNames.map { "\($0): \($0)" }.joined(separator: ", ")
-        let readStatesCreation = representation.machine.states.map {
-            let name = $0.name.rawValue.lowercased()
-            return "let \(name): [any ReadState] = \(name)Ringlets.map(\\.read)"
-        }
-        .joined(separator: "\n")
-        let readStatesFinal = "return " + representation.machine.states.map { $0.name.rawValue.lowercased() }.joined(separator: " + ")
-        self = """
-        import C\(name)
-        import VHDLParsing
-
-        public struct \(name)KripkeStructure: Codable {
-
-        \(stateVariables.indent(amount: 1))
-
-            public var totalCount: Int {
-        \(stateVariableCounts.indent(amount: 2))
-            }
-
-            var readStates: [any ReadState] {
-        \(readStatesCreation.indent(amount: 2))
-        \(readStatesFinal.indent(amount: 2))
-            }
-
-            public var readDomains: [VariableName: [SignalLiteral]] {
-                var domains: [VariableName: Set<SignalLiteral>] = [:]
-                readStates.forEach {
-                    $0.properties.forEach { key, val in
-                        domains[key, default: []].insert(val)
-                    }
-                }
-                return domains.mapValues { $0.sorted { $0.rawValue < $1.rawValue } }
-            }
-
-            public init(
-        \(nameTypes.indent(amount: 2))
-            ) {
-        \(nameAssignments.indent(amount: 2))
-            }
-
-            public init?(rawValue: [UInt32]) {
-        \(stateVariableCreation.indent(amount: 2))
-                let totalCount = \(stateVariableCounts)
-                guard totalCount == rawValue.count else {
-                    return nil
-                }
-                self.init(\(initCall))
-            }
-
-        }
-        """
     }
 
 }

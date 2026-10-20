@@ -1,30 +1,30 @@
 // PortBlockTests.swift
 // VHDLKripkeStructureGenerator
-// 
+//
 // Created by Morgan McColl.
 // Copyright © 2023 Morgan McColl. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above
 //    copyright notice, this list of conditions and the following
 //    disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // 3. All advertising materials mentioning features or use of this
 //    software must display the following acknowledgement:
-// 
+//
 //    This product includes software developed by Morgan McColl.
-// 
+//
 // 4. Neither the name of the author nor the names of contributors
 //    may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,50 +36,52 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // -----------------------------------------------------------------------
 // This program is free software; you can redistribute it and/or
 // modify it under the above terms or under the terms of the GNU
 // General Public License as published by the Free Software Foundation;
 // either version 2 of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see http://www.gnu.org/licenses/
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
-// 
+//
 
-@testable import VHDLGenerator
+import Testing
 import VHDLMachines
 import VHDLParsing
-import XCTest
+
+@testable import VHDLGenerator
 
 /// Test class for `PortBlock` extensions.
-final class PortBlockTests: XCTestCase {
+@Suite
+struct PortBlockTests {
 
     // swiftlint:disable implicitly_unwrapped_optional
 
     /// A machine to use for testing.
-    var machine: Machine!
+    var machine: Machine
 
     /// The equivalent representation for `machine`.
-    var representation: MachineRepresentation! {
-        MachineRepresentation(machine: machine, name: .M)
+    var representation: MachineRepresentation {
+        MachineRepresentation(machine: machine, name: .M)!
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
     /// Initialise the machine before every test.
-    override func setUp() {
+    init() {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output)
+            PortSignal(type: .stdLogic, name: .y2, mode: .output),
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -88,6 +90,7 @@ final class PortBlockTests: XCTestCase {
     // swiftlint:disable function_body_length
 
     /// Test the `PortBlock` `init(verifiable:)` initialiser.
+    @Test
     func testVerifiableInit() {
         guard
             let block = PortBlock(verifiable: representation),
@@ -116,9 +119,14 @@ final class PortBlockTests: XCTestCase {
                 PortSignal(type: .stdLogic, name: y2Name, mode: .output),
                 PortSignal(type: .stdLogic, name: suspendedName, mode: .output),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(
-                        upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
-                    ))),
+                    type: .ranged(
+                        type: .stdLogicVector(
+                            size: .downto(
+                                upper: .literal(value: .integer(value: 1)),
+                                lower: .literal(value: .integer(value: 0))
+                            )
+                        )
+                    ),
                     name: commandName,
                     mode: .input
                 ),
@@ -138,22 +146,23 @@ final class PortBlockTests: XCTestCase {
                 internalStateOut,
                 targetStateOut,
                 .setInternalSignals,
-                .reset
+                .reset,
             ])
         else {
-            XCTFail("Failed to create expected block.")
+            Issue.record("Failed to create expected block.")
             return
         }
         // block.rawValue.components(separatedBy: .newlines).forEach { print($0) }
-        XCTAssertEqual(block, expected)
+        #expect(block == expected)
     }
 
     // swiftlint:enable function_body_length
 
     /// Test that `PortBlock.init(verifiable:)` returns `nil` when the machine has a type-aliased signal.
-    func testVerifiableInitReturnsNilForAliasType() {
+    @Test
+    mutating func testVerifiableInitReturnsNilForAliasType() {
         machine.machineSignals = [LocalSignal(type: .alias(name: .x), name: .y)]
-        XCTAssertNil(PortBlock(verifiable: representation))
+        #expect(PortBlock(verifiable: representation) == nil)
     }
 
 }
