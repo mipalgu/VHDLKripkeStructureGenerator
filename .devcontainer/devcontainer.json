@@ -34,7 +34,9 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"swiftlang.swift-vscode"
+				"swiftlang.swift-vscode",
+				"fnando.linter",
+				"emeraldwalk.RunOnSave"
 			],
 			"settings": {
 				"swift.path": "/usr/bin",
@@ -47,7 +49,15 @@
 				"swift.additionalTestArguments": [
 					"--build-system",
 					"native"
-				]
+				],
+				"emeraldwalk.runonsave": {
+					"commands": [
+						{
+							"match": "\\.swift$",
+							"cmd": "swiftlint --fix --quiet --config ${workspaceFolder}/.swiftlint.yml ${file}"
+						}
+					]
+				}
 			}
 		}
 	},
