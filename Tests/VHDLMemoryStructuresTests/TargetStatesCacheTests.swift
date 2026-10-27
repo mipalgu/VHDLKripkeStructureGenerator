@@ -53,8 +53,8 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLMachines
 import VHDLParsing
 
@@ -64,15 +64,15 @@ import VHDLParsing
 @Suite
 struct TargetStatesCacheTests {
 
-    // swiftlint:disable implicitly_unwrapped_optional
+    // swiftlint:disable force_unwrapping
 
     /// A test machine.
-    let representation: MachineRepresentation = MachineRepresentation(
+    let representation = MachineRepresentation(
         machine: .pingMachine,
         name: .pingMachine
     )!
 
-    // swiftlint:enable implicitly_unwrapped_optional
+    // swiftlint:enable force_unwrapping
 
     /// Test generations create VHDL files.
     @Test

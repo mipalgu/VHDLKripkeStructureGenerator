@@ -60,12 +60,14 @@ import VHDLParsing
 
 @testable import VHDLGenerator
 
+// swiftlint:disable type_body_length
+
 /// Test class for `SynchronousBlock` extensions.
 @Suite
 struct SynchronousBlockTests {
 
     /// A machine to use for testing.
-    var machine: Machine = Machine.initialSuspensible
+    var machine = Machine.initialSuspensible
 
     /// The varaible `x`.
     let x = Expression.reference(variable: .variable(reference: .variable(name: .x)))
@@ -74,6 +76,7 @@ struct SynchronousBlockTests {
 
     /// The representation of the machine.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -84,7 +87,7 @@ struct SynchronousBlockTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -220,7 +223,7 @@ struct SynchronousBlockTests {
                                 )
                             )
                         ),
-                        WhenCase(condition: .others, code: .statement(statement: .null)),
+                        WhenCase(condition: .others, code: .statement(statement: .null))
                     ]
                 )
             )
@@ -267,7 +270,7 @@ struct SynchronousBlockTests {
                                                     )
                                                 )
                                             )
-                                        ),
+                                        )
                                     ])
                                 )
                             )
@@ -358,7 +361,7 @@ struct SynchronousBlockTests {
                                                     )
                                                 )
                                             )
-                                        ),
+                                        )
                                     ])
                                 )
                             )
@@ -385,10 +388,10 @@ struct SynchronousBlockTests {
                                             variable: .variable(reference: .variable(name: .x))
                                         )
                                     )
-                                ),
+                                )
                             ])
                         ),
-                        WhenCase(condition: .others, code: .statement(statement: .null)),
+                        WhenCase(condition: .others, code: .statement(statement: .null))
                     ]
                 )
             )
@@ -433,3 +436,5 @@ struct SynchronousBlockTests {
     }
 
 }
+
+// swiftlint:enable type_body_length

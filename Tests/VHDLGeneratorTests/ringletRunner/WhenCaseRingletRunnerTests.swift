@@ -87,6 +87,7 @@ struct WhenCaseRingletRunnerTests {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -95,6 +96,7 @@ struct WhenCaseRingletRunnerTests {
     /// The assignment of readSnapshotState
     let readSnapshotState =
         "readSnapshotState <= (x => x, state => state, M_y2 => y2, M_y => M_y,"
+        // swiftlint:disable:next line_length
         + " M_STATE_Initial_initialX => M_STATE_Initial_initialX, executeOnEntry => previousRinglet /= state);"
 
     /// The WaitForStart case.
@@ -148,7 +150,7 @@ struct WhenCaseRingletRunnerTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -166,7 +168,7 @@ struct WhenCaseRingletRunnerTests {
         #expect(WhenCase.waitForFinish().rawValue == waitForFinish)
     }
 
-    /// Test wait for start is correct.
+    // /// Test wait for start is correct.
     // @Test
     // func testWaitForStart() {
     //     let result = WhenCase(waitForStartFor: representation)

@@ -54,8 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 //
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLMachines
 import VHDLParsing
 
@@ -77,7 +77,7 @@ struct VHDLFileTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -85,7 +85,7 @@ struct VHDLFileTests {
 
     // swiftlint:disable function_body_length
 
-    /// Test the `PrimitiveTypes` file is generated correctly.
+    // /// Test the `PrimitiveTypes` file is generated correctly.
     // @Test
     // func testPrimitiveTypes() {
     //     // swiftlint:disable line_length

@@ -56,9 +56,11 @@
 
 import Testing
 
+/// Example test suite for basic functionality.
 @Suite
 struct ExampleTest {
 
+    /// True test.
     @Test
     func testTrue() {
         #expect(true)

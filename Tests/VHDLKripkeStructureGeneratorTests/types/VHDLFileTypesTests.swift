@@ -54,8 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 //
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLMachines
 import VHDLParsing
 
@@ -72,6 +72,7 @@ struct VHDLFileTypesTests {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -192,7 +193,7 @@ struct VHDLFileTypesTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -203,9 +204,12 @@ struct VHDLFileTypesTests {
     @Test
     func testPackage() {
         let result = VHDLFile(typesFor: representation)
-        #expect(result!.rawValue == raw)
+        #expect(result?.rawValue == raw)
     }
 
+    // swiftlint:disable function_body_length force_unwrapping
+
+    /// Test ping machine vhdl is correct.
     @Test
     func testPingMachine() {
         let result = VHDLFile(
@@ -299,5 +303,7 @@ struct VHDLFileTypesTests {
             """
         #expect(result.rawValue == expected)
     }
+
+    // swiftlint:enable function_body_length force_unwrapping
 
 }

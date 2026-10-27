@@ -81,13 +81,13 @@ struct WhenCaseGeneratorTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
     }
 
-    /// Test set job has correct format.
+    // /// Test set job has correct format.
     // func testSetJob() {
     //     let result = WhenCase(generatorSetJobFor: representation)!
     //     // print(result.rawValue)

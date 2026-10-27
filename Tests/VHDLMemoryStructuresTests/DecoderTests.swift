@@ -53,8 +53,8 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLParsing
 
 @testable import VHDLMemoryStructures
@@ -154,10 +154,17 @@ struct DecoderTests {
 
 }
 
+// swiftlint:disable force_unwrapping
+
+/// Add some variable names.
 extension VariableName {
 
+    /// The target state decoder.
     static let targetStatesDecoder = VariableName(rawValue: "TargetStatesDecoder")!
 
+    /// The target state encoder.
     static let targetStatesEncoder = VariableName(rawValue: "TargetStatesEncoder")!
 
 }
+
+// swiftlint:enable force_unwrapping

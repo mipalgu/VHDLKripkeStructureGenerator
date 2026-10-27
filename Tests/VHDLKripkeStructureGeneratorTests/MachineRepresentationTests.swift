@@ -67,7 +67,7 @@ struct MachineRepresentationTests {
     /// The external variables in `machine`.
     let externals = [
         PortSignal(type: .stdLogic, name: .x, mode: .input),
-        PortSignal(type: .stdLogic, name: .y, mode: .output),
+        PortSignal(type: .stdLogic, name: .y, mode: .output)
     ]
 
     // swiftlint:disable implicitly_unwrapped_optional
@@ -77,6 +77,7 @@ struct MachineRepresentationTests {
 
     /// The representation under test.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 

@@ -65,7 +65,7 @@ extension Machine {
         includes: [.library(value: .ieee), .include(statement: .stdLogic1164All)],
         externalSignals: [
             PortSignal(type: .stdLogic, name: .ping, mode: .output),
-            PortSignal(type: .stdLogic, name: .pong, mode: .input),
+            PortSignal(type: .stdLogic, name: .pong, mode: .input)
         ],
         clocks: [Clock(name: .clk, frequency: 125, unit: .MHz)],
         drivingClock: 0,
@@ -87,7 +87,7 @@ extension Machine {
                 signals: [],
                 externalVariables: [.ping]
             ),
-            .waitForPong,
+            .waitForPong
         ],
         transitions: [
             Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1),
@@ -102,7 +102,7 @@ extension Machine {
                 ),
                 source: 1,
                 target: 1
-            ),
+            )
         ],
         initialState: 0,
         suspendedState: nil

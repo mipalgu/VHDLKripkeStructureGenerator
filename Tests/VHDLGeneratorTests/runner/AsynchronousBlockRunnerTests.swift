@@ -71,6 +71,7 @@ struct AsynchronousBlockRunnerTests {
 
     /// The representation of the machine.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -81,7 +82,7 @@ struct AsynchronousBlockRunnerTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -116,7 +117,7 @@ struct AsynchronousBlockRunnerTests {
                     )
                 )
             ),
-            .process(block: .runnerLogic),
+            .process(block: .runnerLogic)
         ])
         #expect(result == expected)
     }

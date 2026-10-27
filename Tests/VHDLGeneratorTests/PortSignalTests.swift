@@ -71,14 +71,18 @@ struct PortSignalTests {
 
     /// The representation of the `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
     // swiftlint:enable implicitly_unwrapped_optional
 
+    /// Set machine to the initial suspensible machine before every test.
     init() {
         machine = Machine.initialSuspensible
     }
+
+    // swiftlint:disable function_body_length
 
     /// Test that ``init(currentStateInFor:)`` works correctly.
     @Test
@@ -150,6 +154,7 @@ struct PortSignalTests {
         // swiftlint:disable:next force_unwrapping
         #expect(
             PortSignal(
+                // swiftlint:disable:next force_unwrapping
                 name: VariableName(rawValue: "M_currentStateIn")!,
                 machine: machine,
                 mode: .input
@@ -225,6 +230,8 @@ struct PortSignalTests {
                 )
         )
     }
+
+    // swiftlint:enable function_body_length
 
     /// Test that init(signal:,in:,mode:) works correctly for signal typed `LocalSignal`s.
     @Test

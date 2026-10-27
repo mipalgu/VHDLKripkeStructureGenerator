@@ -54,8 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 //
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLMachines
 import VHDLParsing
 
@@ -78,6 +78,7 @@ struct AsynchronousBlockTests {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -88,7 +89,7 @@ struct AsynchronousBlockTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
     }
@@ -109,7 +110,7 @@ struct AsynchronousBlockTests {
                     comment,
                     .process(
                         block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
-                    ),
+                    )
                 ]
             )
             .hasProcess
@@ -120,9 +121,9 @@ struct AsynchronousBlockTests {
                     comment,
                     .process(
                         block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))
-                    ),
+                    )
                 ]),
-                comment,
+                comment
             ])
             .hasProcess
         )
@@ -159,7 +160,7 @@ struct AsynchronousBlockTests {
             blocks: [nullStatement, representation.architectureBody]
         )
         let expected = AsynchronousBlock.blocks(blocks: [
-            nullStatement, .process(block: newProcess),
+            nullStatement, .process(block: newProcess)
         ])
         #expect(AsynchronousBlock(verifiable: blocks, in: representation) == expected)
     }
@@ -178,7 +179,7 @@ struct AsynchronousBlockTests {
     func testVerifiableBlocksReturnsNil() {
         let blocks = AsynchronousBlock.blocks(blocks: [
             comment,
-            .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null))),
+            .process(block: ProcessBlock(sensitivityList: [], code: .statement(statement: .null)))
         ])
         #expect(AsynchronousBlock(verifiable: blocks, in: representation) == nil)
     }
@@ -241,7 +242,7 @@ struct AsynchronousBlockTests {
                                 sensitivityList: [],
                                 code: .statement(statement: .null)
                             )
-                        ),
+                        )
                     ]),
                     machine: machine
                 )
@@ -276,7 +277,7 @@ struct AsynchronousBlockTests {
                 ),
                 blocks[0],
                 comment,
-                .process(block: verifiableProcess),
+                .process(block: verifiableProcess)
             ]
         )
         let result = AsynchronousBlock(verifiable: representation)

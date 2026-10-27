@@ -71,6 +71,7 @@ struct AsynchronousBlockStateRunnerTests {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -88,7 +89,9 @@ struct AsynchronousBlockStateRunnerTests {
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            // swiftlint:disable:next force_unwrapping
             PortSignal(type: .stdLogic, name: VariableName(rawValue: "nullX")!, mode: .input),
+            // swiftlint:disable:next force_unwrapping
             PortSignal(type: .stdLogic, name: VariableName(rawValue: "nullY")!, mode: .output),
             PortSignal(
                 type: .ranged(
@@ -99,26 +102,35 @@ struct AsynchronousBlockStateRunnerTests {
                         )
                     )
                 ),
+                // swiftlint:disable:next force_unwrapping
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
             ),
-            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output),
+            // swiftlint:disable:next force_unwrapping
+            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
         machine.states[0].externalVariables = [
-            .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!,
+            // swiftlint:disable:next force_unwrapping
+            .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!
         ]
     }
 
-    /// Test component instantiation is correct.
+    // /// Test component instantiation is correct.
     // func testComponentInstantiation() {
     //     let result = AsynchronousBlock(stateRunnerComponentsFor: machine.states[0], in: representation)
+    //     // swiftlint:disable:next force_unwrapping
     //     // print(result!.rawValue)
-    //     // print(AsynchronousBlock(stateRunnerComponentsFor: machine.states[1], in: representation)!.rawValue)
+    //     // // swiftlint:disable:next force_unwrapping
+    //     // print(
+    //     //     AsynchronousBlock(
+    //     //         stateRunnerComponentsFor: machine.states[1], in: representation
+    //     //     )!.rawValue
+    //     // )
     // }
 
-    /// Test logic is correct.
+    // /// Test logic is correct.
     // func testLogic() {
     //     let result = AsynchronousBlock(stateRunnerFor: machine.states[0], in: representation)
     //     // print(result!.rawValue)

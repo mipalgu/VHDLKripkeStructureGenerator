@@ -53,16 +53,20 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLMachines
 import VHDLParsing
 
 @testable import VHDLKripkeStructureGenerator
 
+/// Test suite for BRAM transmitter.
 @Suite
 struct VHDLFileBramTransmitterTests {
 
+    // swiftlint:disable function_body_length line_length
+
+    /// Test generates correct VHDL code.
     @Test
     func testRawValue() {
         guard let representation = MachineRepresentation(machine: .pingMachine, name: .pingMachine)
@@ -264,5 +268,7 @@ struct VHDLFileBramTransmitterTests {
             """
         #expect(result.rawValue == expected)
     }
+
+    // swiftlint:enable function_body_length line_length
 
 }

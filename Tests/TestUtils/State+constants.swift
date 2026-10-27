@@ -74,7 +74,7 @@ extension State {
                     name: .variable(reference: .variable(name: .ping)),
                     value: .literal(value: .bit(value: .high))
                 )
-            ),
+            )
         ],
         signals: [],
         externalVariables: [.ping, .pong]

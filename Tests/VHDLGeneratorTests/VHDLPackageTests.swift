@@ -63,7 +63,7 @@ import VHDLParsing
 @Suite
 struct VHDLPackageTests {
 
-    /// Test the `PrimitiveTypes` package is defined correctly.
+    // /// Test the `PrimitiveTypes` package is defined correctly.
     // func testPrimitiveTypesPackage() {
     //     // swiftlint:disable line_length
     //     let expected = """

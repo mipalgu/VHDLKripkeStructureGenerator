@@ -53,8 +53,8 @@
 // or write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA  02110-1301, USA.
 
-import TestUtils
 import Testing
+import TestUtils
 import VHDLMachines
 import VHDLParsing
 
@@ -97,7 +97,7 @@ struct MemoryStructureFactoryTests {
             VariableName(rawValue: "CacheDivider")!,
             VariableName(rawValue: "CacheEncoder")!,
             VariableName(rawValue: "CacheDecoder")!,
-            VariableName(rawValue: "CacheBRAM")!,
+            VariableName(rawValue: "CacheBRAM")!
         ]
         #expect(fileNames == expected)
     }
@@ -117,7 +117,7 @@ struct MemoryStructureFactoryTests {
             VariableName(rawValue: "PingMachineTargetStatesCacheDivider")!,
             VariableName(rawValue: "PingMachineTargetStatesCacheEncoder")!,
             VariableName(rawValue: "PingMachineTargetStatesCacheDecoder")!,
-            VariableName(rawValue: "PingMachineTargetStatesCacheBRAM")!,
+            VariableName(rawValue: "PingMachineTargetStatesCacheBRAM")!
         ]
         #expect(fileNames == expected)
     }

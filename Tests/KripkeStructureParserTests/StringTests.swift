@@ -70,6 +70,8 @@ struct StringTests {
 
     // swiftlint:enable force_unwrapping
 
+    // swiftlint:disable function_body_length line_length
+
     /// Test the `read` state is created correctly.
     @Test
     func testReadStateCreation() {
@@ -185,6 +187,8 @@ struct StringTests {
             """
         #expect(result == expected)
     }
+
+    // swiftlint:enable function_body_length line_length
 
     /// Test Ringlet representation in Kripke Structure.
     @Test

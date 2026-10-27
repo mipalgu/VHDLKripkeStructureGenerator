@@ -71,6 +71,7 @@ struct VHDLFileStateRunnerTests {
 
     /// The equivalent representation for `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -88,7 +89,9 @@ struct VHDLFileStateRunnerTests {
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
             PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            // swiftlint:disable:next force_unwrapping
             PortSignal(type: .stdLogic, name: VariableName(rawValue: "nullX")!, mode: .input),
+            // swiftlint:disable:next force_unwrapping
             PortSignal(type: .stdLogic, name: VariableName(rawValue: "nullY")!, mode: .output),
             PortSignal(
                 type: .ranged(
@@ -99,19 +102,22 @@ struct VHDLFileStateRunnerTests {
                         )
                     )
                 ),
+                // swiftlint:disable:next force_unwrapping
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
             ),
-            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output),
+            // swiftlint:disable:next force_unwrapping
+            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
         machine.states[0].externalVariables = [
-            .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!,
+            // swiftlint:disable:next force_unwrapping
+            .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!
         ]
     }
 
-    /// Test runner is generated correctly.
+    // /// Test runner is generated correctly.
     // func testStateRunner() {
     //     let result = VHDLFile(stateRunnerFor: machine.states[0], in: representation)
     //     // print(result!.rawValue)

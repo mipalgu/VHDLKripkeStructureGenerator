@@ -83,7 +83,7 @@ struct ProcessBlockTests {
     mutating func testVerifiableInit() {
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y, mode: .output),
+            PortSignal(type: .stdLogic, name: .y, mode: .output)
         ]
         guard !machine.states.isEmpty else {
             Issue.record("Machine has no states.")
@@ -120,7 +120,7 @@ struct ProcessBlockTests {
             (VariableName.internalState, VariableName.internalStateOut(for: representation)),
             (VariableName.targetState, VariableName.targetStateOut(for: representation)),
             (VariableName.currentState, VariableName.currentStateOut(for: representation)),
-            (VariableName.previousRinglet, VariableName.previousRingletOut(for: representation)),
+            (VariableName.previousRinglet, VariableName.previousRingletOut(for: representation))
         ]
         let newLogic = newVariables.reduce(logic) {
             SynchronousBlock(internalSignal: $0, signal: $1.0, newSignal: $1.1)
@@ -206,7 +206,7 @@ struct ProcessBlockTests {
                                             )
                                         )
                                     )
-                                ),
+                                )
                             ] + [newLogic]
                         ),
                         elseBlock: mutationBlock

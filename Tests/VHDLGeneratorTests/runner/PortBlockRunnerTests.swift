@@ -71,6 +71,7 @@ struct PortBlockRunnerTests {
 
     /// The representation of the machine.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 
@@ -86,14 +87,14 @@ struct PortBlockRunnerTests {
         "previousRingletIn: in std_logic_vector(0 downto 0)",
         "previousRingletOut: out std_logic_vector(0 downto 0)",
         "targetStateIn: in std_logic_vector(0 downto 0)",
-        "targetStateOut: out std_logic_vector(0 downto 0)",
+        "targetStateOut: out std_logic_vector(0 downto 0)"
     ]
 
     /// The control signals.
     let controlSignals = [
         "reset: in std_logic",
         "goalInternalState: in std_logic_vector(2 downto 0)",
-        "finished: out boolean := true",
+        "finished: out boolean := true"
     ]
 
     /// Initialises the machine before each test.
@@ -101,7 +102,7 @@ struct PortBlockRunnerTests {
         machine = Machine.initialSuspensible
         machine.externalSignals = [
             PortSignal(type: .stdLogic, name: .x, mode: .input),
-            PortSignal(type: .stdLogic, name: .y2, mode: .output),
+            PortSignal(type: .stdLogic, name: .y2, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
@@ -144,7 +145,7 @@ struct PortBlockRunnerTests {
             "M_y: out std_logic",
             "M_yIn: in std_logic",
             "M_STATE_Initial_initialX: out std_logic",
-            "M_STATE_Initial_initialXIn: in std_logic",
+            "M_STATE_Initial_initialXIn: in std_logic"
         ]
         let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
         let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))
@@ -168,11 +169,11 @@ struct PortBlockRunnerTests {
         let snapshotsRaw = [
             "M_x: out std_logic",
             "M_y2: out std_logic",
-            "M_y2In: in std_logic",
+            "M_y2In: in std_logic"
         ]
         let machinesRaw = ["M_y: out std_logic", "M_yIn: in std_logic"]
         let statesRaw = [
-            "M_STATE_Initial_initialX: out std_logic", "M_STATE_Initial_initialXIn: in std_logic",
+            "M_STATE_Initial_initialX: out std_logic", "M_STATE_Initial_initialXIn: in std_logic"
         ]
         let trackers = self.trackersRaw.compactMap(PortSignal.init(rawValue:))
         let controls = self.controlSignals.compactMap(PortSignal.init(rawValue:))

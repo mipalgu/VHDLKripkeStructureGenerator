@@ -71,6 +71,7 @@ struct VariableNameTests {
 
     /// The representation of the `machine`.
     var representation: MachineRepresentation {
+        // swiftlint:disable:next force_unwrapping
         MachineRepresentation(machine: machine, name: .M)!
     }
 

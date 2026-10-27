@@ -105,12 +105,12 @@ struct VariableParserTests {
                 name: VariableName(rawValue: "nullXs")!,
                 mode: .input
             ),
-            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output),
+            PortSignal(type: .stdLogic, name: VariableName(rawValue: "y3")!, mode: .output)
         ]
         machine.machineSignals = [LocalSignal(type: .stdLogic, name: .y)]
         machine.states[0].signals = [LocalSignal(type: .stdLogic, name: .initialX)]
         machine.states[0].externalVariables = [
-            .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!,
+            .x, .y2, VariableName(rawValue: "nullXs")!, VariableName(rawValue: "y3")!
         ]
     }
 

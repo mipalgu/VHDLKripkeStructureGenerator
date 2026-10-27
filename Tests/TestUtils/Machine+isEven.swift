@@ -76,7 +76,7 @@ extension Machine {
                 name: .count,
                 mode: .input
             ),
-            PortSignal(type: .stdLogic, name: .isEven, mode: .output),
+            PortSignal(type: .stdLogic, name: .isEven, mode: .output)
         ],
         clocks: [Clock(name: .clk, frequency: 125, unit: .MHz)],
         drivingClock: 0,
@@ -109,7 +109,7 @@ extension Machine {
                 ],
                 signals: [],
                 externalVariables: [.count, .isEven]
-            ),
+            )
         ],
         transitions: [
             Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1)
