@@ -92,9 +92,9 @@ extension String {
                 }
 
                 func removeOldFileIfExists(url: URL) throws {
-                    var isDirectory: Bool = false
+                    var isDirectory: ObjCBool = false
                     if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) {
-                        if isDirectory {
+                        if isDirectory.boolValue {
                             fatalError("Located directory resource at \\(url.path)")
                         }
                         try FileManager.default.removeItem(at: url)
